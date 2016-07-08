@@ -92,50 +92,10 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	
 	onStudent: function(){
-		var active = Ext.Viewport.getActiveItem();
-		console.log(active.xtype)
-		if(active.xtype == 'student') return
-			
-		Ext.Viewport.remove(active,true); //remove 当前界面
-    	//Ext.Viewport.setActiveItem(Ext.create('Youngshine.view.student.List'));
-		
-		var obj = {
-			"consultID": localStorage.consultID
-		}		
-		var store = Ext.getStore('Student'); 
-		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
-			'readStudentList.php?data=' + JSON.stringify(obj));
-		store.load({
-			callback: function(records, operation, success){
-		        //Ext.Viewport.setMasked(false);
-		        if (success){
-					Ext.Viewport.setActiveItem(Ext.create('Youngshine.view.student.List'));
-				};
-			}   		
-		});	
+		this.fireEvent('student')
 	},
 	onTeacher: function(){
-		var active = Ext.Viewport.getActiveItem();
-		if(active.xtype == 'teacher') return
-			
-		Ext.Viewport.remove(active,true); //remove 当前界面
-    	//var view = Ext.create('Youngshine.view.teacher.List');
-		//Ext.Viewport.setActiveItem(view);
-		//view.onGenreChange(); //默认
-		var obj = {
-			"schoolID": localStorage.schoolID
-		}		
-		var store = Ext.getStore('Teacher'); 
-		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
-			'readTeacherList.php?data=' + JSON.stringify(obj));
-		store.load({
-			callback: function(records, operation, success){
-		        //Ext.Viewport.setMasked(false);
-		        if (success){
-					Ext.Viewport.setActiveItem(Ext.create('Youngshine.view.teacher.List'));
-				};
-			}   		
-		});	
+		this.fireEvent('teacher')
 	},
 	onNews: function(){
 		var active = Ext.Viewport.getActiveItem();

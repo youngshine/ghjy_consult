@@ -16,7 +16,7 @@ Ext.define('Youngshine.store.Teacher', {
         },
         sorters: [{ // 最新发布的线路排在顶部，不起作用？
 			property: 'created',
-			direction: "DESC"
+			//direction: "DESC"
 		}]
     }
 });

@@ -9,6 +9,7 @@ Ext.define('Youngshine.view.student.List', {
 
     config: {
         store: 'Student',
+		record: null,
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
@@ -41,14 +42,13 @@ Ext.define('Youngshine.view.student.List', {
 				}		
 			}]
 		},{
-			xtype: 'label',
+    		xtype: 'searchfield',
+			scrollDock: 'top',
 			docked: 'top',
-			html: '',
-			itemId: 'zsd',
-			style: 'text-align:center;color:#888;font-size:0.9em;margin:5px;'
+			placeHolder: 'search...',
     	}],
 		
-		record: null,
+		
     },
 	
 	initialize: function(){

@@ -4,42 +4,47 @@ Ext.define('Youngshine.controller.Main', {
     config: {
         refs: {
 			login: 'login',
-			mainview : '#mainview'
+			mainview : '#mainview',
+			sidemenu: 'sidemenu'
         },
         control: {
 			login: {
 				ok: 'loginOk',
 				//forgetpassword: 'loginForgetpassword' //忘记密码
+			},
+			sidemenu: {
+				student: 'menuStudent',
+				teacher: 'menuTeacher'
 			}
         },
     },
 
     loginOk: function(username,psw,school){  	
-    	var me = this; console.log(username,school)
+    	var me = this; 
 		Ext.Viewport.setMasked({xtype:'loadmask',message:'正在登录'});
 		
     	Ext.data.JsonP.request({			
 			url: me.getApplication().dataUrl + 'login.php',
 			params:{
-				username: username,
-				psw     : psw,
-				school  : school
+				data: '{"username":"' + username + '","psw":"' + psw + '","school":"' + school + '"}'
 			},
 			success: function(result){ // 服务器连接成功
 				Ext.Viewport.setMasked(false); 
 				console.log(result)
 				if (result.success){ // 返回值有success成功
-					localStorage.setItem('consultID',result.data.consultName);
+					localStorage.setItem('consultID',result.data.consultID);
 					localStorage.setItem('consultName',result.data.consultName);
-					localStorage.setItem('school',result.data.schoolName); 
-					Ext.Viewport.remove(me.getLogin(),true); 			
+					localStorage.setItem('schoolID',result.data.schoolID); 
+					localStorage.setItem('schoolName',result.data.schoolName); 
+					
+					Ext.Viewport.remove(me.getLogin(),true); 	
+					me.mainview = Ext.create('Youngshine.view.Main');
+					Ext.Viewport.add(me.mainview)
+					Ext.Viewport.setActiveItem(me.mainview);
+					me.mainview.down('toolbar').setTitle(localStorage.schoolName)		
 				}else{
 					Ext.toast(result.message,3000);
 				}
-				Ext.Viewport.remove(me.login); //getLogin(),true); 
-				me.mainview = Ext.create('Youngshine.view.Main');
-				Ext.Viewport.add(me.mainview)
-				Ext.Viewport.setActiveItem(me.mainview);
 			}
 		});
 	},
@@ -52,6 +57,12 @@ Ext.define('Youngshine.controller.Main', {
 			cover: false //reveal: true
 		});
 		Ext.Viewport.toggleMenu('left');	 
+	},
+	menuStudent: function(){
+		this.getApplication().getController('Student').studentList()		 
+	},
+	menuTeacher: function(){
+		this.getApplication().getController('Teacher').teacherList()		 
 	},
 	
 	// 用户注销退出，来自Main控制器，reset

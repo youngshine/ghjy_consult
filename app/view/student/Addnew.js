@@ -20,12 +20,9 @@ Ext.define('Youngshine.view.student.Addnew', {
 			docked: 'top',
 			title: '新增学生',
 			items: [{
-				text: '返回',
-				ui: 'back',
-				handler: function(btn){
-					btn.up('panel').destroy();//onBack();
-					//Ext.Viewport.remove(Ext.Viewport.getActiveItem(),true);
-				}	
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
 			},{
 				xtype: 'spacer'
 			},{
@@ -44,8 +41,32 @@ Ext.define('Youngshine.view.student.Addnew', {
 				xtype: 'textfield',
 				name: 'studentName', //绑定后台数据字段
 				label: '姓名',
-				//value: localStorage.a,
 				clearIcon: false
+			},{
+				xtype: 'selectfield',
+				name: 'gender', 
+				autoSelect: false,
+				label: '性别',
+				options: [
+				    {text: '男', value: '男'},
+				    {text: '女', value: '女'}
+				]	
+			},{
+				xtype: 'selectfield',
+				name: 'grade', 
+				label: '年级',
+				autoSelect: false,
+				options: [
+				    {text: '九年级', value: '九年级'},
+				    {text: '八年级', value: '八年级'},
+				    {text: '七年级', value: '七年级'},
+				    {text: '六年级', value: '六年级'},
+				    {text: '五年级', value: '五年级'},
+				    {text: '四年级', value: '四年级'},
+				    {text: '三年级', value: '三年级'},
+				    {text: '二年级', value: '二年级'},
+				    {text: '一年级', value: '一年级'}
+				]
 			},{	
 				xtype: 'textfield',
 				name: 'addr', //绑定后台数据字段
@@ -59,22 +80,22 @@ Ext.define('Youngshine.view.student.Addnew', {
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
-				}	
-			},{	
-				xtype: 'hiddenfield',	
-				name: 'openID', //绑定后台数据字段
-				value: localStorage.openID //sessionStorage.openID		
+				}		
 			}]	
 		}],		
 	
 		listeners: [{
 			delegate: 'button[action=save]',
 			event: 'tap',
-			fn: 'onSave'	
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'		
 		}]
 	},
 
-	// it's bad to use listeners config obj in Ext.define(), use it in instanialiing create()
+	/* it's bad to use listeners config obj in Ext.define(), use it in instanialiing create()
 	initialize: function(){	
         this.callParent(arguments);	
 		this.element.on({
@@ -86,40 +107,37 @@ Ext.define('Youngshine.view.student.Addnew', {
         if(e.direction=='right'){
         	this.onBack(); //destroy();
         };     
-    },
-	onBack: function(){
-		var me = this;
-		
-		var vw = Youngshine.app.getController('Main').mainview //.getMainview(); //先显示前一画面，动画切换才顺滑
-		console.log(vw)
-		Ext.Viewport.setActiveItem(vw);	
-		me.hide();
-		setTimeout(function(){ //延迟，才能hide config动画，滚动到最后4-1
-			me.destroy();
-		},300);	
-	},
-	
+    }, */
+
 	onSave: function(){
 		var me = this;
 
-		var member_name = this.down('textfield[name=member_name]').getValue().trim();
-		var member_phone = this.down('textfield[name=member_phone]').getValue().trim(); 
-		var member_addr = this.down('textfield[name=member_addr]').getValue().trim(); 
-		//var member_gender = '';
+		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
+			gender = this.down('selectfield[name=gender]').getValue(),
+			grade = this.down('selectfield[name=grade]').getValue(),
+			phone = this.down('textfield[name=phone]').getValue().trim(),
+			addr = this.down('textfield[name=addr]').getValue().trim()
 	
-		if (member_name == ''){
-			Youngshine.app.getController('Main').alertMsg('请填写姓名',2000)
-			return;
+		if (studentName == ''){
+			Ext.toast('姓名不能空白',3000); return;
+		}
+		if (phone == ''){
+			Ext.toast('电话不能空白',3000); return;
 		}
 		var obj = {
-			member_name: member_name,
-			member_phone: member_phone,
-			member_addr: member_addr,
-			member_gender: '无',
-			openID: localStorage.openID 
-			//member_id: member_id
+			studentName: studentName,
+			gender: gender,
+			grade: grade,
+			phone: phone,
+			addr: addr,
+			consultID: localStorage.consultID //归属哪个咨询师
 		};
-		me.fireEvent('membereditSave', obj,me);
+		console.log(obj)
+		me.fireEvent('save', obj,me);
 	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	}
 	
 });

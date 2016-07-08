@@ -1,27 +1,25 @@
 <?php 
+/*
+ * 登录：参数校区账号密码
+*/
+	require_once('db/request.php');
+	require_once('db/response.php');
+	require_once('db/database_connection.php');
+	//require_once ('../lib/global_function.php');
 
-require_once('db/request.php');
-require_once('db/response.php');
-require_once('db/database_connection.php');
-//require_once ('../lib/global_function.php');
-
-$req = new Request(array());
-$res = new Response();
-
-//下面两行代码是为了对登录传过来的数据进行特殊处理
-//$dataJson = str_replace("\\","",$_REQUEST['data']);//去json字符串中的反斜线		
-//$request->params = (isset($_REQUEST['data'])) ? json_decode($dataJson) : null;//将json格式的数据转换成数组
+	$req = new Request(array());
+	$res = new Response();
 
 	$arr = $req->params;
 	
 	$username = addslashes($arr->username);
 	$psw = addslashes($arr->psw);
 	$school = addslashes($arr->school);
-
+	
 	$query = "SELECT a.*,b.schoolName  
 		From `ghjy_consult` a 
 		Join `ghjy_school` b On a.schoolID = b.schoolID 
-		Where a.consultName='$username' And a.psw='$psw' And b.schoolName='$schoolName' ";
+		Where a.consultName='$username' And a.psw='$psw' And b.schoolName='$school' ";
 	$result = mysql_query($query);
 	//if(!$result)
 		//ErrorOutput();
