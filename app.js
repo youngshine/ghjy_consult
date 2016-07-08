@@ -14,11 +14,21 @@ Ext.application({
     name: 'Youngshine',
 
     requires: [
-        'Ext.MessageBox'
+        'Ext.MessageBox',
+		'Ext.Toast',
+		'Ext.data.JsonP'
     ],
+	
+	dataUrl: 'http://www.xzpt.org/app/consult/script/', //服务端,全局变量大写???
 
     views: [
+        //'Main'
+    ],
+    controllers: [
         'Main'
+    ],
+    stores: [
+    	'Student','Teacher'
     ],
 
     icon: {
@@ -44,7 +54,7 @@ Ext.application({
         Ext.fly('appLoadingIndicator').destroy();
 
         // Initialize the main view
-        Ext.Viewport.add(Ext.create('Youngshine.view.Main'));
+        Ext.Viewport.add(Ext.create('Youngshine.view.Login'));
     },
 
     onUpdated: function() {
