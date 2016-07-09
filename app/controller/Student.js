@@ -6,6 +6,7 @@ Ext.define('Youngshine.controller.Student', {
         refs: {
            	student: 'student',
 			studentaddnew: 'student-addnew',
+			studentshow: 'student-show'
         },
         control: {
 			student: {
@@ -48,42 +49,11 @@ Ext.define('Youngshine.controller.Student', {
 	},
 	studentItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
-		//list.down('button[action=done]').enable();
-		//list.setSelectedRecord(record);
-		//console.log(list.getSelectedRecord());
-		//me.showStudent(record);	
-		console.log(record.data)
-		//list.destroy()
-		
-		if(!me.student){
-			me.student = Ext.create('Youngshine.view.teach.Student')
-			Ext.Viewport.add(me.student)
-		}
-		
-		me.student.setRecord(record); //带入当前知识点
-		me.student.down('label[itemId=zsd]').setHtml(record.data.zsdName)
-		
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生列表'});
-		// 预先加载的数据
-		var obj = {
-			"teacherID": record.data.teacherID,
-			"zsdID": record.data.zsdID, // zsdID不唯一，因三个表
-			"subjectID": record.data.subjectID
-		}
-		var store = Ext.getStore('Student'); 
-		store.getProxy().setUrl(this.getApplication().dataUrl + 
-			'readStudentList.php?data='+JSON.stringify(obj) );
-		store.load({ //异步async
-			callback: function(records, operation, success){
-				if (success){
-					Ext.Viewport.setMasked(false);
-					Ext.Viewport.setActiveItem(me.student);
-				}else{
-					//me.alertMsg('服务请求失败',3000)
-					Ext.Msg.alert(result.message);
-				};
-			}   		
-		});	
+		me.studentshow = Ext.create('Youngshine.view.student.Show');
+		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
+		me.studentshow.down('panel[itemId=my_show]').setData(record.data)
+		me.studentshow.show(); 
+		me.studentshow.setRecord(record); // 当前记录参数
 	},
 
 	studentAddnew: function(win){		

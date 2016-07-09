@@ -46,7 +46,7 @@ Ext.define('Youngshine.view.Login', {
 				itemId: 'school',
     			label: '校区',
 				//value: '18150112938',
-				placeHolder: ''
+				placeHolder: '输入加盟校区'
     		}]
     	},{
 			xtype: 'button',
@@ -107,6 +107,6 @@ Ext.define('Youngshine.view.Login', {
     },
     onPainted: function() {
 		this.down('textfield[itemId=username]').setValue(localStorage.consultName)
-		this.down('textfield[itemId=school]').setValue(localStorage.school)
+		this.down('textfield[itemId=school]').setValue(localStorage.schoolName)
     },
 });

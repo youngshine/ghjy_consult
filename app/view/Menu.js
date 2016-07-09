@@ -4,15 +4,19 @@ Ext.define('Youngshine.view.Menu', {
 	//id: 'mypopmenu',
 	
 	config: {
-		width: '50%',
+		width: '34%',
 		//scrollable: 'vertical',
 		items: [{
-			text: '注册学生',
-			//iconCls: 'home',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
+			text: '咨询首页',
+			iconCls: 'home',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onHome()
+			}
+		},{
+			text: '学生',
+			iconCls: 'team',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
@@ -20,11 +24,7 @@ Ext.define('Youngshine.view.Menu', {
 			}
 		},{
 			text: '教师',
-			//iconCls: 'search',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
+			iconCls: 'user',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
@@ -33,52 +33,34 @@ Ext.define('Youngshine.view.Menu', {
 			//iconCls: 'compose'
 		
 		},{
-			text: '价格套餐',
-			//iconCls: 'user',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
-			//iconCls: 'star'
+			text: '测评＋销售',
+			iconCls: 'action',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onPricelist()
 			}
 		},{
-			text: '排课',
-			//iconCls: 'info',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
+			text: '排课程表',
+			iconCls: 'compose',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudy()
 			}
 		},{
-			text: '个人设置',
-			//iconCls: 'info',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onMember()
-			}
-		},{
 			text: '退出',
 			//iconCls: 'delete',
-			style: {
-				background: 'none',
-				color: '#fff'
-			},
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
 				Youngshine.app.getController('Main').logout()
+			}
+		},{
+			text: '根号教育',
+			ui: 'plain',
+			style: {
+				color: '#fff',
+				'font-size': '0.8em'
 			}
 		}],
 	},
@@ -90,7 +72,10 @@ Ext.define('Youngshine.view.Menu', {
 	onHidemenu: function(){
 		this.destroy()
 	},
-	
+
+	onHome: function(){
+		this.fireEvent('home')
+	},	
 	onStudent: function(){
 		this.fireEvent('student')
 	},

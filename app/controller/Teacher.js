@@ -6,6 +6,7 @@ Ext.define('Youngshine.controller.Teacher', {
         refs: {
            	teacher: 'teacher',
 			teacheraddnew: 'teacher-addnew',
+			teachercourse: 'teacher-course',
         },
         control: {
 			teacher: {
@@ -16,6 +17,9 @@ Ext.define('Youngshine.controller.Teacher', {
 			teacheraddnew: {
 				save: 'teacheraddnewSave', 
 				cancel: 'teacheraddnewCancel'
+			},
+			teachercourse: {
+				back: 'teachercourseBack'
 			},
         }
     },
@@ -45,42 +49,32 @@ Ext.define('Youngshine.controller.Teacher', {
 			} 
 		})	  			 
 	},
-	//zsdSelect: function(list,record){
+	// 显示课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
-		//list.down('button[action=done]').enable();
-		//list.setSelectedRecord(record);
-		//console.log(list.getSelectedRecord());
-		//me.showStudent(record);	
-		console.log(record.data)
-		//list.destroy()
+
+		if(!me.teachercourse){
+			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
+			Ext.Viewport.add(me.teachercourse)
+		}		
+		me.teachercourse.setRecord(record); //带入当前知识点
+		me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
 		
-		if(!me.student){
-			me.student = Ext.create('Youngshine.view.teach.Student')
-			Ext.Viewport.add(me.student)
-		}
-		
-		me.student.setRecord(record); //带入当前知识点
-		me.student.down('label[itemId=zsd]').setHtml(record.data.zsdName)
-		
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生列表'});
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
 		// 预先加载的数据
 		var obj = {
 			"teacherID": record.data.teacherID,
-			"zsdID": record.data.zsdID, // zsdID不唯一，因三个表
-			"subjectID": record.data.subjectID
 		}
-		var store = Ext.getStore('Student'); 
+		var store = Ext.getStore('Course'); 
 		store.getProxy().setUrl(this.getApplication().dataUrl + 
-			'readStudentList.php?data='+JSON.stringify(obj) );
+			'readCourseList.php?data='+JSON.stringify(obj) );
 		store.load({ //异步async
 			callback: function(records, operation, success){
+				Ext.Viewport.setMasked(false);
 				if (success){
-					Ext.Viewport.setMasked(false);
-					Ext.Viewport.setActiveItem(me.student);
+					Ext.Viewport.setActiveItem(me.teachercourse);
 				}else{
-					//me.alertMsg('服务请求失败',3000)
-					Ext.Msg.alert(result.message);
+					Ext.toast(result.message,3000);
 				};
 			}   		
 		});	
@@ -170,6 +164,12 @@ Ext.define('Youngshine.controller.Teacher', {
 				Ext.getStore('Teacher').insert(0,obj)
 		    }
 		});
+	},
+	// 返回
+	teachercourseBack: function(oldView){		
+		var me = this;
+		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.teacher);
 	},
 
 			

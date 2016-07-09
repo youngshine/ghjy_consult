@@ -10,7 +10,7 @@ Ext.define('Youngshine.view.teacher.List', {
 		record: null,
         //itemHeight: 89,
         //emptyText: '学生列表',
-		disableSelection: true,
+		//disableSelection: true,
         itemTpl: [
             '<div><span>{teacherName}</span><span style="float:right;color:#888;">{subjectName}</span></div>'
         ],

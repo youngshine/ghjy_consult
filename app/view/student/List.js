@@ -12,7 +12,7 @@ Ext.define('Youngshine.view.student.List', {
 		record: null,
         //itemHeight: 89,
         //emptyText: '学生列表',
-		disableSelection: true,
+		//disableSelection: true,
         itemTpl: [
             '<div>{studentName}<span style="float:right;color:#888;">{fullPass}</span></div>'
         ],
@@ -53,7 +53,7 @@ Ext.define('Youngshine.view.student.List', {
 	
 	initialize: function(){
 		this.callParent(arguments)
-		this.on('itemtap',this.onItemtap)
+		//this.on('itemtap',this.onItemtap)
 	},
 	
 	// 显示详情

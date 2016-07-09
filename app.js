@@ -28,7 +28,7 @@ Ext.application({
         'Main','Student','Teacher'
     ],
     stores: [
-    	'Student','Teacher'
+    	'Student','Teacher','Course'
     ],
 
     icon: {

@@ -13,6 +13,7 @@ Ext.define('Youngshine.controller.Main', {
 				//forgetpassword: 'loginForgetpassword' //忘记密码
 			},
 			sidemenu: {
+				home: 'menuHome',
 				student: 'menuStudent',
 				teacher: 'menuTeacher'
 			}
@@ -58,6 +59,17 @@ Ext.define('Youngshine.controller.Main', {
 		});
 		Ext.Viewport.toggleMenu('left');	 
 	},
+	
+	menuHome: function(){
+		var me = this;
+		var curView = Ext.Viewport.getActiveItem();
+		if(curView.xtype == 'mainview') return
+			
+		me.mainview = Ext.create('Youngshine.view.Main');
+		Ext.Viewport.add(me.mainview)
+		Ext.Viewport.setActiveItem(me.mainview);
+		me.mainview.down('toolbar').setTitle(localStorage.schoolName)	
+	},
 	menuStudent: function(){
 		this.getApplication().getController('Student').studentList()		 
 	},
@@ -79,6 +91,14 @@ Ext.define('Youngshine.controller.Main', {
 	launch: function(){
 		console.log('main controller launch logic');
 		
-	}
+	}, /*
+	init: function(){
+		var me = this; 
+		console.log('main controller init ');
+		console.log(localStorage.schoolName)
+		me.login = Ext.create('Youngshine.view.Login')
+		me.login.down('textfield[itemId=school]').setValue(localStorage.schoolName)
+		Ext.Viewport.add(me.login)
+	} */
     
 });

@@ -37,10 +37,28 @@ Ext.define('Youngshine.view.Main', {
 				} 
 			}]	
 		},{	
-			xtype: 'dataview',
-			scrollable: {
-				direction: 'vertical'
-			},
+            xtype: 'carousel',
+
+            //the direction is horizontal
+            direction: 'vertical',
+
+            //we turn on direction lock so you cannot scroll diagonally
+            directionLock: true,
+
+            //and give it the items array
+            items: [{
+                xtype: 'image',
+                //cls: 'my-carousel-item-img',
+                src: 'resources/images/carousel03.jpg'
+			},{
+                xtype: 'image',
+                //cls: 'my-carousel-item-img',
+                src: 'resources/images/carousel02.jpg'
+			},{
+                xtype: 'image',
+                //cls: 'my-carousel-item-img',
+                src: 'resources/images/carousel01.jpg'		
+            }]
         }],
     },
 	
