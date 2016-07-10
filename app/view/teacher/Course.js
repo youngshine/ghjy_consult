@@ -10,17 +10,18 @@ Ext.define('Youngshine.view.teacher.Course', {
 		store: 'Course',
 		disableSelection: true,
         //itemHeight: 89,
-        emptyText: '－－－空白－－－',
+        //emptyText: '－－－空白－－－',
 		//disableSelection: true,
         itemTpl: [
-			'<div style="color:#888;">{beginTime}｜{studentName}'+
+			'<div style="color:#888;font-size:0.9em;"><dpsn>{fullDate}</span>'+
+			'<span style="float:right;">{studentName}</span></div>'+
 			'<div>{zsdName}</div>'
         ],
 		
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '课时列表',
+    		title: '教师课时',
 			items: [{
 				ui : 'back',
 				action: 'back',

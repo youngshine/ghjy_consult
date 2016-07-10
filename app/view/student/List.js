@@ -46,11 +46,21 @@ Ext.define('Youngshine.view.student.List', {
 			scrollDock: 'top',
 			docked: 'top',
 			placeHolder: 'search...',
+			action: 'search'
     	}],
 		
-		
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
     },
-	
+/*	
 	initialize: function(){
 		this.callParent(arguments)
 		//this.on('itemtap',this.onItemtap)
@@ -63,10 +73,22 @@ Ext.define('Youngshine.view.student.List', {
 		vw.down('panel[itemId=my_show]').setData(record.data)
 		vw.show(); 
 		vw.setRecord(record); // 当前记录参数
-    },
+    }, */
     onAddnew: function(list, index, item, record){
 		var vw = Ext.create('Youngshine.view.student.Addnew');
 		Ext.Viewport.add(vw); 
 		vw.show(); //ext.setactive?
     },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Student');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = Ext.getStore('Student');
+		store.clearFilter();
+	},	
 });

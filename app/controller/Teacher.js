@@ -7,6 +7,7 @@ Ext.define('Youngshine.controller.Teacher', {
            	teacher: 'teacher',
 			teacheraddnew: 'teacher-addnew',
 			teachercourse: 'teacher-course',
+			teachercourseassess: 'teacher-course-assess'
         },
         control: {
 			teacher: {
@@ -19,7 +20,8 @@ Ext.define('Youngshine.controller.Teacher', {
 				cancel: 'teacheraddnewCancel'
 			},
 			teachercourse: {
-				back: 'teachercourseBack'
+				back: 'teachercourseBack',
+				itemtap: 'teachercourseItemtap'
 			},
         }
     },
@@ -160,7 +162,7 @@ Ext.define('Youngshine.controller.Teacher', {
 				oldView.destroy()
 				Ext.Viewport.setActiveItem(me.teacher);
 				obj.teacherID = result.data.teacherID
-				obj.created = new Date();
+				//obj.created = new Date();
 				Ext.getStore('Teacher').insert(0,obj)
 		    }
 		});
@@ -171,7 +173,27 @@ Ext.define('Youngshine.controller.Teacher', {
 		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},
-
+	// 显示该堂课时的家长评价
+	teachercourseItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		me.teachercourseassess = Ext.create('Youngshine.view.teacher.course.Assess');
+		//Ext.Viewport.add(me.teachercourseassess); //否则build后无法显示
+		
+		// ajax instead of jsonp 课时评价
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'readCourseAssess.php',
+		    params: {
+				courseID: record.data.courseID
+		    },
+		    success: function(response){
+				var ret = JSON.parse(response.responseText)
+				console.log(response)
+				Ext.Viewport.add(me.teachercourseassess); //否则build后无法显示
+				me.teachercourseassess.down('panel[itemId=my_show]').setData(ret)
+				me.teachercourseassess.show(); 	         
+		    }
+		});
+	},
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */
 	launch: function(){

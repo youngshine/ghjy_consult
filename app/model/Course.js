@@ -21,7 +21,10 @@ Ext.define('Youngshine.model.Course', {
 			{name: 'created'}, // sort by
 			
 			{ name: 'fullDate', convert: function(value, record){
-					return record.get('beginTime')//.substr(2,8)
+					var begin = record.get('beginTime');
+					begin = new Date(begin)
+					begin = (begin.getMonth()+1)+'月'+begin.getDate()+'日'
+					return begin
 				} 
 			},
 			{ name: 'fullEndtime', convert: function(value, record){

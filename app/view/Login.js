@@ -85,7 +85,7 @@ Ext.define('Youngshine.view.Login', {
 		//console.log(school+username+psw)
 		//if (schoolID==null || schoolID==''){
 		if (school==null || school==''){
-			Ext.toast('请选择加盟校区',3000); return;
+			Ext.toast('请输入加盟校区',3000); return;
 		}
 		if (username==''){
 			Ext.toast('请输入账号',3000); return;

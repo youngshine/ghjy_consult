@@ -7,6 +7,13 @@ Ext.define('Youngshine.view.Menu', {
 		width: '34%',
 		//scrollable: 'vertical',
 		items: [{
+			text: '根号教育',
+			ui: 'plain',
+			style: {
+				color: '#fff',
+				'font-size': '0.8em'
+			}
+		},{	
 			text: '咨询首页',
 			iconCls: 'home',
 			handler: function(btn){
@@ -31,9 +38,16 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onTeacher()
 			}
 			//iconCls: 'compose'
-		
 		},{
-			text: '测评＋销售',
+			text: '购买课时',
+			iconCls: 'action',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onOrders()
+			}		
+		},{
+			text: '课时套餐价格',
 			iconCls: 'action',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -55,13 +69,6 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				Youngshine.app.getController('Main').logout()
 			}
-		},{
-			text: '根号教育',
-			ui: 'plain',
-			style: {
-				color: '#fff',
-				'font-size': '0.8em'
-			}
 		}],
 	},
 
@@ -81,6 +88,12 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	onTeacher: function(){
 		this.fireEvent('teacher')
+	},
+	onOrders: function(){
+		this.fireEvent('orders')
+	},
+	onPricelist: function(){
+		this.fireEvent('pricelist')
 	},
 	onNews: function(){
 		var active = Ext.Viewport.getActiveItem();

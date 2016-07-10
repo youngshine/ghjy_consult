@@ -15,7 +15,9 @@ Ext.define('Youngshine.controller.Main', {
 			sidemenu: {
 				home: 'menuHome',
 				student: 'menuStudent',
-				teacher: 'menuTeacher'
+				teacher: 'menuTeacher',
+				orders: 'menuOrders',
+				pricelist: 'menuPricelist'
 			}
         },
     },
@@ -75,6 +77,12 @@ Ext.define('Youngshine.controller.Main', {
 	},
 	menuTeacher: function(){
 		this.getApplication().getController('Teacher').teacherList()		 
+	},
+	menuOrders: function(){
+		this.getApplication().getController('Orders').ordersList()		 
+	},
+	menuPricelist: function(){
+		//this.getApplication().getController('Teacher').teacherList()		 
 	},
 	
 	// 用户注销退出，来自Main控制器，reset

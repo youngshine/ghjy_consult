@@ -25,10 +25,10 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher'
+        'Main','Student','Teacher','Orders'
     ],
     stores: [
-    	'Student','Teacher','Course'
+    	'Student','Teacher','Course','Orders','Pricelist'
     ],
 
     icon: {
