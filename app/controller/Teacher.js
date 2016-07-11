@@ -51,7 +51,7 @@ Ext.define('Youngshine.controller.Teacher', {
 			} 
 		})	  			 
 	},
-	// 显示课时
+	// 显示教师上课课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 

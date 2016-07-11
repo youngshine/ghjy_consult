@@ -6,8 +6,8 @@ Ext.define('Youngshine.view.orders.List', {
 	xtype: 'orders',
 	
     config: {
-        store: 'Orders',
-		record: null,
+		record: null, //父窗口传递的记录参数
+		store: 'Orders',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
@@ -43,7 +43,19 @@ Ext.define('Youngshine.view.orders.List', {
 			scrollDock: 'top',
 			docked: 'top',
 			placeHolder: 'search...',
+			action: 'search'
     	}],	
+		
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
     },
 	
 	/*
@@ -64,4 +76,16 @@ Ext.define('Youngshine.view.orders.List', {
 		var me = this;
 		me.fireEvent('addnew', me);
     },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Orders');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = Ext.getStore('Orders');
+		store.clearFilter();
+	},	
 });

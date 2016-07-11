@@ -74379,7 +74379,10 @@ Ext.define('Youngshine.controller.Main', {
 			sidemenu: {
 				home: 'menuHome',
 				student: 'menuStudent',
-				teacher: 'menuTeacher'
+				teacher: 'menuTeacher',
+				orders: 'menuOrders',
+				study: 'menuStudy',//安排课程内容（知识点）及教师
+				pricelist: 'menuPricelist'
 			}
         },
     },
@@ -74439,6 +74442,15 @@ Ext.define('Youngshine.controller.Main', {
 	},
 	menuTeacher: function(){
 		this.getApplication().getController('Teacher').teacherList()		 
+	},
+	menuOrders: function(){
+		this.getApplication().getController('Orders').ordersList()		 
+	},
+	menuStudy: function(){
+		this.getApplication().getController('Study').ordersList()		 
+	},
+	menuPricelist: function(){
+		//this.getApplication().getController('Teacher').teacherList()		 
 	},
 	
 	// 用户注销退出，来自Main控制器，reset
@@ -74542,18 +74554,23 @@ Ext.define('Youngshine.controller.Student', {
 		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
-	studentaddnewSave: function( obj )	{
+	studentaddnewSave: function( obj,oldView )	{
     	var me = this; 
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
-				Ext.Ajax.request({
+				Ext.data.JsonP.request({
 				    url: me.getApplication().dataUrl + 'createStudent.php',
-				    params: obj,
-				    success: function(response){
-				        var text = response.responseText;
-				        //record.set('fullEndtime','')
-						
+				    params: {
+						data: JSON.stringify(obj)
+					},
+				    success: function(result){
+				        //var text = response.responseText; JSON.parse()
+						oldView.destroy()
+						Ext.Viewport.setActiveItem(me.student);
+						obj.studentID = result.data.studentID; //删除用
+						//obj.created = new Date();
+						Ext.getStore('Student').insert(0,obj)
 				    }
 				});
 			}
@@ -74624,7 +74641,7 @@ Ext.define('Youngshine.controller.Teacher', {
 			} 
 		})	  			 
 	},
-	// 显示课时
+	// 显示教师上课课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 
@@ -74775,6 +74792,378 @@ Ext.define('Youngshine.controller.Teacher', {
 	init: function(){
 		this.callParent(arguments);
 		console.log('teach controller init');
+	}
+});
+
+// 购买课时订单相关的控制器，
+Ext.define('Youngshine.controller.Orders', {
+    extend:  Ext.app.Controller ,
+
+    config: {
+        refs: {
+           	orders: 'orders',
+			ordersaddnew: 'orders-addnew',
+			student: 'orders-student',
+			pricelist: 'orders-pricelist',
+			ordersstudy: 'orders-study', //套餐的子记录（报读知识点）
+			studyzsd: 'study-zsd',
+        },
+        control: {
+			orders: {
+				addnew: 'ordersAddnew',
+				itemtap: 'ordersItemtap',
+				itemswipe: 'ordersItemswipe' // 删除
+			},
+			ordersaddnew: {
+				save: 'ordersaddnewSave', 
+				cancel: 'ordersaddnewCancel',
+				student: 'ordersaddnewStudent', //查找选择学生
+				pricelist: 'ordersaddnewPricelist', //查找选择学生 
+			},
+			student: {
+				//search: '', //itemtap
+				itemtap: 'studentItemtap'
+			},
+			pricelist: {
+				itemtap: 'pricelistItemtap'
+			},
+			ordersstudy: {
+				back: 'ordersstudyBack',
+				addnew: 'ordersstudyAddnew',
+				itemtap: 'ordersstudyItemtap', // 排课
+				itemswipe: 'ordersstudyItemswipe' // 删除
+			},
+			studyzsd: {
+				itemtap: 'studyzsdItemtap'
+			},
+        }
+    },
+
+	// sidemenu跳转这里 student list of a particular consultant
+	ordersList: function(){
+		var me = this;
+		var curView = Ext.Viewport.getActiveItem();
+		if(curView.xtype == 'orders') return
+ 
+		Ext.Viewport.remove(curView,true); //remove 当前界面
+		me.orders = Ext.create('Youngshine.view.orders.List');
+		Ext.Viewport.add(me.orders);
+		//me.student.onGenreChange(); //默认
+		
+		var obj = {
+			"consultID": localStorage.consultID
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Orders'); 
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readOrdersList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        //Ext.Viewport.setMasked(false);
+				console.log(records)
+		        if (success){
+					Ext.Viewport.setActiveItem(me.orders);
+				};
+			}   		
+		});	  			 
+	},
+	
+	// 向左滑动，删除
+	ordersItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteOrders.php',
+			    params: {
+					prepaidID: rec.data.prepaidID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Orders').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},	
+
+	ordersAddnew: function(win){		
+		var me = this;
+		
+		if(!me.studentaddnew){
+			me.ordersaddnew = Ext.create('Youngshine.view.orders.Addnew');
+			Ext.Viewport.add(me.ordersaddnew)
+		}
+		Ext.Viewport.setActiveItem(me.ordersaddnew)
+		
+		// 当前校区的课时套餐价格表
+		var obj = {
+			"schoolID": localStorage.schoolID
+		}		
+		var store = Ext.getStore('Pricelist'); 
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readPricelist.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+
+			}   		
+		});	
+	},
+	
+	// 取消添加
+	ordersaddnewCancel: function(oldView){		
+		var me = this; 
+		oldView.destroy()
+		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.orders);
+	},	
+	ordersaddnewSave: function( obj,oldView )	{
+    	var me = this; 
+
+    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+			if(btn == 'yes'){
+				Ext.data.JsonP.request({
+				    url: me.getApplication().dataUrl + 'createOrders.php',
+				    params: {
+						data: JSON.stringify(obj)
+					},
+				    success: function(result){
+						oldView.destroy()
+						Ext.Viewport.setActiveItem(me.orders);
+						obj.prepaidID = result.data.prepaidID
+						//obj.created = new Date();
+						Ext.getStore('Orders').insert(0,obj)					
+				    }
+				});
+			}
+		});	
+	},
+	// 查找选择购买的学生
+	ordersaddnewStudent: function(btn)	{
+    	var me = this; 
+		me.student = Ext.create('Youngshine.view.orders.Student');
+		Ext.Viewport.add(me.student); //否则build后无法显示
+
+		var obj = {
+			"consultID": localStorage.consultID
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Student'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readStudentList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        //Ext.Viewport.setMasked(false);
+		        if (success){
+					//Ext.Viewport.setActiveItem(me.student);
+					me.student.showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	studentItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		list.hide()
+		me.ordersaddnew.down('textfield[name=studentName]')
+			.setValue(record.data.studentName+'［'+record.data.grade+'］')
+		me.ordersaddnew.down('hiddenfield[name=studentID]').setValue(record.data.studentID)
+	},
+	// 查找选择校区的课时套餐价格
+	ordersaddnewPricelist: function(btn)	{
+    	var me = this; 
+		me.pricelist = Ext.create('Youngshine.view.orders.Pricelist');
+		Ext.Viewport.add(me.pricelist); //否则build后无法显示
+
+		var obj = {
+			"schoolID": localStorage.schoolID
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Pricelist'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readPricelist.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        //Ext.Viewport.setMasked(false);
+		        if (success){
+					//Ext.Viewport.setActiveItem(me.student);
+					me.pricelist.showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	pricelistItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		list.hide()
+		me.ordersaddnew.down('textfield[name=taocan]').setValue(record.data.title)
+		me.ordersaddnew.down('hiddenfield[name=hour]').setValue(record.data.hour)
+		me.ordersaddnew.down('hiddenfield[name=amount]').setValue(record.data.unitprice)
+	},
+	
+	// 显示课时套餐的报读课程知识点记录
+	ordersItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		console.log(record)
+		if(!me.ordersstudy){
+			me.ordersstudy = Ext.create('Youngshine.view.orders.Study')
+			me.ordersstudy.setRecord(record); //传递父表记录参数
+			Ext.Viewport.add(me.ordersstudy)
+		}		
+		me.ordersstudy.setRecord(record); //带入当前知识点
+		me.ordersstudy.down('label[itemId=taocan]').setHtml(record.data.taocan)
+		
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取报读知识点'});
+		// 预先加载的数据
+		var obj = {
+			"prepaidID": record.data.prepaidID,
+		}
+		var store = Ext.getStore('Study'); 
+		store.getProxy().setUrl(this.getApplication().dataUrl + 
+			'readStudyList.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				Ext.Viewport.setMasked(false);
+				if (success){
+					Ext.Viewport.setActiveItem(me.ordersstudy);
+				}else{
+					Ext.toast('出错',3000);
+				};
+			}   		
+		});	
+	},
+	// 返回
+	ordersstudyBack: function(oldView){		
+		var me = this;
+		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.orders);
+	},
+	ordersstudyAddnew: function(btn){		
+    	var me = this; 
+		me.studyzsd = Ext.create('Youngshine.view.orders.study.Zsd');
+		Ext.Viewport.add(me.studyzsd); //否则build后无法显示
+		me.studyzsd.show(); // overlay show
+		// 选择学科，才显示知识点
+	},
+	// 向左滑动，删除
+	ordersstudyItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			console.log(rec)
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteStudy.php',
+			    params: {
+					studentstudyID: rec.data.studentstudyID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Study').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},	
+	// 排课：单击‘排课’
+	ordersstudyItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		console.log(e.target.className)
+		
+		if(e.target.className == 'kcb'){
+			me.studykcb = Ext.create('Youngshine.view.orders.study.Kcb');
+			Ext.Viewport.add(me.studykcb); //否则build后无法显示
+			me.studykcb.show()
+		}	
+	},
+	
+	// 选中报读知识点
+	studyzsdItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		list.hide()
+		
+		var obj = {
+			zsdID: record.data.zsdID,
+			zsdName: record.data.zsdName,
+			subjectID: record.data.subjectID,
+			studentID: me.ordersstudy.getRecord().data.studentID,
+			prepaidID: me.ordersstudy.getRecord().data.prepaidID
+		}
+		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
+            url: me.getApplication().dataUrl +  'createStudy.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				//更新前端store，最新插入记录ID，才能删除修改
+				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
+				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
+				Ext.toast('添加知识点成功',3000)		
+            }
+		});
+	},
+			
+	/* 如果用户登录的话，控制器launch加载相关的store */
+	launch: function(){
+	    this.callParent(arguments);
+	},
+	init: function(){
+		this.callParent(arguments);
+		console.log('orders controller init');
 	}
 });
 
@@ -74930,6 +75319,197 @@ Ext.define('Youngshine.store.Course', {
     }
 });
 
+// 某个咨询师的订单列表：购买课时
+Ext.define('Youngshine.model.Orders', {
+    extend:  Ext.data.Model ,
+
+    config: {
+        fields: [
+			{name: 'prepaidID'}, 
+			{name: 'studentID'}, 
+			{name: 'studentName'}, 
+			{name: 'gender'}, 
+			{name: 'grade'}, 
+			{name: 'study_list'}, // 报读课程列表
+			{name: 'payment'},
+			{name: 'subtotal'}, 
+			{name: 'taocan'}, // 套餐
+			{name: 'sectionID'}, // 学段：小学、初中、高中
+			{name: 'amt'}, //价格
+			{name: 'coupon'}, //代金券抵扣
+			{name: 'amount'}, //实际金额：价格－抵扣
+			{name: 'times'}, //购买小时数：10、20、30
+			{name: 'times_study'}, //已经使用的课时（添加知识点）
+			{name: 'OrderID'}, //刷卡的话，交易单	
+			{name: 'consultID'}, //所属咨询师 
+			{name: 'created'},
+        ]
+    }
+});
+
+// 报读某个学科知识点（subjectID+zsdID)的学生列表，通过的放最后
+Ext.define('Youngshine.store.Orders', {
+    extend:  Ext.data.Store ,
+	                                    
+	
+    config: {
+        model: 'Youngshine.model.Orders',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+        sorters: [{ // 最新发布的线路排在顶部，不起作用？
+			property: 'pass',
+			//direction: "DESC"
+		}]
+    }
+});
+
+// 对应课时套餐的子表：报读知识点
+Ext.define('Youngshine.model.Study', {
+    extend:  Ext.data.Model ,
+
+    config: {
+        fields: [
+			{name: 'studentstudyID'}, 
+			{name: 'prepaidID'},
+			{name: 'taocan'},
+			{name: 'OrderID'}, //交易单
+			{name: 'studentID'}, // 学生
+			{name: 'studentName'},
+			{name: 'zsdID'}, // 补习知识点
+			{name: 'zsdName'}, // 知识点名称，前端显示用
+			{name: 'subjectID'}, // 学科
+			{name: 'subjectName'}, // 学科名称
+			{name: 'gradeName'}, //关联表的字段名称
+		
+			{name: 'times'}, //课时
+			{name: 'fee'}, //课时费	
+			{name: 'discount'}, //折扣／100
+			{name: 'payment'}, //付款方式
+			{name: 'prepaid'}, //预缴费flag 0,1
+		
+			{name: 'teacherID'}, 
+			{name: 'teacherName'}, 
+			{name: 'teach_weekday'}, //每周那天上课
+			{name: 'teach_timespan'}, //上课时间段
+		
+			{name: 'pass'}, //教学通过flag 0,1
+			{name: 'pass_date'},
+			{name: 'test'}, //咨询师考试通过flag 0,1
+			{name: 'test_date'},
+			{name: 'paid'}, //家长确认学习通过，付款
+			{name: 'paid_date'},
+		
+			{name: 'note'}, //备注：特殊情况如一周上两次
+			{name: 'created'}
+        ]
+    }
+});
+
+// 报读某个学科知识点（subjectID+zsdID)的学生列表，通过的放最后
+Ext.define('Youngshine.store.Study', {
+    extend:  Ext.data.Store ,
+	                                   
+	
+    config: {
+        model: 'Youngshine.model.Study',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+        sorters: [{ // 最新发布的线路排在顶部，不起作用？
+			property: 'pass',
+			//direction: "DESC"
+		}]
+    }
+});
+
+// 某个学科的知识点
+Ext.define('Youngshine.model.Zsd', {
+    extend:  Ext.data.Model ,
+
+    config: {
+        fields: [
+			{name: 'zsdID'}, // 补习知识点
+			{name: 'zsdName'}, 
+			{name: 'subjectID'}, //
+			{name: 'subjectName'}, // 学科名称，前端显示
+			{name: 'gradeID'},
+			{name: 'gradeName'}, //年级，关联表的字段名称
+			{name: 'semester'},
+			{name: 'fee'}, //课时费	
+			{name: 'times'}, //课时	
+		
+			{name: 'select',type: 'boolean', defaultValue: false} //, convert: null} //用于出错打勾，数据库没有的字段
+        ]
+    }
+});
+
+// 课时套餐，各个校区不同
+Ext.define('Youngshine.store.Zsd', {
+    extend:  Ext.data.Store ,
+	                                 
+	
+    config: {
+        model: 'Youngshine.model.Zsd',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+    }
+});
+
+// 某个咨询师的订单列表：购买课时
+Ext.define('Youngshine.model.Pricelist', {
+    extend:  Ext.data.Model ,
+
+    config: {
+        fields: [
+			{name: 'pricelistID'}, 
+			{name: 'title'}, 
+			{name: 'unitprice'}, 
+			{name: 'hour'}, 
+			{name: 'schoolID'}, 
+			{name: 'schoolName'},
+        ]
+    }
+});
+
+// 课时套餐，各个校区不同
+Ext.define('Youngshine.store.Pricelist', {
+    extend:  Ext.data.Store ,
+	                                       
+	
+    config: {
+        model: 'Youngshine.model.Pricelist',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+    }
+});
+
 /*
     This file is generated and updated by Sencha Cmd. You can edit this file as
     needed for your application, but these edits will have to be merged by
@@ -74957,10 +75537,10 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher'
+        'Main','Student','Teacher','Orders'
     ],
     stores: [
-    	'Student','Teacher','Course'
+    	'Student','Teacher','Course','Orders','Study','Zsd','Pricelist'
     ],
 
     icon: {
@@ -75155,22 +75735,29 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onTeacher()
 			}
 			//iconCls: 'compose'
-		
 		},{
-			text: '测评＋销售',
+			text: '购买课时',
 			iconCls: 'action',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
-				this.up('menu').onPricelist()
-			}
+				this.up('menu').onOrders()
+			}	
 		},{
-			text: '排课程表',
+			text: '排课',
 			iconCls: 'compose',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudy()
+			}	
+		},{
+			text: '课时套餐价格',
+			iconCls: 'info',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onPricelist()
 			}
 		},{
 			text: '退出',
@@ -75198,6 +75785,15 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	onTeacher: function(){
 		this.fireEvent('teacher')
+	},
+	onOrders: function(){
+		this.fireEvent('orders') //购买课时套餐
+	},
+	onStudy: function(){
+		this.fireEvent('study') //安排课程及教师
+	},
+	onPricelist: function(){
+		this.fireEvent('pricelist') //课时套餐的校区价格设置
 	},
 	onNews: function(){
 		var active = Ext.Viewport.getActiveItem();
@@ -75509,6 +76105,684 @@ Ext.define('Youngshine.view.member.Edit', {
 	
 });
 
+Ext.define('Youngshine.view.orders.Addnew', {
+    extend:  Ext.form.Panel ,
+    xtype: 'orders-addnew',
+
+    config: {
+        /*
+		showAnimation: {
+            type: "slideIn",
+            direction: "left",
+            duration: 200
+        },
+        hideAnimation: {
+            type: "slideOut",
+            direction: "right",
+            duration: 200
+        }, */
+		
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '新增购买',
+			items: [{
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
+				ui: 'confirm',
+				text: '保存',
+				action: 'save'
+			}]
+		},{
+			xtype: 'fieldset',
+			defaults: {
+				labelWidth: 85,
+				xtype: 'textfield'
+			},
+			items: [{
+				layout: 'hbox',
+				xtype: 'container',
+				items: [{
+					xtype: 'textfield',
+					name: 'studentName', 
+					label: '姓名',
+					labelWidth: 85,
+					placeHolder: '选择学生',
+					readOnly: true, //to focus
+					flex: 1
+				},{
+					xtype: 'button',
+					action: 'student',
+					text: '...',
+					//iconCls: 'search',
+					ui: 'plain',
+					width: 60,
+					zIndex: 999
+				},{	
+					xtype: 'hiddenfield',
+					name: 'studentID', //绑定后台数据字段
+				}]
+			},{
+				layout: 'hbox',
+				xtype: 'container',
+				items: [{
+					xtype: 'textfield',
+					name: 'taocan', 
+					label: '课时套餐',
+					labelWidth: 85,
+					placeHolder: '',
+					readOnly: true, //to focus
+					flex: 1
+				},{
+					xtype: 'button',
+					action: 'pricelist',
+					text: '...',
+					//iconCls: 'search',
+					ui: 'plain',
+					width: 60,
+					zIndex: 999
+				},{	
+					xtype: 'hiddenfield',
+					name: 'hour', //绑定后台数据字段
+				},{	
+					xtype: 'hiddenfield',
+					name: 'amount', //绑定后台数据字段
+				}]
+			},{
+				xtype: 'selectfield',
+				name: 'payment', 
+				label: '付款方式',
+				autoSelect: false,
+				options: [
+				    {text: '现金', value: '现金'},
+				    {text: '刷卡', value: '刷卡'},
+				    {text: '微信', value: '微信'},
+				    {text: '扫码', value: '扫码'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			}]	
+		}],		
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'	
+		},{
+			delegate: 'button[action=student]',
+			event: 'tap',
+			fn: 'onStudent'	
+		},{
+			delegate: 'button[action=pricelist]',
+			event: 'tap',
+			fn: 'onPricelist'
+		}]
+	},
+
+	/* it's bad to use listeners config obj in Ext.define(), use it in instanialiing create()
+	initialize: function(){	
+        this.callParent(arguments);	
+		this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+	},  
+    onElSwipe : function(e) {
+        if(e.direction=='right'){
+        	this.onBack(); //destroy();
+        };     
+    }, */
+
+	onSave: function(){
+		var me = this;
+
+		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
+			studentID = this.down('hiddenfield[name=studentID]').getValue(),
+			taocan = this.down('textfield[name=taocan]').getValue(),
+			hour = this.down('hiddenfield[name=hour]').getValue(),
+			amount = this.down('hiddenfield[name=amount]').getValue(),
+			payment = this.down('selectfield[name=payment]').getValue()
+	
+		if (studentName == ''){
+			Ext.toast('姓名不能空白',3000); return;
+		}
+		if (taocan == null){
+			Ext.toast('请选择课时套餐',3000); return;
+		}
+		if (payment == null){
+			Ext.toast('请选择付款方式',3000); return;
+		}
+		var obj = {
+			studentName: studentName,
+			studentID: studentID,
+			taocan: taocan,
+			hour: hour,
+			amount: amount,
+			payment: payment,
+			consultID: localStorage.consultID //归属哪个咨询师
+		};
+		console.log(obj)
+		me.fireEvent('save', obj,me);
+	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	},
+	
+	// 查找选择学生
+	onStudent: function(btn){
+		var me = this; 
+		me.fireEvent('student',btn,me);
+	},
+	// 价格表
+	onPricelist: function(btn){
+		var me = this; 
+		me.fireEvent('pricelist',btn,me);
+	}
+	// 滚动自己，避免toolbar滚动
+	//this.up('drive-new').getScrollable().getScroller().scrollTo(0,360);
+	//window.scrollTo(0,0);
+});
+
+/**
+ * Displays a list of 购买课时套餐 prepaid
+ */
+Ext.define('Youngshine.view.orders.List', {
+    extend:  Ext.dataview.List ,
+	xtype: 'orders',
+	
+    config: {
+		record: null, //父窗口传递的记录参数
+		store: 'Orders',
+        //itemHeight: 89,
+        //emptyText: '学生列表',
+		disableSelection: true,
+		striped: true,
+        itemTpl: [
+			'<div><span style="color:#888;">{studentName}{created}</span></div>'+
+			'<div>{taocan}</dive>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '课时套餐订单',
+			items: [{
+				iconCls: 'list',
+				iconMask: true,
+				ui: 'plain',
+				handler: function(btn){
+					Youngshine.app.getApplication().getController('Main').menuNav()
+				} 
+			},{
+				xtype: 'spacer'
+			},{
+				ui : 'action',
+				action: 'addnew',
+				iconCls: 'add',
+				handler: function(){
+					this.up('list').onAddnew()
+				}		
+			}]
+		},{
+    		xtype: 'searchfield',
+			scrollDock: 'top',
+			docked: 'top',
+			placeHolder: 'search...',
+			action: 'search'
+    	}],	
+		
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
+    },
+	
+	/*
+	initialize: function(){
+		this.callParent(arguments)
+		//this.on('itemtap',this.onItemtap)
+	},
+	
+	// 显示详情
+    onItemtap: function(list, index, item, record){
+		var vw = Ext.create('Youngshine.view.student.Show');
+		Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
+		vw.down('panel[itemId=my_show]').setData(record.data)
+		vw.show(); 
+		vw.setRecord(record); // 当前记录参数
+    }, */
+    onAddnew: function(btn){
+		var me = this;
+		me.fireEvent('addnew', me);
+    },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Orders');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = Ext.getStore('Orders');
+		store.clearFilter();
+	},	
+});
+
+// 查找选择课时套餐
+Ext.define('Youngshine.view.orders.Pricelist',{
+	extend:  Ext.dataview.List ,
+	xtype: 'orders-pricelist',
+
+	config: {
+		striped: true,
+		store: 'Pricelist',
+		itemTpl: '<div>{title}</div>',
+        // We give it a left and top property to make it floating by default
+        //right: 0,
+        //top: 0,
+		width: 400,height: '75%',
+		border: 5,
+		style: 'border-color: black; border-style: solid;',
+
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+	},
+
+
+});
+
+// 查找选择学生
+Ext.define('Youngshine.view.orders.Student',{
+	extend:  Ext.dataview.List ,
+	xtype: 'orders-student',
+
+	config: {
+		striped: true,
+		store: 'Student',
+		itemTpl: '{studentName}<span style="float:right;">{grade}</span>',
+        // We give it a left and top property to make it floating by default
+        //right: 0,
+        //top: 0,
+		width: 400,height: '75%',
+		border: 5,
+		style: 'border-color: black; border-style: solid;',
+
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+        // Insert a title docked at the top with a title
+        items: [{
+            docked: 'top',
+            xtype: 'toolbar',
+			ui: 'gray',
+            items: [{
+            	xtype: 'searchfield',
+				placeHolder: '搜索学生'
+            }]
+        }],
+		
+    	listeners: [{
+			delegate: 'searchfield',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange' 						
+    	}]
+	},
+
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Student');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+});
+
+// 课时套餐的子表：报读知识点记录
+Ext.define('Youngshine.view.orders.Study', {
+    extend:  Ext.dataview.List ,
+	xtype: 'orders-study',
+
+    config: {
+        layout: 'fit',
+		record: null,
+		
+		store: 'Study',
+		disableSelection: true,
+		striped: true,
+        //itemHeight: 89,
+        //emptyText: '－－－空白－－－',
+        itemTpl: [
+			'<div><span>{zsdName}</span>'+
+			'<span class="kcb" style="float:right;color:green;">排课</span></div>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '报读知识点',
+			items: [{
+				ui : 'back',
+				action: 'back',
+				text : '返回',
+			}]
+		},{
+			xtype: 'label',
+			docked: 'top',
+			html: '',
+			itemId: 'taocan',
+			style: 'text-align:center;color:#888;font-size:0.9em;margin:5px;'
+		},{
+    		xtype: 'button',
+			text: '＋添加',
+			action: 'addnew',
+			ui: 'plain',
+			scrollDock: 'bottom',
+			docked: 'bottom',
+			style: 'color:green;margin-top:10px;'
+    	}],
+		
+		listeners: [{
+			delegate: 'button[action=back]',
+			event: 'tap',
+			fn: 'onBack'
+		},{
+			delegate: 'button[action=addnew]',
+			event: 'tap',
+			fn: 'onAddnew'		
+		}]
+		
+		//selectedRecord: null,
+    },
+
+    onAddnew: function(btn){
+		var me = this;
+		me.fireEvent('addnew',btn, me);
+    },	
+	onBack: function(btn){
+		var me = this;
+		me.fireEvent('back',me);
+	},
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		var me = this;
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	//Ext.Viewport.setActiveItem( Youngshine.app.getController('Teach').getTopicteach() );
+			//this.destroy();
+			me.onBack();
+        };     
+    }, 
+
+});
+
+// 排课
+Ext.define('Youngshine.view.orders.study.Kcb',{
+	extend:  Ext.Panel ,
+	xtype: 'study-kcb',
+
+	config: {
+		xtype: 'panel',
+		modal: true,
+		hideOnMaskTap: true,
+		centered: true,
+		width: 410,height: 310,
+		scrollable: true,
+
+        items: [{	
+        	xtype: 'toolbar',
+        	docked: 'top',
+        	title: '一对一排课',
+		},{
+			xtype: 'fieldset',
+			width: '95%',
+			items: [{
+				xtype: 'selectfield',
+				label: '上课日', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				itemId: 'weekday',
+				options: [
+				    {text: '周一', value: '周一'},
+				    {text: '周二', value: '周二'},
+				    {text: '周三', value: '周三'},
+				    {text: '周四', value: '周四'},
+				    {text: '周五', value: '周五'},
+				    {text: '周六', value: '周六'},
+				    {text: '周日', value: '周日'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				listeners: {
+					change: function(){
+						this.up('panel').down('selectfield[itemId=zsd]').reset();
+						this.up('panel').down('button[action=save]').setDisabled(true);
+						loadZsd(this.getValue())
+					},					
+				},
+			},{
+				xtype: 'selectfield',
+				label: '时间段', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				itemId: 'timespan',
+				options: [
+				    {text: '08-10', value: '08-10'},
+				    {text: '10-12', value: '10-12'},
+				    {text: '14-16', value: '14-16'},
+				    {text: '16-18', value: '16-18'},
+				    {text: '19-21', value: '19-21'},
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				listeners: {
+					change: function(field,newValue){
+						console.log(newValue)
+						if(newValue != null )
+							this.up('panel').down('button[action=save]').setDisabled(false);
+					},					
+				},
+			},{
+				xtype: 'selectfield',
+				label: '任课教师', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				itemId: 'teacher',
+			},{
+				xtype: 'textfield',
+				label: '备注',
+				labelWidth: 85,
+				itemId: 'note'
+			}]	
+		},{
+			xtype: 'button',
+			text: '保存',
+			action: 'save',
+			margin: '-15 10 15',
+			ui: 'confirm',
+			handler: function(btn){
+				var me = this;
+				var psw1 = this.up('panel').down('passwordfield[itemId=psw1]').getValue().trim(),
+					psw2 = this.up('panel').down('passwordfield[itemId=psw2]').getValue().trim()
+				console.log(psw1)
+				if(psw1.length<6){
+					Ext.toast('密码少于6位',3000); return
+				}
+				if(psw1!= psw2){
+					Ext.toast('确认密码错误',3000); return
+				}
+				// ajax
+				Ext.Ajax.request({
+				    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
+				    params: {
+				        psw1     : psw1,
+						consultID: localStorage.consultID
+				    },
+				    success: function(response){
+				        var text = response.responseText;
+				        // process server response here
+						Ext.toast('密码修改成功',3000)
+						me.up('panel').destroy()
+				    }
+				});
+			}
+		}],	
+	},
+
+
+});
+
+// 查找选择添加 报读知识点
+Ext.define('Youngshine.view.orders.study.Zsd',{
+	extend:  Ext.dataview.List ,
+	xtype: 'study-zsd',
+
+	config: {
+		emptyText: '选择学科',
+		striped: true,
+		store: 'Zsd',
+		itemTpl: '<div><span>{zsdName}</span><span style="float:right;">{grade}</span></div>',
+        // We give it a left and top property to make it floating by default
+        right: 0,
+        top: 0,
+		width: 400,height: '100%',
+
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+        // Insert a title docked at the top with a title
+        items: [{
+            docked: 'top',
+            xtype: 'toolbar',
+			//ui: 'gray',
+            items: [{
+				xtype: 'selectfield',
+				itemId: 'subject', 
+				placeHolder: '选择学科',
+				width: 150,
+				autoSelect: false,
+				options: [
+				    {text: '数学', value: 1},
+				    {text: '物理', value: 2},
+				    {text: '化学', value: 3}
+				],
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+				xtype: 'selectfield',
+				itemId: 'grade', 
+				placeHolder: '选择年级',
+				width: 150,
+				hidden: true,
+				autoSelect: false,
+				options: [
+				    {text: '九年级', value: '九年级'},
+				    {text: '八年级', value: '八年级'},
+				    {text: '七年级', value: '七年级'},
+				    {text: '六年级', value: '六年级'},
+				    {text: '五年级', value: '五年级'},
+				    {text: '四年级', value: '四年级'},
+				    {text: '三年级', value: '三年级'},
+				    {text: '二年级', value: '二年级'},
+				    {text: '一年级', value: '一年级'}
+				],	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
+            }]
+        }],
+		
+    	listeners: [{
+			delegate: 'selectfield[itemId=subject]',
+			event: 'change', // need return to work
+			fn: 'onSubject' 
+		},{
+			delegate: 'selectfield[itemId=grade]',
+			event: 'change', // need return to work
+			fn: 'onGrade'							
+    	}]
+	},
+
+	// 搜索过滤
+    onSubject: function(field,newValue,oldValue){
+		console.log(newValue)
+		var me = this;
+		me.down('selectfield[itemId=grade]').setHidden(false)
+		
+		var obj = {
+			"subjectID": newValue,
+		}
+		var store = Ext.getStore('Zsd'); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readZsdList.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				console.log(records)
+			}   		
+		});	
+	},	
+	onGrade: function(field,newValue,oldValue){
+		console.log(newValue)
+		var store = Ext.getStore('Zsd');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('gradeName', newValue, true);
+	}
+});
+
 Ext.define('Youngshine.view.student.Addnew', {
     extend:  Ext.form.Panel ,
     xtype: 'student-addnew',
@@ -75561,12 +76835,16 @@ Ext.define('Youngshine.view.student.Addnew', {
 				options: [
 				    {text: '男', value: '男'},
 				    {text: '女', value: '女'}
-				]	
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
 			},{
 				xtype: 'selectfield',
 				name: 'grade', 
 				label: '年级',
-				autoSelect: false,
 				options: [
 				    {text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
@@ -75577,12 +76855,24 @@ Ext.define('Youngshine.view.student.Addnew', {
 				    {text: '三年级', value: '三年级'},
 				    {text: '二年级', value: '二年级'},
 				    {text: '一年级', value: '一年级'}
-				]
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			},{	
 				xtype: 'textfield',
 				name: 'addr', //绑定后台数据字段
 				label: '地址',
-				clearIcon: false
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,50);
+						//window.scrollTo(0,0);
+					}
+				}
 			},{	
 				xtype: 'textfield',
 				name: 'phone', //绑定后台数据字段
@@ -75591,6 +76881,13 @@ Ext.define('Youngshine.view.student.Addnew', {
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
+				},
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
 				}		
 			}]	
 		}],		
@@ -75701,11 +76998,21 @@ Ext.define('Youngshine.view.student.List', {
 			scrollDock: 'top',
 			docked: 'top',
 			placeHolder: 'search...',
+			action: 'search'
     	}],
 		
-		
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
     },
-	
+/*	
 	initialize: function(){
 		this.callParent(arguments)
 		//this.on('itemtap',this.onItemtap)
@@ -75718,12 +77025,24 @@ Ext.define('Youngshine.view.student.List', {
 		vw.down('panel[itemId=my_show]').setData(record.data)
 		vw.show(); 
 		vw.setRecord(record); // 当前记录参数
-    },
+    }, */
     onAddnew: function(list, index, item, record){
 		var vw = Ext.create('Youngshine.view.student.Addnew');
 		Ext.Viewport.add(vw); 
 		vw.show(); //ext.setactive?
     },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Student');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = Ext.getStore('Student');
+		store.clearFilter();
+	},	
 });
 
 Ext.define('Youngshine.view.student.Show',{
@@ -76012,11 +77331,13 @@ Ext.define('Youngshine.view.teacher.List', {
 	xtype: 'teacher',
 
     config: {
-        store: 'Teacher',
-		record: null,
+		record: null, //父窗口记录参数传递
+		
+		store: 'Teacher',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		//disableSelection: true,
+		striped: true,
         itemTpl: [
             '<div><span>{teacherName}</span><span style="float:right;color:#888;">{subjectName}</span></div>'
         ],
@@ -76051,7 +77372,7 @@ Ext.define('Youngshine.view.teacher.List', {
 			ui: 'gray',
 			items: [{
 				width: '100%',
-				padding: '0 30',
+				padding: '0 0',
 				defaults: {flex: 1},
 				xtype: 'segmentedbutton',
 				allowDepress: false,

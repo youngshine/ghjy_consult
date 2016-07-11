@@ -29,7 +29,7 @@ require_once('db/database_connection.php');
 	}
 		
 	$res->success = true;
-	$res->message = "读取课程价格表pricelist成功";
+	$res->message = "读取校区课程价格表pricelist成功";
 	$res->data = $query_array;
 
 

@@ -73,18 +73,23 @@ Ext.define('Youngshine.controller.Student', {
 		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
-	studentaddnewSave: function( obj )	{
+	studentaddnewSave: function( obj,oldView )	{
     	var me = this; 
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
-				Ext.Ajax.request({
+				Ext.data.JsonP.request({
 				    url: me.getApplication().dataUrl + 'createStudent.php',
-				    params: obj,
-				    success: function(response){
-				        var text = response.responseText;
-				        //record.set('fullEndtime','')
-						
+				    params: {
+						data: JSON.stringify(obj)
+					},
+				    success: function(result){
+				        //var text = response.responseText; JSON.parse()
+						oldView.destroy()
+						Ext.Viewport.setActiveItem(me.student);
+						obj.studentID = result.data.studentID; //删除用
+						//obj.created = new Date();
+						Ext.getStore('Student').insert(0,obj)
 				    }
 				});
 			}

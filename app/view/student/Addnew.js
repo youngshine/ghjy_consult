@@ -50,12 +50,16 @@ Ext.define('Youngshine.view.student.Addnew', {
 				options: [
 				    {text: '男', value: '男'},
 				    {text: '女', value: '女'}
-				]	
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
 			},{
 				xtype: 'selectfield',
 				name: 'grade', 
 				label: '年级',
-				autoSelect: false,
 				options: [
 				    {text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
@@ -66,12 +70,24 @@ Ext.define('Youngshine.view.student.Addnew', {
 				    {text: '三年级', value: '三年级'},
 				    {text: '二年级', value: '二年级'},
 				    {text: '一年级', value: '一年级'}
-				]
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			},{	
 				xtype: 'textfield',
 				name: 'addr', //绑定后台数据字段
 				label: '地址',
-				clearIcon: false
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,50);
+						//window.scrollTo(0,0);
+					}
+				}
 			},{	
 				xtype: 'textfield',
 				name: 'phone', //绑定后台数据字段
@@ -80,6 +96,13 @@ Ext.define('Youngshine.view.student.Addnew', {
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
+				},
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
 				}		
 			}]	
 		}],		

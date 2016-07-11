@@ -6,11 +6,13 @@ Ext.define('Youngshine.view.teacher.List', {
 	xtype: 'teacher',
 
     config: {
-        store: 'Teacher',
-		record: null,
+		record: null, //父窗口记录参数传递
+		
+		store: 'Teacher',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		//disableSelection: true,
+		striped: true,
         itemTpl: [
             '<div><span>{teacherName}</span><span style="float:right;color:#888;">{subjectName}</span></div>'
         ],
@@ -45,7 +47,7 @@ Ext.define('Youngshine.view.teacher.List', {
 			ui: 'gray',
 			items: [{
 				width: '100%',
-				padding: '0 30',
+				padding: '0 0',
 				defaults: {flex: 1},
 				xtype: 'segmentedbutton',
 				allowDepress: false,

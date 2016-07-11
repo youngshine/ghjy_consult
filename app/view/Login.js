@@ -3,7 +3,7 @@ Ext.define('Youngshine.view.Login', {
     xtype: 'login',
 	
     config: {
-        showAnimation: {
+/*        showAnimation: {
             type: "slide",
             direction: "down",
             duration: 300
@@ -12,7 +12,7 @@ Ext.define('Youngshine.view.Login', {
             type: "slide",
             direction: "up",
             duration: 300
-        },
+        }, */
 		
 		layout: {
 			type: 'vbox',
@@ -23,29 +23,28 @@ Ext.define('Youngshine.view.Login', {
     	//layout: 'fit',
     	items: [{
     		xtype: 'fieldset',
-			title: '<div style="color:#888;">根号教育 • 咨询</div>',
+			title: '<div style="color:#888;">根号教育 － 咨询</div>',
 			style: {
 				width: '410px',
 				maxWidth: '480px',
 				margin: '80px auto 0'
 			},
+			defaults: {
+				xtype: 'textfield',
+				clearIcon: false,
+				labelWidth: 85,
+			},
     		items: [{
-    			xtype: 'textfield',
 				itemId: 'username',
     			label: '账号',
-				//value: '18150112938',
-				placeHolder: ''
     		},{
     			xtype : 'passwordfield',
 				itemId : 'psw',
 				label : '密码',
 				value: '123456',
-				//placeHolder: '默认123456'
 			},{
-    			xtype: 'textfield',
 				itemId: 'school',
     			label: '校区',
-				//value: '18150112938',
 				placeHolder: '输入加盟校区'
     		}]
     	},{

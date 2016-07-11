@@ -45,22 +45,22 @@ Ext.define('Youngshine.view.Menu', {
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onOrders()
-			}		
+			}	
 		},{
-			text: '课时套餐价格',
-			iconCls: 'action',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onPricelist()
-			}
-		},{
-			text: '排课程表',
+			text: '排课',
 			iconCls: 'compose',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudy()
+			}	
+		},{
+			text: '课时套餐价格',
+			iconCls: 'info',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onPricelist()
 			}
 		},{
 			text: '退出',
@@ -90,10 +90,13 @@ Ext.define('Youngshine.view.Menu', {
 		this.fireEvent('teacher')
 	},
 	onOrders: function(){
-		this.fireEvent('orders')
+		this.fireEvent('orders') //购买课时套餐
+	},
+	onStudy: function(){
+		this.fireEvent('study') //安排课程及教师
 	},
 	onPricelist: function(){
-		this.fireEvent('pricelist')
+		//this.fireEvent('pricelist') //课时套餐的校区价格设置
 	},
 	onNews: function(){
 		var active = Ext.Viewport.getActiveItem();

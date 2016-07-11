@@ -1,59 +1,51 @@
 // 查找选择学生
 Ext.define('Youngshine.view.orders.Student',{
-	extend: 'Ext.Sheet',
+	extend: 'Ext.dataview.List',
 	xtype: 'orders-student',
 
 	config: {
-		//floating: true,
-		//centered: true,
-		// We give it a left and top property to make it floating by default
-		//scrollable: 'vertical',
-		enter: 'right',
-		exit: 'right',
-		right: 0,
-		//top: 0,
-		width: '50%',
-		stretchY: true,
+		striped: true,
+		store: 'Student',
+		itemTpl: '{studentName}<span style="float:right;">{grade}</span>',
+        // We give it a left and top property to make it floating by default
+        //right: 0,
+        //top: 0,
+		width: 400,height: '75%',
+		border: 5,
+		style: 'border-color: black; border-style: solid;',
 
-		hideOnMaskTap: true,
-		modal: true, 
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+        // Insert a title docked at the top with a title
+        items: [{
+            docked: 'top',
+            xtype: 'toolbar',
+			ui: 'gray',
+            items: [{
+            	xtype: 'searchfield',
+				placeHolder: '搜索学生'
+            }]
+        }],
 		
-		styleHtmlContent: true,
-		style: 'background:#fff;border-radius:10px 0 0 10px;',
-		//cls: 'x-confirm',
-        layout: {
-            type: 'vbox',
-            align: 'stretch'
-        },
-		items: [{
-		    itemTpl: '{studentName}<span style="float:right;">{grade}</span>',
-		    store: 'Student',
-			striped: true
-		}],
+    	listeners: [{
+			delegate: 'searchfield',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange' 						
+    	}]
 	},
 
-    hide: function(animation) {
-        this.callParent();
-		this.destroy();
-    },
-    //use initialize method to swipe back 右滑返回
-    initialize : function() {
-        //it's important to callParent to not break inheritance
-        this.callParent();
-        this.element.on({
-            scope : this,
-            swipe : 'onElementSwipe', //not use anonymous functions
-			//tap	  : 'onTapToHide',
-        });
-    },   
-    // swipe right to return to the previous
-    onElementSwipe : function(e) {
-        //fire event on component so swipe event is now on the component
-        if(e.direction=='right'){
-        	this.hide();
-        };     
-    },  	
-    onTapToHide : function(e) {
-        this.hide();    
-    },
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = Ext.getStore('Student');
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
 });
