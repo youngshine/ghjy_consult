@@ -7,13 +7,14 @@ Ext.define('Youngshine.controller.Teacher', {
            	teacher: 'teacher',
 			teacheraddnew: 'teacher-addnew',
 			teacheredit: 'teacher-edit',
+			teacherkcb: 'teacher-kcb',
 			teachercourse: 'teacher-course',
 			teachercourseassess: 'teacher-course-assess'
         },
         control: {
 			teacher: {
 				addnew: 'teacherAddnew', //itemtap
-				itemtap: 'teacherItemtap', //包括修改按钮
+				itemtap: 'teacherItemtap', //包括修改、课程表按钮
 				itemswipe: 'teacherItemswipe' //delete
 			},
 			teacheraddnew: {
@@ -68,6 +69,40 @@ Ext.define('Youngshine.controller.Teacher', {
 			Ext.Viewport.setActiveItem(me.teacheredit); //show()?
 			console.log(record.data)
 			me.teacheredit.setRecord(record)
+			return
+		}
+		// 点击‘教师课程表’
+		if(e.target.className == 'kcb'){
+			me.teacherkcb = Ext.create('Youngshine.view.teacher.Kcb');
+			Ext.Viewport.add(me.teacherkcb); //否则build后无法显示
+			//me.teacherkcb.show()
+			//Ext.Viewport.setActiveItem(me.teacherkcb); //show()?
+			console.log(record.data.teacherID)
+			
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'readKcbListByTeacher.php',
+			    params: {
+					teacherID: record.data.teacherID
+			    },
+			    success: function(response){
+					var arr = JSON.parse(response.responseText)
+					console.log(arr)
+					var content = ''
+					Ext.Array.each(arr, function(name, index) {
+						content += name.teach_weekday + ' ' +
+							name.teach_timespan + '<br>' 
+					});		
+					console.log(content) 
+					var obj = {
+						teacherName: record.data.teacherName,
+						kcb: content
+					}  
+					me.teacherkcb.down('panel[itemId=my_show]').setData(obj)
+					me.teacherkcb.show();      
+			    }
+			});
+			
+			//me.teacheredit.setRecord(record)
 			return
 		}
 

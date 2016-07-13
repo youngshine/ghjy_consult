@@ -24,9 +24,26 @@ Ext.define('Youngshine.controller.Kcb', {
 		if(curView.xtype == 'kcb') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
-		me.kcb = Ext.create('Youngshine.view.kcb.List');
-		Ext.Viewport.add(me.kcb);
- 			 
+		me.teacher = Ext.create('Youngshine.view.kcb.List');
+		Ext.Viewport.add(me.teacher);
+		//view.onGenreChange(); //默认
+		var obj = {
+			"consultID": localStorage.getItem('consultID'),
+			"teacherID"  : 0
+		}		
+		var store = Ext.getStore('Study');
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readStudyListByKcb.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+			    //Ext.Viewport.setMasked(false);
+			    if (success){
+					Ext.Viewport.setActiveItem(me.kcb);
+				};
+			} 
+		})	  			 
 	},
 
 	// 排课：单击‘排课kcb’
@@ -55,7 +72,7 @@ Ext.define('Youngshine.controller.Kcb', {
 	
 	// 排课：分配任课教师及上课时间
 	kcbteacherDone: function(obj,oldView)	{
-    	var me = this; 
+    	var me = this; alert('done')
 		Ext.Ajax.request({
 			url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
 			params: obj,

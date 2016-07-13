@@ -14,7 +14,8 @@ Ext.define('Youngshine.view.kcb.List', {
         //emptyText: '－－－空白－－－',
         itemTpl: [
 			'<div>{zsdName}</div>'+
-			'<div style="color:#fff;font-size:0.8em;">{gradename}｜{studentName}/div>'
+			'<div style="color:#888;font-size:0.8em;">'+
+			'{gradeName}{subjectName}｜{studentName}</div>'
         ],
 		
     	items: [{

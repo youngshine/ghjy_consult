@@ -16,7 +16,8 @@ Ext.Loader.addClassPathMappings({
   "Ext.device.sqlite.SQLResultSet": "touch/src/device/sqlite/Sencha.js",
   "Ext.device.sqlite.SQLResultSetRowList": "touch/src/device/sqlite/Sencha.js",
   "Ext.device.sqlite.SQLTransaction": "touch/src/device/sqlite/Sencha.js",
-  "Youngshine": "app"
+  "Youngshine": "app",
+  "Youngshine.view.orders.study.Kcb": "app/view/kcb/Kcb.js"
 });
 Ext.ClassManager.addNameAlternateMappings({
   "Ext.AbstractComponent": [],
@@ -651,6 +652,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.viewport.WindowsPhone": [
     "Ext.viewport.WP"
   ],
+  "Youngshine.controller.Kcb": [],
   "Youngshine.controller.Main": [],
   "Youngshine.controller.Orders": [],
   "Youngshine.controller.Pricelist": [],
@@ -673,6 +675,8 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.Login": [],
   "Youngshine.view.Main": [],
   "Youngshine.view.Menu": [],
+  "Youngshine.view.kcb.List": [],
+  "Youngshine.view.kcb.Teacher": [],
   "Youngshine.view.member.Edit": [],
   "Youngshine.view.orders.Addnew": [],
   "Youngshine.view.orders.List": [],
@@ -690,6 +694,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.teacher.Addnew": [],
   "Youngshine.view.teacher.Course": [],
   "Youngshine.view.teacher.Edit": [],
+  "Youngshine.view.teacher.Kcb": [],
   "Youngshine.view.teacher.List": [],
   "Youngshine.view.teacher.course.Assess": []
 });
@@ -1419,6 +1424,7 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.Ios": [],
   "Ext.viewport.Viewport": [],
   "Ext.viewport.WindowsPhone": [],
+  "Youngshine.controller.Kcb": [],
   "Youngshine.controller.Main": [],
   "Youngshine.controller.Orders": [],
   "Youngshine.controller.Pricelist": [],
@@ -1446,6 +1452,12 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.Menu": [
     "widget.sidemenu"
+  ],
+  "Youngshine.view.kcb.List": [
+    "widget.kcb"
+  ],
+  "Youngshine.view.kcb.Teacher": [
+    "widget.kcb-teacher"
   ],
   "Youngshine.view.member.Edit": [
     "widget.member"
@@ -1497,6 +1509,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.teacher.Edit": [
     "widget.teacher-edit"
+  ],
+  "Youngshine.view.teacher.Kcb": [
+    "widget.teacher-kcb"
   ],
   "Youngshine.view.teacher.List": [
     "widget.teacher"

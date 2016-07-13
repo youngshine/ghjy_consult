@@ -16,7 +16,9 @@ Ext.define('Youngshine.view.teacher.List', {
         itemTpl: [
             '<div>{teacherName}</div>'+
 			'<div style="font-size:0.8em;"><span style="color:#888;">{subjectName}</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
+			'<span class="edit" style="float:right;color:green;">编辑</span>'+
+			'<span class="kcb" style="float:right;color:green;">课程表｜</span>'+
+			'</div>'
         ],
 		
     	items: [{

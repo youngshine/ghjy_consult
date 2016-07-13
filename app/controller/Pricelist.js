@@ -36,7 +36,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 		var store = Ext.getStore('Pricelist');
 		store.removeAll()
 		store.clearFilter() 
-		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
 			'readPricelist.php?data=' + JSON.stringify(obj));
 		store.load({
 			callback: function(records, operation, success){
