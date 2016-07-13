@@ -6,16 +6,22 @@ Ext.define('Youngshine.controller.Student', {
         refs: {
            	student: 'student',
 			studentaddnew: 'student-addnew',
+			studentedit: 'student-edit',
 			studentshow: 'student-show'
         },
         control: {
 			student: {
 				addnew: 'studentAddnew', //itemtap
-				itemtap: 'studentItemtap'
+				itemtap: 'studentItemtap', //包含：修改
+				itemswipe: 'studentItemswipe'
 			},
 			studentaddnew: {
 				save: 'studentaddnewSave', 
 				cancel: 'studentaddnewCancel'
+			},
+			studentedit: {
+				save: 'studenteditSave', 
+				cancel: 'studenteditCancel'
 			},
         }
     },
@@ -36,6 +42,8 @@ Ext.define('Youngshine.controller.Student', {
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readStudentList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -47,8 +55,65 @@ Ext.define('Youngshine.controller.Student', {
 			}   		
 		});	  			 
 	},
+	
+	// 向左滑动，删除
+	studentItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteStudent.php',
+			    params: {
+					studentID: rec.data.studentID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Student').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},
 	studentItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
+		// 点击‘修改编辑’
+		if(e.target.className == 'edit'){
+			me.studentedit = Ext.create('Youngshine.view.student.Edit');
+			Ext.Viewport.add(me.studentedit); //否则build后无法显示
+			Ext.Viewport.setActiveItem(me.studentedit); //show()?
+			console.log(record.data)
+			me.studentedit.setRecord(record)
+			return
+		}
+		
 		me.studentshow = Ext.create('Youngshine.view.student.Show');
 		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
 		me.studentshow.down('panel[itemId=my_show]').setData(record.data)
@@ -94,6 +159,28 @@ Ext.define('Youngshine.controller.Student', {
 				});
 			}
 		});	
+	},
+	// 取消添加
+	studenteditCancel: function(oldView){		
+		var me = this; 
+		oldView.destroy()
+		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.student);
+	},	
+	studenteditSave: function( obj,oldView )	{
+    	var me = this; 
+
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateStudent.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; JSON.parse()
+				oldView.destroy()
+				//Ext.Viewport.setActiveItem(me.student);
+				//rec.set(obj) //前端更新显示
+				Ext.toast('修改成功',3000)
+		    }
+		});
 	},
 
 			

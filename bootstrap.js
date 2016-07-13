@@ -653,6 +653,7 @@ Ext.ClassManager.addNameAlternateMappings({
   ],
   "Youngshine.controller.Main": [],
   "Youngshine.controller.Orders": [],
+  "Youngshine.controller.Pricelist": [],
   "Youngshine.controller.Student": [],
   "Youngshine.controller.Teacher": [],
   "Youngshine.model.Course": [],
@@ -680,11 +681,15 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.orders.Study": [],
   "Youngshine.view.orders.study.Kcb": [],
   "Youngshine.view.orders.study.Zsd": [],
+  "Youngshine.view.pricelist.Addnew": [],
+  "Youngshine.view.pricelist.List": [],
   "Youngshine.view.student.Addnew": [],
+  "Youngshine.view.student.Edit": [],
   "Youngshine.view.student.List": [],
   "Youngshine.view.student.Show": [],
   "Youngshine.view.teacher.Addnew": [],
   "Youngshine.view.teacher.Course": [],
+  "Youngshine.view.teacher.Edit": [],
   "Youngshine.view.teacher.List": [],
   "Youngshine.view.teacher.course.Assess": []
 });
@@ -1416,6 +1421,7 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.WindowsPhone": [],
   "Youngshine.controller.Main": [],
   "Youngshine.controller.Orders": [],
+  "Youngshine.controller.Pricelist": [],
   "Youngshine.controller.Student": [],
   "Youngshine.controller.Teacher": [],
   "Youngshine.model.Course": [],
@@ -1465,8 +1471,17 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.orders.study.Zsd": [
     "widget.study-zsd"
   ],
+  "Youngshine.view.pricelist.Addnew": [
+    "widget.pricelist-addnew"
+  ],
+  "Youngshine.view.pricelist.List": [
+    "widget.pricelist"
+  ],
   "Youngshine.view.student.Addnew": [
     "widget.student-addnew"
+  ],
+  "Youngshine.view.student.Edit": [
+    "widget.student-edit"
   ],
   "Youngshine.view.student.List": [
     "widget.student"
@@ -1479,6 +1494,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.teacher.Course": [
     "widget.teacher-course"
+  ],
+  "Youngshine.view.teacher.Edit": [
+    "widget.teacher-edit"
   ],
   "Youngshine.view.teacher.List": [
     "widget.teacher"

@@ -13,7 +13,7 @@ Ext.define('Youngshine.view.orders.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div><span style="color:#888;">{studentName}{created}</span></div>'+
+			'<div><span style="color:#888;">{studentName}｜{created}</span></div>'+
 			'<div>{taocan}</dive>'
         ],
 		

@@ -9,7 +9,8 @@ Ext.define('Youngshine.controller.Orders', {
 			student: 'orders-student',
 			pricelist: 'orders-pricelist',
 			ordersstudy: 'orders-study', //套餐的子记录（报读知识点）
-			studyzsd: 'study-zsd',
+			studyzsd: 'study-zsd', //添加报读记录
+			studykcb: 'study-kcb', //排课
         },
         control: {
 			orders: {
@@ -37,7 +38,10 @@ Ext.define('Youngshine.controller.Orders', {
 				itemswipe: 'ordersstudyItemswipe' // 删除
 			},
 			studyzsd: {
-				itemtap: 'studyzsdItemtap'
+				itemtap: 'studyzsdItemtap' //添加报读记录
+			},
+			studykcb: {
+				done: 'studykcbDone' //排课，分配教师、上课时间
 			},
         }
     },
@@ -58,6 +62,8 @@ Ext.define('Youngshine.controller.Orders', {
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Orders'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readOrdersList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -149,7 +155,7 @@ Ext.define('Youngshine.controller.Orders', {
 		Ext.Viewport.setActiveItem(me.orders);
 	},	
 	ordersaddnewSave: function( obj,oldView )	{
-    	var me = this; 
+    	var me = this; console.log(obj)
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
@@ -159,7 +165,7 @@ Ext.define('Youngshine.controller.Orders', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-						oldView.destroy()
+						oldView.destroy(); console.log(result)
 						Ext.Viewport.setActiveItem(me.orders);
 						obj.prepaidID = result.data.prepaidID
 						//obj.created = new Date();
@@ -321,7 +327,7 @@ Ext.define('Youngshine.controller.Orders', {
 			});
 		}
 	},	
-	// 排课：单击‘排课’
+	// 排课：单击‘排课kcb’
 	ordersstudyItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		console.log(e.target.className)
@@ -329,9 +335,19 @@ Ext.define('Youngshine.controller.Orders', {
 		if(e.target.className == 'kcb'){
 			me.studykcb = Ext.create('Youngshine.view.orders.study.Kcb');
 			Ext.Viewport.add(me.studykcb); //否则build后无法显示
-			me.studykcb.show()
+			//me.studykcb.show()
 			console.log(record.data)
 			me.studykcb.setRecord(record)
+			
+			// 任课教师selectfield，没有store,这样才能显示名字
+			var selectBox = me.studykcb.down('selectfield[name=teacherID]')
+			console.log(selectBox)
+			selectBox.setOptions([
+			    {teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
+			    //{text: 'Third Option',  value: 'third'}
+			])
+			selectBox.setValue(record.data.teacherID);
+			console.log(selectBox.getValue())
 		}	
 	},
 	
@@ -349,6 +365,35 @@ Ext.define('Youngshine.controller.Orders', {
 		}
 		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
             url: me.getApplication().dataUrl +  'createStudy.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				//更新前端store，最新插入记录ID，才能删除修改
+				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
+				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
+				Ext.toast('添加知识点成功',3000)		
+            }
+		});
+	},
+	
+	// 排课：分配任课教师及上课时间
+	studykcbDone: function(obj,oldView)	{
+    	var me = this; 
+		Ext.Ajax.request({
+			url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
+			params: obj,
+            success: function(response){
+				Ext.toast('排课成功',3000)
+				oldView.destroy()	
+				// 要即时更新前端数据才能正确显示	record.set(obj)
+            }
+		})
+		return
+		
+		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
+            url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
             callbackKey: 'callback',
             params:{
                 data: JSON.stringify(obj)

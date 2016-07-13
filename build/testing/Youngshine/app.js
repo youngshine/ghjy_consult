@@ -69651,6 +69651,178 @@ Ext.define('Ext.field.Hidden', {
 });
 
 /**
+ * The Number field creates an HTML5 number input and is usually created inside a form. Because it creates an HTML
+ * number input field, most browsers will show a specialized virtual keyboard for entering numbers. The Number field
+ * only accepts numerical input and also provides additional spinner UI that increases or decreases the current value
+ * by a configured {@link #stepValue step value}. Here's how we might use one in a form:
+ *
+ *     @example
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'fieldset',
+ *                 title: 'How old are you?',
+ *                 items: [
+ *                     {
+ *                         xtype: 'numberfield',
+ *                         label: 'Age',
+ *                         minValue: 18,
+ *                         maxValue: 150,
+ *                         name: 'age'
+ *                     }
+ *                 ]
+ *             }
+ *         ]
+ *     });
+ *
+ * Or on its own, outside of a form:
+ *
+ *     Ext.create('Ext.field.Number', {
+ *         label: 'Age',
+ *         value: '26'
+ *     });
+ *
+ * ## minValue, maxValue and stepValue
+ *
+ * The {@link #minValue} and {@link #maxValue} configurations are self-explanatory and simply constrain the value
+ * entered to the range specified by the configured min and max values. The other option exposed by this component
+ * is {@link #stepValue}, which enables you to set how much the value changes every time the up and down spinners
+ * are tapped on. For example, to create a salary field that ticks up and down by $1,000 each tap we can do this:
+ *
+ *     @example
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'fieldset',
+ *                 title: 'Are you rich yet?',
+ *                 items: [
+ *                     {
+ *                         xtype: 'numberfield',
+ *                         label: 'Salary',
+ *                         value: 30000,
+ *                         minValue: 25000,
+ *                         maxValue: 50000,
+ *                         stepValue: 1000
+ *                     }
+ *                 ]
+ *             }
+ *         ]
+ *     });
+ *
+ * This creates a field that starts with a value of $30,000, steps up and down in $1,000 increments and will not go
+ * beneath $25,000 or above $50,000.
+ *
+ * Because number field inherits from {@link Ext.field.Text textfield} it gains all of the functionality that text
+ * fields provide, including getting and setting the value at runtime, validations and various events that are fired as
+ * the user interacts with the component. Check out the {@link Ext.field.Text} docs to see the additional functionality
+ * available.
+ *
+ * For more information regarding forms and fields, please review [Using Forms in Sencha Touch Guide](../../../components/forms.html)
+ */
+Ext.define('Ext.field.Number', {
+    extend:  Ext.field.Text ,
+    xtype: 'numberfield',
+    alternateClassName: 'Ext.form.Number',
+
+    config: {
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        component: {
+            type: 'number'
+        },
+
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        ui: 'number'
+    },
+
+    proxyConfig: {
+        /**
+         * @cfg {Number} minValue The minimum value that this Number field can accept
+         * @accessor
+         */
+        minValue: null,
+
+        /**
+         * @cfg {Number} maxValue The maximum value that this Number field can accept
+         * @accessor
+         */
+        maxValue: null,
+
+        /**
+         * @cfg {Number} stepValue The amount by which the field is incremented or decremented each time the spinner is tapped.
+         * Defaults to undefined, which means that the field goes up or down by 1 each time the spinner is tapped
+         * @accessor
+         */
+        stepValue: null
+    },
+
+    applyPlaceHolder: function(value) {
+        // Android 4.1 & lower require a hack for placeholder text in number fields when using the Stock Browser
+        // details here https://code.google.com/p/android/issues/detail?id=24626
+        this._enableNumericPlaceHolderHack = ((!Ext.feature.has.NumericInputPlaceHolder) && (!Ext.isEmpty(value)));
+        return value;
+    },
+
+    onFocus: function(e) {
+        if (this._enableNumericPlaceHolderHack) {
+            this.getComponent().input.dom.setAttribute("type", "number");
+        }
+        this.callParent(arguments);
+    },
+
+    onBlur: function(e) {
+        if (this._enableNumericPlaceHolderHack) {
+            this.getComponent().input.dom.setAttribute("type", "text");
+        }
+        this.callParent(arguments);
+    },
+
+    doInitValue : function() {
+        var value = this.getInitialConfig().value;
+
+        if (value) {
+            value = this.applyValue(value);
+        }
+
+        this.originalValue = value;
+    },
+
+    applyValue: function(value) {
+        var minValue = this.getMinValue(),
+            maxValue = this.getMaxValue();
+
+        if (Ext.isNumber(minValue) && Ext.isNumber(value)) {
+            value = Math.max(value, minValue);
+        }
+
+        if (Ext.isNumber(maxValue) && Ext.isNumber(value)) {
+            value = Math.min(value, maxValue);
+        }
+
+        value = parseFloat(value);
+        return (isNaN(value)) ? '' : value;
+    },
+
+    getValue: function() {
+        var value = parseFloat(this.callParent(), 10);
+        return (isNaN(value)) ? null : value;
+    },
+
+    doClearIconTap: function(me, e) {
+        me.getComponent().setValue('');
+        me.getValue();
+        me.hideClearIcon();
+    }
+});
+
+/**
  * The Password field creates a password input and is usually created inside a form. Because it creates a password
  * field, when the user enters text it will show up as stars. Aside from that, the password field is just a normal text
  * field. Here's an example of how to use it in a form:
@@ -69911,6 +70083,466 @@ Ext.define('Ext.field.Search', {
             type: 'text'
         }
     }]
+});
+
+/**
+ * A wrapper class which can be applied to any element. Fires a "tap" event while
+ * touching the device. The interval between firings may be specified in the config but
+ * defaults to 20 milliseconds.
+ */
+Ext.define('Ext.util.TapRepeater', {
+                                 
+
+    mixins: {
+        observable:  Ext.mixin.Observable 
+    },
+
+    /**
+     * @event touchstart
+     * Fires when the touch is started.
+     * @param {Ext.util.TapRepeater} this
+     * @param {Ext.event.Event} e
+     */
+
+    /**
+     * @event tap
+     * Fires on a specified interval during the time the element is pressed.
+     * @param {Ext.util.TapRepeater} this
+     * @param {Ext.event.Event} e
+     */
+
+    /**
+     * @event touchend
+     * Fires when the touch is ended.
+     * @param {Ext.util.TapRepeater} this
+     * @param {Ext.event.Event} e
+     */
+
+    config: {
+        el: null,
+        accelerate: true,
+        interval: 10,
+        delay: 250,
+        preventDefault: true,
+        stopDefault: false,
+        timer: 0,
+        pressCls: null
+    },
+
+    /**
+     * Creates new TapRepeater.
+     * @param {Object} config
+     */
+    constructor: function(config) {
+        var me = this;
+        for (var configName in config) {
+            if (me.self.prototype.config && !(configName in me.self.prototype.config)) {
+                me[configName] = config[configName];
+                Ext.Logger.warn('Applied config as instance property: "' + configName + '"', me);
+            }
+        }
+        me.initConfig(config);
+    },
+
+    updateEl: function(newEl, oldEl) {
+        var eventCfg = {
+                touchstart: 'onTouchStart',
+                touchend: 'onTouchEnd',
+                tap: 'eventOptions',
+                scope: this
+            };
+        if (oldEl) {
+            oldEl.un(eventCfg)
+        }
+        newEl.on(eventCfg);
+    },
+
+    // @private
+    eventOptions: function(e) {
+        if (this.getPreventDefault()) {
+            e.preventDefault();
+        }
+        if (this.getStopDefault()) {
+            e.stopEvent();
+        }
+    },
+
+    // @private
+    destroy: function() {
+        this.clearListeners();
+        Ext.destroy(this.el);
+    },
+
+    // @private
+    onTouchStart: function(e) {
+        var me = this,
+            pressCls = me.getPressCls();
+        clearTimeout(me.getTimer());
+        if (pressCls) {
+            me.getEl().addCls(pressCls);
+        }
+        me.tapStartTime = new Date();
+
+        me.fireEvent('touchstart', me, e);
+        me.fireEvent('tap', me, e);
+
+        // Do not honor delay or interval if acceleration wanted.
+        if (me.getAccelerate()) {
+            me.delay = 400;
+        }
+        me.setTimer(Ext.defer(me.tap, me.getDelay() || me.getInterval(), me, [e]));
+    },
+
+    // @private
+    tap: function(e) {
+        var me = this;
+        me.fireEvent('tap', me, e);
+        me.setTimer(Ext.defer(me.tap, me.getAccelerate() ? me.easeOutExpo(Ext.Date.getElapsed(me.tapStartTime),
+            400,
+            -390,
+            12000) : me.getInterval(), me, [e]));
+    },
+
+    // Easing calculation
+    // @private
+    easeOutExpo: function(t, b, c, d) {
+        return (t == d) ? b + c : c * ( - Math.pow(2, -10 * t / d) + 1) + b;
+    },
+
+    // @private
+    onTouchEnd: function(e) {
+        var me = this;
+        clearTimeout(me.getTimer());
+        me.getEl().removeCls(me.getPressCls());
+        me.fireEvent('touchend', me, e);
+    }
+});
+
+/**
+ * Wraps an HTML5 number field. Example usage:
+ *
+ *     @example miniphone
+ *     var spinner = Ext.create('Ext.field.Spinner', {
+ *         label     : 'Spinner Field',
+ *         minValue  : 0,
+ *         maxValue  : 100,
+ *         stepValue : 2,
+ *         cycle     : true
+ *     });
+ *     Ext.Viewport.add({ xtype: 'container', items: [spinner] });
+ *
+ * For more information regarding forms and fields, please review [Using Forms in Sencha Touch Guide](../../../components/forms.html)
+ */
+Ext.define('Ext.field.Spinner', {
+    extend:  Ext.field.Number ,
+    xtype: 'spinnerfield',
+    alternateClassName: 'Ext.form.Spinner',
+                                       
+
+    /**
+     * @event spin
+     * Fires when the value is changed via either spinner buttons.
+     * @param {Ext.field.Spinner} this
+     * @param {Number} value
+     * @param {String} direction 'up' or 'down'.
+     */
+
+    /**
+     * @event spindown
+     * Fires when the value is changed via the spinner down button.
+     * @param {Ext.field.Spinner} this
+     * @param {Number} value
+     */
+
+    /**
+     * @event spinup
+     * Fires when the value is changed via the spinner up button.
+     * @param {Ext.field.Spinner} this
+     * @param {Number} value
+     */
+
+    /**
+     * @event change
+     * Fires just before the field blurs if the field value has changed.
+     * @param {Ext.field.Text} this This field.
+     * @param {Number} newValue The new value.
+     * @param {Number} oldValue The original value.
+     */
+
+    /**
+     * @event updatedata
+     * @hide
+     */
+
+    /**
+     * @event action
+     * @hide
+     */
+
+    config: {
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        cls: Ext.baseCSSPrefix + 'spinner',
+
+        /**
+         * @cfg {Number} [minValue=-infinity] The minimum allowed value.
+         * @accessor
+         */
+        minValue: Number.NEGATIVE_INFINITY,
+
+        /**
+         * @cfg {Number} [maxValue=infinity] The maximum allowed value.
+         * @accessor
+         */
+        maxValue: Number.MAX_VALUE,
+
+        /**
+         * @cfg {Number} stepValue Value that is added or subtracted from the current value when a spinner is used.
+         * @accessor
+         */
+        stepValue: 0.1,
+
+        /**
+         * @cfg {Boolean} accelerateOnTapHold True if autorepeating should start slowly and accelerate.
+         * @accessor
+         */
+        accelerateOnTapHold: true,
+
+        /**
+         * @cfg {Boolean} cycle When set to `true`, it will loop the values of a minimum or maximum is reached.
+         * If the maximum value is reached, the value will be set to the minimum.
+         * @accessor
+         */
+        cycle: false,
+
+        /**
+         * @cfg {Boolean} clearIcon
+         * @hide
+         * @accessor
+         */
+        clearIcon: false,
+
+        /**
+         * @cfg {Number} defaultValue The default value for this field when no value has been set.
+         * It is also used when the value is set to `NaN`.
+         */
+        defaultValue: 0,
+
+        /**
+         * @cfg {Number} tabIndex
+         * @hide
+         */
+        tabIndex: -1,
+
+        /**
+         * @cfg {Boolean} groupButtons
+         * `true` if you want to group the buttons to the right of the fields. `false` if you want the buttons
+         * to be at either side of the field.
+         */
+        groupButtons: true,
+
+        /**
+         * @cfg component
+         * @inheritdoc
+         */
+        component: {
+            disabled: true
+        }
+    },
+
+    platformConfig: [{
+        platform: 'android',
+        component: {
+            disabled: false,
+            readOnly: true
+        }
+    }],
+
+    constructor: function() {
+        var me = this;
+
+        me.callParent(arguments);
+
+        if (!me.getValue()) {
+            me.suspendEvents();
+            me.setValue(me.getDefaultValue());
+            me.resumeEvents();
+        }
+    },
+
+    syncEmptyCls: Ext.emptyFn,
+
+    /**
+     * Updates the {@link #component} configuration
+     */
+    updateComponent: function(newComponent) {
+        this.callParent(arguments);
+
+        var cls = this.getCls();
+
+        if (newComponent) {
+            this.spinDownButton = Ext.Element.create({
+                cls : cls + '-button ' + cls + '-button-down',
+                html: '-'
+            });
+
+            this.spinUpButton = Ext.Element.create({
+                cls : cls + '-button ' + cls + '-button-up',
+                html: '+'
+            });
+
+            this.downRepeater = this.createRepeater(this.spinDownButton, this.onSpinDown);
+            this.upRepeater = this.createRepeater(this.spinUpButton,     this.onSpinUp);
+        }
+    },
+
+    updateGroupButtons: function(newGroupButtons, oldGroupButtons) {
+        var me = this,
+            innerElement = me.innerElement,
+            cls = me.getBaseCls() + '-grouped-buttons';
+
+        me.getComponent();
+
+        if (newGroupButtons != oldGroupButtons) {
+            if (newGroupButtons) {
+                this.addCls(cls);
+                innerElement.appendChild(me.spinDownButton);
+                innerElement.appendChild(me.spinUpButton);
+            } else {
+                this.removeCls(cls);
+                innerElement.insertFirst(me.spinDownButton);
+                innerElement.appendChild(me.spinUpButton);
+            }
+        }
+    },
+
+    applyValue: function(value) {
+        value = parseFloat(value);
+        if (isNaN(value) || value === null) {
+            value = this.getDefaultValue();
+        }
+
+        //round the value to 1 decimal
+        value = Math.round(value * 10) / 10;
+
+        return this.callParent([value]);
+    },
+
+    // @private
+    createRepeater: function(el, fn) {
+        var me = this,
+            repeater = Ext.create('Ext.util.TapRepeater', {
+                el: el,
+                accelerate: me.getAccelerateOnTapHold()
+            });
+
+        repeater.on({
+            tap: fn,
+            touchstart: 'onTouchStart',
+            touchend: 'onTouchEnd',
+            scope: me
+        });
+
+        return repeater;
+    },
+
+    // @private
+    onSpinDown: function() {
+        if (!this.getDisabled() && !this.getReadOnly()) {
+            this.spin(true);
+        }
+    },
+
+    // @private
+    onSpinUp: function() {
+        if (!this.getDisabled() && !this.getReadOnly()) {
+            this.spin(false);
+        }
+    },
+
+    // @private
+    onTouchStart: function(repeater) {
+        if (!this.getDisabled() && !this.getReadOnly()) {
+            repeater.getEl().addCls(Ext.baseCSSPrefix + 'button-pressed');
+        }
+    },
+
+    // @private
+    onTouchEnd: function(repeater) {
+        repeater.getEl().removeCls(Ext.baseCSSPrefix + 'button-pressed');
+    },
+
+    // @private
+    spin: function(down) {
+        var me = this,
+            originalValue = me.getValue(),
+            stepValue = me.getStepValue(),
+            direction = down ? 'down' : 'up',
+            minValue = me.getMinValue(),
+            maxValue = me.getMaxValue(),
+            value;
+
+        if (down) {
+            value = originalValue - stepValue;
+        }
+        else {
+            value = originalValue + stepValue;
+        }
+
+        //if cycle is true, then we need to check fi the value hasn't changed and we cycle the value
+        if (me.getCycle()) {
+            if (originalValue == minValue && value < minValue) {
+                value = maxValue;
+            }
+
+            if (originalValue == maxValue && value > maxValue) {
+                value = minValue;
+            }
+        }
+
+        me.setValue(value);
+        value = me.getValue();
+
+        me.fireEvent('spin', me, value, direction);
+        me.fireEvent('spin' + direction, me, value);
+    },
+
+    /**
+     * @private
+     */
+    doSetDisabled: function(disabled) {
+        Ext.Component.prototype.doSetDisabled.apply(this, arguments);
+    },
+
+    /**
+     * @private
+     */
+    setDisabled: function() {
+        Ext.Component.prototype.setDisabled.apply(this, arguments);
+    },
+
+    reset: function() {
+        this.setValue(this.getDefaultValue());
+    },
+
+//    setValue: function(value){
+//        this.callSuper(arguments);
+
+        // @TODO: Isn't this already done by the framework by default?
+//        if(Ext.getThemeName() == 'WP'){
+//            this.getComponent().element.dom.setAttribute('value',value);
+//        }
+//    },
+
+    // @private
+    destroy: function() {
+        var me = this;
+        Ext.destroy(me.downRepeater, me.upRepeater, me.spinDownButton, me.spinUpButton);
+        me.callParent(arguments);
+    }
+}, function() {
 });
 
 /**
@@ -74450,7 +75082,7 @@ Ext.define('Youngshine.controller.Main', {
 		this.getApplication().getController('Study').ordersList()		 
 	},
 	menuPricelist: function(){
-		//this.getApplication().getController('Teacher').teacherList()		 
+		this.getApplication().getController('Pricelist').pricelistList()		 
 	},
 	
 	// 用户注销退出，来自Main控制器，reset
@@ -74487,16 +75119,22 @@ Ext.define('Youngshine.controller.Student', {
         refs: {
            	student: 'student',
 			studentaddnew: 'student-addnew',
+			studentedit: 'student-edit',
 			studentshow: 'student-show'
         },
         control: {
 			student: {
 				addnew: 'studentAddnew', //itemtap
-				itemtap: 'studentItemtap'
+				itemtap: 'studentItemtap', //包含：修改
+				itemswipe: 'studentItemswipe'
 			},
 			studentaddnew: {
 				save: 'studentaddnewSave', 
 				cancel: 'studentaddnewCancel'
+			},
+			studentedit: {
+				save: 'studenteditSave', 
+				cancel: 'studenteditCancel'
 			},
         }
     },
@@ -74517,6 +75155,8 @@ Ext.define('Youngshine.controller.Student', {
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readStudentList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -74528,8 +75168,65 @@ Ext.define('Youngshine.controller.Student', {
 			}   		
 		});	  			 
 	},
+	
+	// 向左滑动，删除
+	studentItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteStudent.php',
+			    params: {
+					studentID: rec.data.studentID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Student').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},
 	studentItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
+		// 点击‘修改编辑’
+		if(e.target.className == 'edit'){
+			me.studentedit = Ext.create('Youngshine.view.student.Edit');
+			Ext.Viewport.add(me.studentedit); //否则build后无法显示
+			Ext.Viewport.setActiveItem(me.studentedit); //show()?
+			console.log(record.data)
+			me.studentedit.setRecord(record)
+			return
+		}
+		
 		me.studentshow = Ext.create('Youngshine.view.student.Show');
 		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
 		me.studentshow.down('panel[itemId=my_show]').setData(record.data)
@@ -74576,6 +75273,28 @@ Ext.define('Youngshine.controller.Student', {
 			}
 		});	
 	},
+	// 取消添加
+	studenteditCancel: function(oldView){		
+		var me = this; 
+		oldView.destroy()
+		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.student);
+	},	
+	studenteditSave: function( obj,oldView )	{
+    	var me = this; 
+
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateStudent.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; JSON.parse()
+				oldView.destroy()
+				//Ext.Viewport.setActiveItem(me.student);
+				//rec.set(obj) //前端更新显示
+				Ext.toast('修改成功',3000)
+		    }
+		});
+	},
 
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */
@@ -74596,18 +75315,23 @@ Ext.define('Youngshine.controller.Teacher', {
         refs: {
            	teacher: 'teacher',
 			teacheraddnew: 'teacher-addnew',
+			teacheredit: 'teacher-edit',
 			teachercourse: 'teacher-course',
 			teachercourseassess: 'teacher-course-assess'
         },
         control: {
 			teacher: {
 				addnew: 'teacherAddnew', //itemtap
-				itemtap: 'teacherItemtap',
+				itemtap: 'teacherItemtap', //包括修改按钮
 				itemswipe: 'teacherItemswipe' //delete
 			},
 			teacheraddnew: {
 				save: 'teacheraddnewSave', 
 				cancel: 'teacheraddnewCancel'
+			},
+			teacheredit: {
+				save: 'teachereditSave', 
+				cancel: 'teachereditCancel'
 			},
 			teachercourse: {
 				back: 'teachercourseBack',
@@ -74630,6 +75354,8 @@ Ext.define('Youngshine.controller.Teacher', {
 			"schoolID": localStorage.schoolID
 		}		
 		var store = Ext.getStore('Teacher'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readTeacherList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -74644,6 +75370,15 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 显示教师上课课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
+		// 点击‘修改编辑’
+		if(e.target.className == 'edit'){
+			me.teacheredit = Ext.create('Youngshine.view.teacher.Edit');
+			Ext.Viewport.add(me.teacheredit); //否则build后无法显示
+			Ext.Viewport.setActiveItem(me.teacheredit); //show()?
+			console.log(record.data)
+			me.teacheredit.setRecord(record)
+			return
+		}
 
 		if(!me.teachercourse){
 			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
@@ -74757,6 +75492,30 @@ Ext.define('Youngshine.controller.Teacher', {
 		    }
 		});
 	},
+	// 取消添加
+	teachereditCancel: function(oldView){		
+		var me = this; 
+		oldView.destroy()
+		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.teacher);
+	},	
+	teachereditSave: function( obj,oldView )	{
+    	var me = this; 
+		console.log(obj)
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateTeacher.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; JSON.parse()
+				console.log(result)
+				oldView.destroy()
+				//Ext.Viewport.setActiveItem(me.student);
+				//rec.set(obj) //前端更新显示
+				Ext.toast('修改成功',3000)
+		    }
+		});
+	},
+	
 	// 返回
 	teachercourseBack: function(oldView){		
 		var me = this;
@@ -74795,6 +75554,155 @@ Ext.define('Youngshine.controller.Teacher', {
 	}
 });
 
+// 课时套餐价格相关的控制器，
+Ext.define('Youngshine.controller.Pricelist', {
+    extend:  Ext.app.Controller ,
+
+    config: {
+        refs: {
+           	pricelist: 'pricelist',
+			pricelistaddnew: 'pricelist-addnew',
+        },
+        control: {
+			pricelist: {
+				addnew: 'pricelistAddnew', //itemtap
+				itemtap: 'pricelistItemtap',
+				itemswipe: 'pricelistItemswipe' //delete
+			},
+			pricelistaddnew: {
+				save: 'pricelistaddnewSave', 
+				cancel: 'pricelistaddnewCancel'
+			},
+        }
+    },
+
+	// sidemenu跳转这里 teaching zsd list of a particular teacher
+	pricelistList: function(){
+		var me = this;
+		var curView = Ext.Viewport.getActiveItem();
+		if(curView.xtype == 'pricelist') return
+ 
+		Ext.Viewport.remove(curView,true); //remove 当前界面
+		me.teacher = Ext.create('Youngshine.view.pricelist.List');
+		Ext.Viewport.add(me.teacher);
+		//view.onGenreChange(); //默认
+		var obj = {
+			"schoolID": localStorage.schoolID
+		}		
+		var store = Ext.getStore('Pricelist');
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readPricelist.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+			    //Ext.Viewport.setMasked(false);
+			    if (success){
+					Ext.Viewport.setActiveItem(me.teacher);
+				};
+			} 
+		})	  			 
+	},
+	// 显示教师上课课时
+	pricelistItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+
+	},
+	// 向左滑动，删除
+	pricelistItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录 disableSelection
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deletePricelist.php',
+			    params: {
+					pricelistID: rec.data.pricelistID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Pricelist').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},	
+
+	pricelistAddnew: function(win){		
+		var me = this;
+
+		if(!me.pricelistaddnew){
+			me.pricelistaddnew = Ext.create('Youngshine.view.pricelist.Addnew');
+			Ext.Viewport.add(me.pricelistaddnew)
+		}
+		Ext.Viewport.setActiveItem(me.pricelistaddnew)
+	},
+	
+	// 取消添加
+	pricelistaddnewCancel: function(oldView){		
+		var me = this; 
+		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面	
+		Ext.Viewport.remove(oldView)
+		Ext.Viewport.setActiveItem(me.pricelist);
+	},	
+	pricelistaddnewSave: function( obj,oldView )	{
+    	var me = this; 
+		// ajax or jsonp(data:obj)
+		Ext.data.JsonP.request({
+		    url: me.getApplication().dataUrl + 'createPricelist.php',
+		    params: {
+				data: JSON.stringify(obj)
+			},
+		    success: function(result){
+		        console.log(result)
+		        //record.set('fullEndtime','')
+				oldView.destroy()
+				Ext.Viewport.setActiveItem(me.pricelist);
+				//obj.teacherID = result.data.teacherID
+				//obj.created = new Date();
+				Ext.getStore('Pricelist').load(); //.insert(0,obj)
+		    }
+		});
+	},
+			
+	/* 如果用户登录的话，控制器launch加载相关的store */
+	launch: function(){
+	    this.callParent(arguments);
+		console.log('pricelist controller launch');
+	},
+	init: function(){
+		this.callParent(arguments);
+		console.log('pricelist controller init');
+	}
+});
+
 // 购买课时订单相关的控制器，
 Ext.define('Youngshine.controller.Orders', {
     extend:  Ext.app.Controller ,
@@ -74806,7 +75714,8 @@ Ext.define('Youngshine.controller.Orders', {
 			student: 'orders-student',
 			pricelist: 'orders-pricelist',
 			ordersstudy: 'orders-study', //套餐的子记录（报读知识点）
-			studyzsd: 'study-zsd',
+			studyzsd: 'study-zsd', //添加报读记录
+			studykcb: 'study-kcb', //排课
         },
         control: {
 			orders: {
@@ -74834,7 +75743,10 @@ Ext.define('Youngshine.controller.Orders', {
 				itemswipe: 'ordersstudyItemswipe' // 删除
 			},
 			studyzsd: {
-				itemtap: 'studyzsdItemtap'
+				itemtap: 'studyzsdItemtap' //添加报读记录
+			},
+			studykcb: {
+				done: 'studykcbDone' //排课，分配教师、上课时间
 			},
         }
     },
@@ -74855,6 +75767,8 @@ Ext.define('Youngshine.controller.Orders', {
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Orders'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readOrdersList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -74946,7 +75860,7 @@ Ext.define('Youngshine.controller.Orders', {
 		Ext.Viewport.setActiveItem(me.orders);
 	},	
 	ordersaddnewSave: function( obj,oldView )	{
-    	var me = this; 
+    	var me = this; console.log(obj)
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
@@ -74956,7 +75870,7 @@ Ext.define('Youngshine.controller.Orders', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-						oldView.destroy()
+						oldView.destroy(); console.log(result)
 						Ext.Viewport.setActiveItem(me.orders);
 						obj.prepaidID = result.data.prepaidID
 						//obj.created = new Date();
@@ -75118,7 +76032,7 @@ Ext.define('Youngshine.controller.Orders', {
 			});
 		}
 	},	
-	// 排课：单击‘排课’
+	// 排课：单击‘排课kcb’
 	ordersstudyItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		console.log(e.target.className)
@@ -75126,7 +76040,19 @@ Ext.define('Youngshine.controller.Orders', {
 		if(e.target.className == 'kcb'){
 			me.studykcb = Ext.create('Youngshine.view.orders.study.Kcb');
 			Ext.Viewport.add(me.studykcb); //否则build后无法显示
-			me.studykcb.show()
+			//me.studykcb.show()
+			console.log(record.data)
+			me.studykcb.setRecord(record)
+			
+			// 任课教师selectfield，没有store,这样才能显示名字
+			var selectBox = me.studykcb.down('selectfield[name=teacherID]')
+			console.log(selectBox)
+			selectBox.setOptions([
+			    {teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
+			    //{text: 'Third Option',  value: 'third'}
+			])
+			selectBox.setValue(record.data.teacherID);
+			console.log(selectBox.getValue())
 		}	
 	},
 	
@@ -75144,6 +76070,35 @@ Ext.define('Youngshine.controller.Orders', {
 		}
 		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
             url: me.getApplication().dataUrl +  'createStudy.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				//更新前端store，最新插入记录ID，才能删除修改
+				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
+				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
+				Ext.toast('添加知识点成功',3000)		
+            }
+		});
+	},
+	
+	// 排课：分配任课教师及上课时间
+	studykcbDone: function(obj,oldView)	{
+    	var me = this; 
+		Ext.Ajax.request({
+			url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
+			params: obj,
+            success: function(response){
+				Ext.toast('排课成功',3000)
+				oldView.destroy()	
+				// 要即时更新前端数据才能正确显示	record.set(obj)
+            }
+		})
+		return
+		
+		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
+            url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
             callbackKey: 'callback',
             params:{
                 data: JSON.stringify(obj)
@@ -75229,6 +76184,8 @@ Ext.define('Youngshine.model.Teacher', {
         fields: [
 			{name: 'teacherID'}, 
 			{name: 'teacherName'}, 
+			{name: 'gender'}, 
+			{name: 'phone'}, 
 			{name: 'subjectID'},	
 			{name: 'subjectName'}, 
 			{name: 'note'}, 
@@ -75364,8 +76321,8 @@ Ext.define('Youngshine.store.Orders', {
 			}
         },
         sorters: [{ // 最新发布的线路排在顶部，不起作用？
-			property: 'pass',
-			//direction: "DESC"
+			property: 'created',
+			direction: "DESC"
 		}]
     }
 });
@@ -75537,7 +76494,7 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Orders'
+        'Main','Student','Teacher','Pricelist','Orders'
     ],
     stores: [
     	'Student','Teacher','Course','Orders','Study','Zsd','Pricelist'
@@ -75587,7 +76544,7 @@ Ext.define('Youngshine.view.Login', {
     xtype: 'login',
 	
     config: {
-        showAnimation: {
+/*        showAnimation: {
             type: "slide",
             direction: "down",
             duration: 300
@@ -75596,7 +76553,7 @@ Ext.define('Youngshine.view.Login', {
             type: "slide",
             direction: "up",
             duration: 300
-        },
+        }, */
 		
 		layout: {
 			type: 'vbox',
@@ -75607,29 +76564,28 @@ Ext.define('Youngshine.view.Login', {
     	//layout: 'fit',
     	items: [{
     		xtype: 'fieldset',
-			title: '<div style="color:#888;">根号教育 • 咨询</div>',
+			title: '<div style="color:#888;">根号教育 － 咨询</div>',
 			style: {
 				width: '410px',
 				maxWidth: '480px',
 				margin: '80px auto 0'
 			},
+			defaults: {
+				xtype: 'textfield',
+				clearIcon: false,
+				labelWidth: 85,
+			},
     		items: [{
-    			xtype: 'textfield',
 				itemId: 'username',
     			label: '账号',
-				//value: '18150112938',
-				placeHolder: ''
     		},{
     			xtype : 'passwordfield',
 				itemId : 'psw',
 				label : '密码',
-				value: '123456',
-				//placeHolder: '默认123456'
+				//value: '123456',
 			},{
-    			xtype: 'textfield',
 				itemId: 'school',
     			label: '校区',
-				//value: '18150112938',
 				placeHolder: '输入加盟校区'
     		}]
     	},{
@@ -76310,7 +77266,7 @@ Ext.define('Youngshine.view.orders.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div><span style="color:#888;">{studentName}{created}</span></div>'+
+			'<div><span style="color:#888;">{studentName}｜{created}</span></div>'+
 			'<div>{taocan}</dive>'
         ],
 		
@@ -76504,7 +77460,7 @@ Ext.define('Youngshine.view.orders.Study', {
 			style: 'text-align:center;color:#888;font-size:0.9em;margin:5px;'
 		},{
     		xtype: 'button',
-			text: '＋添加',
+			text: '＋添加记录',
 			action: 'addnew',
 			ui: 'plain',
 			scrollDock: 'bottom',
@@ -76558,21 +77514,27 @@ Ext.define('Youngshine.view.orders.Study', {
 
 // 排课
 Ext.define('Youngshine.view.orders.study.Kcb',{
-	extend:  Ext.Panel ,
+	extend:  Ext.form.Panel ,
 	xtype: 'study-kcb',
 
 	config: {
-		xtype: 'panel',
+		record: null,
 		modal: true,
 		hideOnMaskTap: true,
 		centered: true,
-		width: 410,height: 310,
-		scrollable: true,
+		width: 420,height: 260,
+		//scrollable: true,
 
         items: [{	
         	xtype: 'toolbar',
         	docked: 'top',
         	title: '一对一排课',
+			items: [{
+				text : '完成',
+				ui: 'confirm',
+				//disabled: true,
+				action: 'done',
+			}]
 		},{
 			xtype: 'fieldset',
 			width: '95%',
@@ -76580,7 +77542,7 @@ Ext.define('Youngshine.view.orders.study.Kcb',{
 				xtype: 'selectfield',
 				label: '上课日', //选择后本地缓存，方便下次直接获取
 				labelWidth: 85,
-				itemId: 'weekday',
+				name: 'teach_weekday',
 				options: [
 				    {text: '周一', value: '周一'},
 				    {text: '周二', value: '周二'},
@@ -76595,18 +77557,11 @@ Ext.define('Youngshine.view.orders.study.Kcb',{
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
-				listeners: {
-					change: function(){
-						this.up('panel').down('selectfield[itemId=zsd]').reset();
-						this.up('panel').down('button[action=save]').setDisabled(true);
-						loadZsd(this.getValue())
-					},					
-				},
 			},{
 				xtype: 'selectfield',
 				label: '时间段', //选择后本地缓存，方便下次直接获取
 				labelWidth: 85,
-				itemId: 'timespan',
+				name: 'teach_timespan',
 				options: [
 				    {text: '08-10', value: '08-10'},
 				    {text: '10-12', value: '10-12'},
@@ -76619,60 +77574,96 @@ Ext.define('Youngshine.view.orders.study.Kcb',{
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
-				listeners: {
-					change: function(field,newValue){
-						console.log(newValue)
-						if(newValue != null )
-							this.up('panel').down('button[action=save]').setDisabled(false);
-					},					
-				},
 			},{
 				xtype: 'selectfield',
 				label: '任课教师', //选择后本地缓存，方便下次直接获取
 				labelWidth: 85,
-				itemId: 'teacher',
+				name: 'teacherID',
+				valueField: 'teacherID',
+				displayField: 'teacherName',
+				autoSelect: false,
+				listeners: {
+					focus: function(selectBox, e, eOpts ){
+						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
+							timespan = this.up('fieldset').down('selectfield[name=teach_timespan]').getValue()
+						if(weekday==null || timespan==null){
+							return false
+							//Ext.toast('先选择上课时间');return false
+						}
+						// ajax读取可用学科教师
+						this.up('panel').onTeacher(weekday,timespan,selectBox)
+					},
+					change: function(e){
+						// 激活保存提交按钮
+						//this.up('panel').down('button[action=done]').setDisabled(false);
+					}
+				}
 			},{
 				xtype: 'textfield',
 				label: '备注',
 				labelWidth: 85,
-				itemId: 'note'
+				name: 'note',
+				clearIcon: false
 			}]	
-		},{
-			xtype: 'button',
-			text: '保存',
-			action: 'save',
-			margin: '-15 10 15',
-			ui: 'confirm',
-			handler: function(btn){
-				var me = this;
-				var psw1 = this.up('panel').down('passwordfield[itemId=psw1]').getValue().trim(),
-					psw2 = this.up('panel').down('passwordfield[itemId=psw2]').getValue().trim()
-				console.log(psw1)
-				if(psw1.length<6){
-					Ext.toast('密码少于6位',3000); return
-				}
-				if(psw1!= psw2){
-					Ext.toast('确认密码错误',3000); return
-				}
-				// ajax
-				Ext.Ajax.request({
-				    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
-				    params: {
-				        psw1     : psw1,
-						consultID: localStorage.consultID
-				    },
-				    success: function(response){
-				        var text = response.responseText;
-				        // process server response here
-						Ext.toast('密码修改成功',3000)
-						me.up('panel').destroy()
-				    }
-				});
-			}
+
 		}],	
+		
+		listeners: [{
+			delegate: 'button[action=done]',
+			event: 'tap',
+			fn: 'onDone'	
+		}] 
 	},
+	
+	onDone: function(btn){
+		var me = this;
+		var teacherID = me.down('selectfield[name=teacherID]').getValue(),
+			weekday = me.down('selectfield[name=teach_weekday]').getValue(),
+			timespan = me.down('selectfield[name=teach_timespan]').getValue(),
+			note = me.down('textfield[name=note]').getValue(),
+			studentstudyID = me.getRecord().data.studentstudyID
 
-
+		if(teacherID==null || teacherID==0){
+			Ext.toast('请选择任课教师',3000); return false
+		} 
+		
+		var obj = {
+			teacherID: teacherID,
+			weekday: weekday,
+			timespan: timespan,
+			note: note,
+			studentstudyID: studentstudyID
+		}	
+		console.log(obj)
+		me.fireEvent('done',obj,me);	
+	},
+	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
+	onTeacher: function(weekday,timespan,selectBox){
+		var me = this;
+		var obj = {
+			"weekday": weekday,
+			"timespan": timespan,
+			"subjectID": me.getRecord().data.subjectID,
+			"schoolID": localStorage.schoolID
+		}
+		console.log(obj)
+		
+		Ext.data.JsonP.request({ 
+            url: Youngshine.app.getApplication().dataUrl +  'readTeacherListByKcb.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				console.log(result.data)
+				selectBox.updateOptions(result.data)		
+            }
+		});
+	},
+	
+	hide: function(){
+		this.destroy()
+	}
 });
 
 // 查找选择添加 报读知识点
@@ -76684,11 +77675,12 @@ Ext.define('Youngshine.view.orders.study.Zsd',{
 		emptyText: '选择学科',
 		striped: true,
 		store: 'Zsd',
-		itemTpl: '<div><span>{zsdName}</span><span style="float:right;">{grade}</span></div>',
+		itemTpl: '<div><span>{zsdName}</span>'+
+			'<span style="float:right;color:#888;">{times}</span></div>',
         // We give it a left and top property to make it floating by default
         right: 0,
         top: 0,
-		width: 400,height: '100%',
+		width: 450,height: '100%',
 
         // Make it modal so you can click the mask to hide the overlay
         modal: true,
@@ -76702,8 +77694,11 @@ Ext.define('Youngshine.view.orders.study.Zsd',{
         items: [{
             docked: 'top',
             xtype: 'toolbar',
-			//ui: 'gray',
+			ui: 'light',
             items: [{
+				xtype: 'label',
+				html: '＋'
+			},{	
 				xtype: 'selectfield',
 				itemId: 'subject', 
 				placeHolder: '选择学科',
@@ -76781,6 +77776,195 @@ Ext.define('Youngshine.view.orders.study.Zsd',{
 		store.clearFilter();
         store.filter('gradeName', newValue, true);
 	}
+});
+
+Ext.define('Youngshine.view.pricelist.Addnew', {
+    extend:  Ext.form.Panel ,
+    xtype: 'pricelist-addnew',
+
+    config: {
+        /*
+		showAnimation: {
+            type: "slideIn",
+            direction: "left",
+            duration: 200
+        },
+        hideAnimation: {
+            type: "slideOut",
+            direction: "right",
+            duration: 200
+        }, */
+		
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '新增课时套餐记录',
+			items: [{
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
+				ui: 'confirm',
+				text: '保存',
+				action: 'save'
+			}]
+		},{
+			xtype: 'fieldset',
+			defaults: {
+				labelWidth: 65,
+				xtype: 'textfield'
+			},
+			//title: '个人资料',
+			items: [{
+				xtype: 'textfield',
+				name: 'title', //绑定后台数据字段
+				label: '标题',
+				clearIcon: false
+			},{
+				xtype: 'spinnerfield',
+				name: 'hour', //绑定后台数据字段
+				label: '小时',
+			    minValue: 10,
+			    maxValue: 100,
+			    increment: 10,
+			    cycle: false
+			},{	
+				xtype: 'textfield',
+				name: 'amount', //绑定后台数据字段
+				label: '金额',
+				clearIcon: false,
+				component: { // 显示数字键
+					xtype: 'input',
+					type: 'tel'
+				},		
+			}]	
+		}],		
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'		
+		}]
+	},
+
+	/* it's bad to use listeners config obj in Ext.define(), use it in instanialiing create()
+	initialize: function(){	
+        this.callParent(arguments);	
+		this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+	},  
+    onElSwipe : function(e) {
+        if(e.direction=='right'){
+        	this.onBack(); //destroy();
+        };     
+    }, */
+
+	onSave: function(){
+		//window.scrollTo(0,0);
+		var me = this;
+		
+		var title = this.down('textfield[name=title]').getValue().trim(),
+			hour = this.down('spinnerfield[name=hour]').getValue(),
+			amount = this.down('textfield[name=amount]').getValue()
+	
+		if (title == ''){
+			Ext.toast('标题不能空白',3000); return;
+		}
+		if (isNaN(amount) || amount==0){
+			Ext.toast('请填写小时金额',3000); return;
+		}
+
+    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+			if(btn == 'yes'){
+				var obj = {
+					title: title,
+					hour: hour,
+					amount: amount,
+					schoolID: localStorage.schoolID //归属哪个咨询师
+				};
+				console.log(obj)
+				me.fireEvent('save', obj,me);
+			}
+		});	
+	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	}
+	
+});
+
+/**
+ * Displays a list of 各个校区课时套餐价格
+ */
+Ext.define('Youngshine.view.pricelist.List', {
+    extend:  Ext.dataview.List ,
+	xtype: 'pricelist',
+
+    config: {
+        store: 'Pricelist',
+        //itemHeight: 89,
+        //emptyText: '学生列表',
+		disableSelection: true,
+		striped: true,
+        itemTpl: [
+            '<div>{title}</div>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '课时套餐价格',
+			items: [{
+				iconCls: 'list',
+				iconMask: true,
+				ui: 'plain',
+				handler: function(btn){
+					//btn.up('main').onMenu()
+					Youngshine.app.getApplication().getController('Main').menuNav()
+				} 
+			},{
+				xtype: 'spacer'
+			},{
+				//ui : 'action',
+				action: 'addnew',
+				iconCls: 'add',
+				//text : '＋新增',
+				handler: function(){
+					this.up('list').onAddnew()
+				}		
+			}]
+    	}],
+    },
+/*	
+	initialize: function(){
+		this.callParent(arguments)
+		//this.on('itemtap',this.onItemtap)
+	},
+	
+	// 显示详情
+    onItemtap: function(list, index, item, record){
+		var vw = Ext.create('Youngshine.view.student.Show');
+		Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
+		vw.down('panel[itemId=my_show]').setData(record.data)
+		vw.show(); 
+		vw.setRecord(record); // 当前记录参数
+    }, */
+    onAddnew: function(btn){
+		this.fireEvent('addnew',this)
+		//var vw = Ext.create('Youngshine.view.pricelist.Addnew');
+		//Ext.Viewport.add(vw); 
+		//vw.show(); //ext.setactive?
+    },
+	
 });
 
 Ext.define('Youngshine.view.student.Addnew', {
@@ -76869,7 +78053,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 				listeners: {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
-						this.up('panel').getScrollable().getScroller().scrollTo(0,50);
+						this.up('panel').getScrollable().getScroller().scrollTo(0,80);
 						//window.scrollTo(0,0);
 					}
 				}
@@ -76886,7 +78070,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						window.scrollTo(0,0);
+						//window.scrollTo(0,0);
 					}
 				}		
 			}]	
@@ -76918,8 +78102,9 @@ Ext.define('Youngshine.view.student.Addnew', {
     }, */
 
 	onSave: function(){
+		//window.scrollTo(0,0);
 		var me = this;
-
+		
 		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
 			gender = this.down('selectfield[name=gender]').getValue(),
 			grade = this.down('selectfield[name=grade]').getValue(),
@@ -76950,6 +78135,156 @@ Ext.define('Youngshine.view.student.Addnew', {
 	
 });
 
+Ext.define('Youngshine.view.student.Edit', {
+    extend:  Ext.form.Panel ,
+    xtype: 'student-edit',
+
+    config: {
+		record: null,
+		
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '修改学生资料',
+			items: [{
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
+				ui: 'confirm',
+				text: '保存',
+				action: 'save'
+			}]
+		},{
+			xtype: 'fieldset',
+			defaults: {
+				labelWidth: 65,
+				xtype: 'textfield'
+			},
+			//title: '个人资料',
+			items: [{
+				xtype: 'textfield',
+				name: 'studentName', //绑定后台数据字段
+				label: '姓名',
+				clearIcon: false
+			},{
+				xtype: 'selectfield',
+				name: 'gender', 
+				autoSelect: false,
+				label: '性别',
+				options: [
+				    {text: '男', value: '男'},
+				    {text: '女', value: '女'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
+			},{
+				xtype: 'selectfield',
+				name: 'grade', 
+				label: '年级',
+				options: [
+				    {text: '九年级', value: '九年级'},
+				    {text: '八年级', value: '八年级'},
+				    {text: '七年级', value: '七年级'},
+				    {text: '六年级', value: '六年级'},
+				    {text: '五年级', value: '五年级'},
+				    {text: '四年级', value: '四年级'},
+				    {text: '三年级', value: '三年级'},
+				    {text: '二年级', value: '二年级'},
+				    {text: '一年级', value: '一年级'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{	
+				xtype: 'textfield',
+				name: 'addr', //绑定后台数据字段
+				label: '地址',
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						//window.scrollTo(0,0);
+					}
+				}
+			},{	
+				xtype: 'textfield',
+				name: 'phone', //绑定后台数据字段
+				label: '电话',
+				clearIcon: false,
+				component: { // 显示数字键
+					xtype: 'input',
+					type: 'tel'
+				},
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						//window.scrollTo(0,0);
+					}
+				}
+			},{
+				xtype: 'hiddenfield',
+				name: 'studentID' //修改的unique			
+			}]	
+		}],		
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'		
+		}]
+	},
+
+	onSave: function(){
+		//window.scrollTo(0,0);
+		var me = this;
+		
+		var studentID = this.down('hiddenfield[name=studentID]').getValue()
+			studentName = this.down('textfield[name=studentName]').getValue().trim(),
+			gender = this.down('selectfield[name=gender]').getValue(),
+			grade = this.down('selectfield[name=grade]').getValue(),
+			phone = this.down('textfield[name=phone]').getValue().trim(),
+			addr = this.down('textfield[name=addr]').getValue().trim()
+	
+		if (studentName == ''){
+			Ext.toast('姓名不能空白',3000); return;
+		}
+		if (phone == ''){
+			Ext.toast('电话不能空白',3000); return;
+		}
+		var obj = {
+			studentName: studentName,
+			gender: gender,
+			grade: grade,
+			phone: phone,
+			addr: addr,
+			studentID: studentID //修改
+		};
+		console.log(obj)
+		me.fireEvent('save', obj,me);
+		// 前端显示更新
+		me.getRecord().set('studentName',studentName)
+	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	}
+	
+});
+
 /**
  * Displays a list of 报读某个知识点的学生列表
  */
@@ -76964,9 +78299,11 @@ Ext.define('Youngshine.view.student.List', {
 		record: null,
         //itemHeight: 89,
         //emptyText: '学生列表',
-		//disableSelection: true,
+		disableSelection: true,
         itemTpl: [
-            '<div>{studentName}<span style="float:right;color:#888;">{fullPass}</span></div>'
+            '<div>{studentName}</div>'+
+			'<div style="font-size:0.8em;"><span style="color:#888;">{grade}</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
         ],
 		
     	items: [{
@@ -77323,6 +78660,151 @@ Ext.define('Youngshine.view.teacher.Course', {
 
 });
 
+Ext.define('Youngshine.view.teacher.Edit', {
+    extend:  Ext.form.Panel ,
+    xtype: 'teacher-edit',
+
+    config: {
+		record: null,
+		
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '修改教师资料',
+			items: [{
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
+				ui: 'confirm',
+				text: '保存',
+				action: 'save'
+			}]
+		},{
+			xtype: 'fieldset',
+			defaults: {
+				labelWidth: 65,
+				xtype: 'textfield'
+			},
+			//title: '个人资料',
+			items: [{
+				xtype: 'textfield',
+				name: 'teacherName', //绑定后台数据字段
+				label: '姓名',
+				clearIcon: false
+			},{
+				xtype: 'selectfield',
+				name: 'gender', 
+				autoSelect: false,
+				label: '性别',
+				options: [
+				    {text: '男', value: '男'},
+				    {text: '女', value: '女'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
+			},{
+				xtype: 'selectfield',
+				name: 'subjectID', 
+				label: '学科',
+				autoSelect: false,
+				options: [
+				    {text: '数学', value: 1},
+				    {text: '物理', value: 2},
+				    {text: '化学', value: 3}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{	
+				xtype: 'textfield',
+				name: 'phone', //绑定后台数据字段
+				label: '电话',
+				clearIcon: false,
+				component: { // 显示数字键
+					xtype: 'input',
+					type: 'tel'
+				},
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						//window.scrollTo(0,0);
+					}
+				}
+			},{	
+				xtype: 'textfield',
+				name: 'note', //绑定后台数据字段
+				label: '备注',
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						//window.scrollTo(0,0);
+					}
+				}
+			},{
+				xtype: 'hiddenfield',
+				name: 'teacherID' //修改的unique			
+			}]	
+		}],		
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'		
+		}]
+	},
+
+	onSave: function(){
+		//window.scrollTo(0,0);
+		var me = this;
+		
+		var teacherID = this.down('hiddenfield[name=teacherID]').getValue()
+			teacherName = this.down('textfield[name=teacherName]').getValue().trim(),
+			gender = this.down('selectfield[name=gender]').getValue(),
+			subjectID = this.down('selectfield[name=subjectID]').getValue(),
+			phone = this.down('textfield[name=phone]').getValue().trim(),
+			note = this.down('textfield[name=note]').getValue().trim()
+	
+		if (teacherName == ''){
+			Ext.toast('姓名不能空白',3000); return;
+		}
+		if (phone == ''){
+			Ext.toast('电话不能空白',3000); return;
+		}
+		var obj = {
+			teacherName: teacherName,
+			gender: gender,
+			subjectID: subjectID,
+			phone: phone,
+			note: note,
+			teacherID: teacherID //修改
+		};
+		console.log(obj)
+		me.fireEvent('save', obj,me);
+		// 前端显示更新
+		me.getRecord().set('teacherName',teacherName)
+	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	}
+	
+});
+
 /**
  * Displays a list of 教师
  */
@@ -77336,10 +78818,12 @@ Ext.define('Youngshine.view.teacher.List', {
 		store: 'Teacher',
         //itemHeight: 89,
         //emptyText: '学生列表',
-		//disableSelection: true,
+		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div><span>{teacherName}</span><span style="float:right;color:#888;">{subjectName}</span></div>'
+            '<div>{teacherName}</div>'+
+			'<div style="font-size:0.8em;"><span style="color:#888;">{subjectName}</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
         ],
 		
     	items: [{

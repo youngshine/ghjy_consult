@@ -96,7 +96,7 @@ Ext.define('Youngshine.view.Menu', {
 		this.fireEvent('study') //安排课程及教师
 	},
 	onPricelist: function(){
-		//this.fireEvent('pricelist') //课时套餐的校区价格设置
+		this.fireEvent('pricelist') //课时套餐的校区价格设置
 	},
 	onNews: function(){
 		var active = Ext.Viewport.getActiveItem();

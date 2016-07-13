@@ -41,7 +41,7 @@ Ext.define('Youngshine.view.Login', {
     			xtype : 'passwordfield',
 				itemId : 'psw',
 				label : '密码',
-				value: '123456',
+				//value: '123456',
 			},{
 				itemId: 'school',
     			label: '校区',

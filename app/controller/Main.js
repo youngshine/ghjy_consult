@@ -86,7 +86,7 @@ Ext.define('Youngshine.controller.Main', {
 		this.getApplication().getController('Study').ordersList()		 
 	},
 	menuPricelist: function(){
-		//this.getApplication().getController('Teacher').teacherList()		 
+		this.getApplication().getController('Pricelist').pricelistList()		 
 	},
 	
 	// 用户注销退出，来自Main控制器，reset

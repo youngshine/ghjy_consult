@@ -6,6 +6,8 @@ Ext.define('Youngshine.model.Teacher', {
         fields: [
 			{name: 'teacherID'}, 
 			{name: 'teacherName'}, 
+			{name: 'gender'}, 
+			{name: 'phone'}, 
 			{name: 'subjectID'},	
 			{name: 'subjectName'}, 
 			{name: 'note'}, 

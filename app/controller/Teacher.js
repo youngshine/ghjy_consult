@@ -6,18 +6,23 @@ Ext.define('Youngshine.controller.Teacher', {
         refs: {
            	teacher: 'teacher',
 			teacheraddnew: 'teacher-addnew',
+			teacheredit: 'teacher-edit',
 			teachercourse: 'teacher-course',
 			teachercourseassess: 'teacher-course-assess'
         },
         control: {
 			teacher: {
 				addnew: 'teacherAddnew', //itemtap
-				itemtap: 'teacherItemtap',
+				itemtap: 'teacherItemtap', //包括修改按钮
 				itemswipe: 'teacherItemswipe' //delete
 			},
 			teacheraddnew: {
 				save: 'teacheraddnewSave', 
 				cancel: 'teacheraddnewCancel'
+			},
+			teacheredit: {
+				save: 'teachereditSave', 
+				cancel: 'teachereditCancel'
 			},
 			teachercourse: {
 				back: 'teachercourseBack',
@@ -40,6 +45,8 @@ Ext.define('Youngshine.controller.Teacher', {
 			"schoolID": localStorage.schoolID
 		}		
 		var store = Ext.getStore('Teacher'); 
+		store.removeAll()
+		store.clearFilter() 
 		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
 			'readTeacherList.php?data=' + JSON.stringify(obj));
 		store.load({
@@ -54,6 +61,15 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 显示教师上课课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
+		// 点击‘修改编辑’
+		if(e.target.className == 'edit'){
+			me.teacheredit = Ext.create('Youngshine.view.teacher.Edit');
+			Ext.Viewport.add(me.teacheredit); //否则build后无法显示
+			Ext.Viewport.setActiveItem(me.teacheredit); //show()?
+			console.log(record.data)
+			me.teacheredit.setRecord(record)
+			return
+		}
 
 		if(!me.teachercourse){
 			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
@@ -167,6 +183,30 @@ Ext.define('Youngshine.controller.Teacher', {
 		    }
 		});
 	},
+	// 取消添加
+	teachereditCancel: function(oldView){		
+		var me = this; 
+		oldView.destroy()
+		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.teacher);
+	},	
+	teachereditSave: function( obj,oldView )	{
+    	var me = this; 
+		console.log(obj)
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateTeacher.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; JSON.parse()
+				console.log(result)
+				oldView.destroy()
+				//Ext.Viewport.setActiveItem(me.student);
+				//rec.set(obj) //前端更新显示
+				Ext.toast('修改成功',3000)
+		    }
+		});
+	},
+	
 	// 返回
 	teachercourseBack: function(oldView){		
 		var me = this;

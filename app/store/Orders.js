@@ -15,8 +15,8 @@ Ext.define('Youngshine.store.Orders', {
 			}
         },
         sorters: [{ // 最新发布的线路排在顶部，不起作用？
-			property: 'pass',
-			//direction: "DESC"
+			property: 'created',
+			direction: "DESC"
 		}]
     }
 });

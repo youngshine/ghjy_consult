@@ -11,10 +11,12 @@ Ext.define('Youngshine.view.teacher.List', {
 		store: 'Teacher',
         //itemHeight: 89,
         //emptyText: '学生列表',
-		//disableSelection: true,
+		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div><span>{teacherName}</span><span style="float:right;color:#888;">{subjectName}</span></div>'
+            '<div>{teacherName}</div>'+
+			'<div style="font-size:0.8em;"><span style="color:#888;">{subjectName}</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
         ],
 		
     	items: [{

@@ -1,24 +1,14 @@
-Ext.define('Youngshine.view.student.Addnew', {
+Ext.define('Youngshine.view.student.Edit', {
     extend: 'Ext.form.Panel',
-    xtype: 'student-addnew',
+    xtype: 'student-edit',
 
     config: {
-        /*
-		showAnimation: {
-            type: "slideIn",
-            direction: "left",
-            duration: 200
-        },
-        hideAnimation: {
-            type: "slideOut",
-            direction: "right",
-            duration: 200
-        }, */
+		record: null,
 		
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增学生',
+			title: '修改学生资料',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -84,7 +74,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 				listeners: {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
-						this.up('panel').getScrollable().getScroller().scrollTo(0,80);
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
 						//window.scrollTo(0,0);
 					}
 				}
@@ -103,7 +93,10 @@ Ext.define('Youngshine.view.student.Addnew', {
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
 						//window.scrollTo(0,0);
 					}
-				}		
+				}
+			},{
+				xtype: 'hiddenfield',
+				name: 'studentID' //修改的unique			
 			}]	
 		}],		
 	
@@ -118,25 +111,12 @@ Ext.define('Youngshine.view.student.Addnew', {
 		}]
 	},
 
-	/* it's bad to use listeners config obj in Ext.define(), use it in instanialiing create()
-	initialize: function(){	
-        this.callParent(arguments);	
-		this.element.on({
-            scope : this,
-            swipe : 'onElSwipe' //not use anonymous functions
-        });
-	},  
-    onElSwipe : function(e) {
-        if(e.direction=='right'){
-        	this.onBack(); //destroy();
-        };     
-    }, */
-
 	onSave: function(){
 		//window.scrollTo(0,0);
 		var me = this;
 		
-		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
+		var studentID = this.down('hiddenfield[name=studentID]').getValue()
+			studentName = this.down('textfield[name=studentName]').getValue().trim(),
 			gender = this.down('selectfield[name=gender]').getValue(),
 			grade = this.down('selectfield[name=grade]').getValue(),
 			phone = this.down('textfield[name=phone]').getValue().trim(),
@@ -154,10 +134,12 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
-			consultID: localStorage.consultID //归属哪个咨询师
+			studentID: studentID //修改
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);
+		// 前端显示更新
+		me.getRecord().set('studentName',studentName)
 	},
 	onCancel: function(btn){
 		var me = this; 

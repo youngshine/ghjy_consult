@@ -25,7 +25,7 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Orders'
+        'Main','Student','Teacher','Pricelist','Orders'
     ],
     stores: [
     	'Student','Teacher','Course','Orders','Study','Zsd','Pricelist'
