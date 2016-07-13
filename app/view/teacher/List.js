@@ -28,8 +28,6 @@ Ext.define('Youngshine.view.teacher.List', {
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
-					//btn.up('main').onMenu()
-					//console.log(Youngshine.app.getApplication().getController('Main').getLogin())
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
@@ -66,8 +64,10 @@ Ext.define('Youngshine.view.teacher.List', {
 				listeners:{
 			        toggle: function(container, button, pressed){
 			            console.log(pressed)
-						if(pressed) //toggle会运行两次
-							button.up('list').onToggle()
+						if(pressed){
+							button.up('list').onToggle(button)
+						} //toggle会运行两次
+							
 			        }
 				} //*/
 			}]	
@@ -87,12 +87,18 @@ Ext.define('Youngshine.view.teacher.List', {
     },
 	
 	// 会运行两次,why"""""????? api中demo不会啊"
-	onToggle: function(container, button, pressed){
-		var me = this;
+	onToggle: function(selBtn){
+		var me = this; 
 		//console.log(seg.getPressedButtons()[0].getText())
 		//console.log(this.down('segmentedbutton').getPressedButtons()[0].getText())
-		var segbtn = this.down('segmentedbutton');
-		//console.log(segbtn)
-		me.fireEvent('segmentedbuttonToggle', segbtn,me);
+		//var segbtn = this.down('segmentedbutton');
+		console.log(selBtn.getText())
+		//me.fireEvent('segmentedbuttonToggle', segbtn,me);
+
+		var subject = selBtn.getText(),
+			store = me.getStore(); //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('subjectName', subject, true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	} 
 });

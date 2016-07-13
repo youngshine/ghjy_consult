@@ -52,7 +52,7 @@ Ext.define('Youngshine.view.Menu', {
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
-				this.up('menu').onStudy()
+				this.up('menu').onKcb()
 			}	
 		},{
 			text: '课时套餐价格',
@@ -92,8 +92,8 @@ Ext.define('Youngshine.view.Menu', {
 	onOrders: function(){
 		this.fireEvent('orders') //购买课时套餐
 	},
-	onStudy: function(){
-		this.fireEvent('study') //安排课程及教师
+	onKcb: function(){
+		this.fireEvent('kcb') //安排课程及教师
 	},
 	onPricelist: function(){
 		this.fireEvent('pricelist') //课时套餐的校区价格设置
