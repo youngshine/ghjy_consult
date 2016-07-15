@@ -16,7 +16,9 @@ Ext.application({
     requires: [
         'Ext.MessageBox',
 		'Ext.Toast',
-		'Ext.data.JsonP'
+		'Ext.data.JsonP',
+		//'Ext.chart.*',
+		//'Ext.draw.*'
     ],
 	
 	dataUrl: 'http://www.xzpt.org/app/consult/script/', //服务端,全局变量大写???
@@ -25,10 +27,10 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Pricelist','Orders','Kcb'
+        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess'
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study','Zsd','Pricelist'
+    	'Student','Teacher','Course','Orders','Study','Zsd','Pricelist','Assess'
     ],
 
     icon: {

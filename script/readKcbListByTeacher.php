@@ -7,7 +7,7 @@ header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
 header('Access-Control-Allow-Origin: *'); // 跨域问题
 //header('Access-Control-Allow-Headers: X-Requested-With');
 
-require_once('db/database_connection.php');
+	require_once('db/database_connection.php');
 
 	$teacherID = $_REQUEST['teacherID'];
     $sql = "SELECT teach_weekday,teach_timespan FROM 

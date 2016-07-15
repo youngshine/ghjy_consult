@@ -39,8 +39,16 @@ Ext.define('Youngshine.view.Menu', {
 			}
 			//iconCls: 'compose'
 		},{
-			text: '购买课时',
-			iconCls: 'action',
+			text: '水平测试',
+			iconCls: 'compose',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAssess()
+			}
+		},{
+			text: '购买课时套餐',
+			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
@@ -48,7 +56,7 @@ Ext.define('Youngshine.view.Menu', {
 			}	
 		},{
 			text: '排课',
-			iconCls: 'compose',
+			iconCls: 'action',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
@@ -88,6 +96,9 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	onTeacher: function(){
 		this.fireEvent('teacher')
+	},
+	onAssess: function(){
+		this.fireEvent('assess') //测评，报名前
 	},
 	onOrders: function(){
 		this.fireEvent('orders') //购买课时套餐

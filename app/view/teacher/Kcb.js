@@ -30,9 +30,9 @@ Ext.define('Youngshine.view.teacher.Kcb',{
 			scrollable: 'vertical',
 			itemId: 'my_show',
 			tpl: [
-				'<div><strong>教师课程表</strong></div><hr>',
-				'<div>教师：{teacherName}</div> <br>',
-				'<div>课程：<br>{kcb}</div> <br>',
+				'<div><strong>教师课程表</strong>',
+				'<span style="float:right;color:#888;">{teacherName}</span></div><hr>',
+				'<div>{kcb}</div>',
 			].join(''),
 			flex: 1 
 			/*},{	

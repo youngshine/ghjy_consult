@@ -3,17 +3,14 @@ Ext.define('Youngshine.view.teacher.Course', {
     extend: 'Ext.dataview.List',
 	xtype: 'teacher-course',
 
-    //id: 'courseList',
-
     config: {
-        layout: 'fit',
+        //layout: 'fit',
 		store: 'Course',
-		disableSelection: true,
         //itemHeight: 89,
         //emptyText: '－－－空白－－－',
-		//disableSelection: true,
+		disableSelection: true,
         itemTpl: [
-			'<div style="color:#888;font-size:0.9em;"><dpsn>{fullDate}</span>'+
+			'<div style="color:#888;font-size:0.9em;"><span>{fullDate}</span>'+
 			'<span style="float:right;">{studentName}</span></div>'+
 			'<div>{zsdName}</div>'
         ],
@@ -28,19 +25,27 @@ Ext.define('Youngshine.view.teacher.Course', {
 				text : '返回',
 			}]
 		},{
-			xtype: 'label',
+    		xtype: 'searchfield',
+			scrollDock: 'top',
 			docked: 'top',
-			html: '',
-			itemId: 'teacher',
-			style: 'text-align:center;color:#888;font-size:0.9em;margin:5px;'
+			placeHolder: 'search...',
+			action: 'search'
     	}],
 		
 		listeners: [{
 			delegate: 'button[action=back]',
 			event: 'tap',
-			fn: 'onBack'		
-		}]
-		
+			fn: 'onBack'
+		},{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'				
+		}]	
 		//selectedRecord: null,
     },
 	
@@ -48,6 +53,18 @@ Ext.define('Youngshine.view.teacher.Course', {
 		var me = this;
 		me.fireEvent('back',me);
 	},
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		var store = this.getStore();
+		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		store.clearFilter();
+        store.filter('zsdName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = this.getStore();
+		store.clearFilter();
+	},	
 	
     //use initialize method to swipe back 右滑返回
     initialize : function() {

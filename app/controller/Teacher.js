@@ -108,10 +108,10 @@ Ext.define('Youngshine.controller.Teacher', {
 
 		if(!me.teachercourse){
 			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
-			Ext.Viewport.add(me.teachercourse)
 		}		
 		me.teachercourse.setRecord(record); //带入当前知识点
-		me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
+		//me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
+		me.teachercourse.down('toolbar').setTitle(record.data.teacherName+'老师上课记录')
 		
 		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
 		// 预先加载的数据
@@ -119,12 +119,15 @@ Ext.define('Youngshine.controller.Teacher', {
 			"teacherID": record.data.teacherID,
 		}
 		var store = Ext.getStore('Course'); 
+		store.removeAll()
+		store.clearFilter()
 		store.getProxy().setUrl(this.getApplication().dataUrl + 
 			'readCourseList.php?data='+JSON.stringify(obj) );
 		store.load({ //异步async
 			callback: function(records, operation, success){
 				Ext.Viewport.setMasked(false);
 				if (success){
+					Ext.Viewport.add(me.teachercourse) // build?
 					Ext.Viewport.setActiveItem(me.teachercourse);
 				}else{
 					Ext.toast(result.message,3000);
@@ -245,7 +248,9 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 返回
 	teachercourseBack: function(oldView){		
 		var me = this;
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		//oldView.destroy()	
+		console.log(me.teacher)	
+		//Ext.Viewport.remove(me.teachercourse); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},
 	// 显示该堂课时的家长评价
@@ -263,7 +268,8 @@ Ext.define('Youngshine.controller.Teacher', {
 		    success: function(response){
 				var ret = JSON.parse(response.responseText)
 				console.log(response)
-				Ext.Viewport.add(me.teachercourseassess); //否则build后无法显示
+				//add,否则build后无法显示
+				Ext.Viewport.add(me.teachercourseassess);
 				me.teachercourseassess.down('panel[itemId=my_show]').setData(ret)
 				me.teachercourseassess.show(); 	         
 		    }

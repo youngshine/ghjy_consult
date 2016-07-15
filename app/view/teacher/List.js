@@ -6,8 +6,6 @@ Ext.define('Youngshine.view.teacher.List', {
 	xtype: 'teacher',
 
     config: {
-		record: null, //父窗口记录参数传递
-		
 		store: 'Teacher',
         //itemHeight: 89,
         //emptyText: '学生列表',

@@ -14,8 +14,7 @@ Ext.define('Youngshine.view.student.List', {
         //emptyText: '学生列表',
 		disableSelection: true,
         itemTpl: [
-            '<div>{studentName}</div>'+
-			'<div style="font-size:0.8em;"><span style="color:#888;">{grade}</span>'+
+            '<div>{studentName}<span style="color:#888;">［{grade}］</span>'+
 			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
         ],
 		

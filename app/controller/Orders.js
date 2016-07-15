@@ -242,7 +242,6 @@ Ext.define('Youngshine.controller.Orders', {
 		console.log(record)
 		if(!me.ordersstudy){
 			me.ordersstudy = Ext.create('Youngshine.view.orders.Study')
-			me.ordersstudy.setRecord(record); //传递父表记录参数
 			Ext.Viewport.add(me.ordersstudy)
 		}		
 		me.ordersstudy.setRecord(record); //带入当前知识点
@@ -278,7 +277,11 @@ Ext.define('Youngshine.controller.Orders', {
 		me.studyzsd = Ext.create('Youngshine.view.orders.study.Zsd');
 		Ext.Viewport.add(me.studyzsd); //否则build后无法显示
 		me.studyzsd.show(); // overlay show
+		
 		// 选择学科，才显示知识点
+		var store = Ext.getStore('Zsd');
+		store.removeAll()
+		store.clearFilter()
 	},
 	// 向左滑动，删除
 	ordersstudyItemswipe: function( list, index, target, record, e, eOpts ){

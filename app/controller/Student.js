@@ -7,6 +7,7 @@ Ext.define('Youngshine.controller.Student', {
            	student: 'student',
 			studentaddnew: 'student-addnew',
 			studentedit: 'student-edit',
+			studentstudy: 'studentstudy',
 			studentshow: 'student-show'
         },
         control: {
@@ -113,12 +114,43 @@ Ext.define('Youngshine.controller.Student', {
 			me.studentedit.setRecord(record)
 			return
 		}
-		
+/*		
 		me.studentshow = Ext.create('Youngshine.view.student.Show');
 		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
 		me.studentshow.down('panel[itemId=my_show]').setData(record.data)
 		me.studentshow.show(); 
 		me.studentshow.setRecord(record); // 当前记录参数
+*/
+		me.studentstudy = Ext.create('Youngshine.view.student.Study');
+		Ext.Viewport.add(me.studentstudy); //否则build后无法显示
+		//me.teacherkcb.show()
+		//Ext.Viewport.setActiveItem(me.teacherkcb); //show()?
+		console.log(record.data.studentID)
+		
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'readStudyListByStudent.php',
+		    params: {
+				studentID: record.data.studentID
+		    },
+		    success: function(response){
+				var arr = JSON.parse(response.responseText)
+				console.log(arr)
+				var content = ''
+				Ext.Array.each(arr, function(name, index) {
+					content += name.zsdName + '<br>' + 
+						'<span style="font-size:0.8em;color:#888;">' + 
+						name.times + '课时；' +
+						name.teacherName + '老师' + '</span><br>'
+				});		
+				console.log(content) 
+				var obj = {
+					studentName: record.data.studentName,
+					kcb: content
+				}  
+				me.studentstudy.down('panel[itemId=my_show]').setData(obj)
+				me.studentstudy.show();      
+		    }
+		});		
 	},
 
 	studentAddnew: function(win){		
