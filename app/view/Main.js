@@ -15,7 +15,7 @@ Ext.define('Youngshine.view.Main', {
 			docked: 'top',
 			//style: 'background:#74B446', //flat
 			//ui: 'green',
-			title: '首页',
+			title: '根号教育－咨询端',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,

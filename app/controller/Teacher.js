@@ -141,7 +141,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		if(e.direction !== 'left') return false
 
 		var me = this;
-		list.select(index,true); // 高亮当前记录
+		list.select(index,true); // 高亮当前记录，必须disableSelection=true
 		var actionSheet = Ext.create('Ext.ActionSheet', {
 			items: [{
 				text: '删除当前行',
@@ -199,6 +199,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 取消添加
 	teacheraddnewCancel: function(oldView){		
 		var me = this;
+		//oldView.destroy()
 		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
@@ -213,7 +214,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		    success: function(result){
 		        console.log(result)
 		        //record.set('fullEndtime','')
-				oldView.destroy()
+				//oldView.destroy()
 				Ext.Viewport.setActiveItem(me.teacher);
 				obj.teacherID = result.data.teacherID
 				//obj.created = new Date();

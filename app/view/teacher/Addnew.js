@@ -33,8 +33,8 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 			},{
 				xtype: 'selectfield',
 				name: 'gender', 
-				autoSelect: false,
 				label: '性别',
+				autoSelect: false,
 				options: [
 				    {text: '男', value: '男'},
 				    {text: '女', value: '女'}
@@ -57,12 +57,26 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
+				},
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
 				}	
 			},{	
 				xtype: 'textfield',
 				name: 'note', //绑定后台数据字段
 				label: '备注',
-				clearIcon: false	
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}	
 			}]	
 		}],		
 	
@@ -91,7 +105,7 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 			Ext.toast('姓名不能空白',3000); return;
 		}
 		if (phone == ''){
-			Ext.toast('电话不能空白',3000); return;
+			Ext.toast('请填写电话',3000); return;
 		}
 		if (gender == null){
 			Ext.toast('请选择教师性别',3000); return;

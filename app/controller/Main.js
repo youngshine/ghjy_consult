@@ -46,7 +46,7 @@ Ext.define('Youngshine.controller.Main', {
 					me.mainview = Ext.create('Youngshine.view.Main');
 					Ext.Viewport.add(me.mainview)
 					Ext.Viewport.setActiveItem(me.mainview);
-					me.mainview.down('toolbar').setTitle(localStorage.schoolName)		
+					//me.mainview.down('toolbar').setTitle(localStorage.schoolName)		
 				}else{
 					Ext.toast(result.message,3000);
 				}
@@ -57,6 +57,7 @@ Ext.define('Youngshine.controller.Main', {
 	menuNav: function(){
 		var me = this;
 		var menu = Ext.create('Youngshine.view.Menu')
+		menu.down('button[action=school]').setText(localStorage.schoolName)
 		Ext.Viewport.setMenu(menu, {
 			side: 'left',
 			cover: false //reveal: true
@@ -72,7 +73,7 @@ Ext.define('Youngshine.controller.Main', {
 		me.mainview = Ext.create('Youngshine.view.Main');
 		Ext.Viewport.add(me.mainview)
 		Ext.Viewport.setActiveItem(me.mainview);
-		me.mainview.down('toolbar').setTitle(localStorage.schoolName)	
+		//me.mainview.down('toolbar').setTitle(localStorage.schoolName)	
 	},
 	menuStudent: function(){
 		this.getApplication().getController('Student').studentList()		 

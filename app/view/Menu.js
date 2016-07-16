@@ -12,7 +12,8 @@ Ext.define('Youngshine.view.Menu', {
 			style: {
 				color: '#fff',
 				'font-size': '0.8em'
-			}
+			},
+			action: 'school'
 		},{	
 			text: '咨询首页',
 			iconCls: 'home',
