@@ -1,88 +1,63 @@
 Ext.define('Youngshine.view.assess.Chart', {
-    extend: 'Ext.Container',
+    extend: 'Ext.Panel',
     xtype: 'assess-chart',
-	
+
     requires: [
-        'Ext.chart.PolarChart',
-        'Ext.chart.series.Pie'
+        'Ext.chart.Chart',
+        'Ext.chart.series.Bar',
+        'Ext.chart.axis.Category'
     ],
 
     config: {
-        layout: {
-            type: 'hbox',
-            align: 'stretch'
-        },
-        items: [
-            {
-                flex: 1,
-                id: 'leagueCmp',
-                xtype: 'component',
-                style: 'padding-left: 10px;',
-                html: '<div class="finance-header">My Cash</div>' +
-                    '<div class="finance-detail">Spending Last 30 Days</div>'
+        cls: 'card1',
+        layout: 'fit',
+        items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '历年考点雷达图表',
+			items: [{
+				ui : 'back',
+				action: 'back',
+				text : '返回',
+				handler: function(){
+					//this.up('list').onBack()
+					this.up('panel').destroy()
+				}
+			}]	
+		},{
+            xtype: 'chart',
+            store: {
+		        fields: ['id', 'amount', 'name'],
+		        data: [
+		            {id: 1, amount: 100, name: 'Other'},
+		            {id: 2, amount: 250, name: 'Pharmacology'},
+		            {id: 3, amount: 275, name: 'Energy'},
+		            {id: 4, amount: 500, name: 'Textiles'},
+		            {id: 5, amount: 750, name: 'Agriculture'},
+		            {id: 6, amount: 900, name: 'Technology'}
+		        ]	
             },
-            {
-                flex: 1,
-                height: '50%',
-                xtype: 'polar',
-                store: 'Finance',
+            background: 'white',
+            flipXY: true,
 
-                innerPadding: 5,
-                colors: [
-                    "rgba(37, 231, 78, 1)",
-                    "rgba(38, 230, 166, 1)",
-                    "rgba(49, 219, 230, 1)",
-                    "rgba(75, 199, 242, 1)",
-                    "rgba(28, 165, 252, 1)",
-                    "rgba(25, 155, 225, 1)",
-                    "rgba(19, 117, 231, 1)"
-                ],
-                series: [
-                    {
-                        type: 'pie',
-                        field: 'pct'
-                    }
-                ]
-            },
-            {
-                flex: 2,
-                xtype: 'list',
-                store: 'Finance',
-                itemTpl: [
-                    '<div class= "coloredRectangle"></div>',
-                    '<div style="margin-left: 40px;">{catagory}',
-                        '<div class="finance-value">{amount}</div><div class="finance-pct">{pct}%</div>',
-                    '</div>'
-                ]
-            }
-        ]
-    },
+            colors: [
+                "blue"
+            ],
 
-    initialize: function() {
-        this.callParent();
-
-        this.chart = this.down('polar');
-        this.list = this.down('list');
-
-        this.on({
-            painted: 'colorListItemRectangles',
-            scope: this
-        });
-    },
-
-    colorListItemRectangles: function () {
-        var me = this,
-            chart = me.chart,
-            list = me.list,
-            colors = chart.getColors(),
-            i = 0;
-
-        Ext.Array.each(list.listItems, function (item) {
-            item.element.down('.coloredRectangle').setStyle({
-                backgroundColor: colors[i % colors.length]
-            });
-
-            i++;
-        });
+            series: [
+                {
+                    type: 'bar',
+                    xField: 'name',
+                    yField: ['amount']
+                }
+            ],
+            axes: [
+                {
+                    type: 'category',
+                    position: 'left',
+                    fields: 'name'
+                }
+            ]
+        }]
     }
 });

@@ -11,7 +11,8 @@ Ext.define('Youngshine.controller.Pricelist', {
 			pricelist: {
 				addnew: 'pricelistAddnew', //itemtap
 				itemtap: 'pricelistItemtap',
-				itemswipe: 'pricelistItemswipe' //delete
+				itemswipe: 'pricelistItemswipe', //delete
+				itemtaphold: 'pricelistItemtaphold' //delete
 			},
 			pricelistaddnew: {
 				save: 'pricelistaddnewSave', 
@@ -53,12 +54,12 @@ Ext.define('Youngshine.controller.Pricelist', {
 
 	},
 	// 向左滑动，删除
-	pricelistItemswipe: function( list, index, target, record, e, eOpts ){
+	pricelistItemtaphold: function( list, index, target, record, e, eOpts ){
 		console.log(e);console.log(record)
-		if(e.direction !== 'left') return false
+		//if(e.direction !== 'left') return false
 
 		var me = this;
-		list.select(index,true); // 高亮当前记录 disableSelection
+		//list.select(index,true); // 高亮当前记录 disableSelection
 		var actionSheet = Ext.create('Ext.ActionSheet', {
 			items: [{
 				text: '删除当前行',
@@ -74,7 +75,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 				handler: function(){
 					actionSheet.hide();
 					Ext.Viewport.remove(actionSheet,true); //移除dom
-					list.deselect(index); // cancel高亮当前记录
+					//list.deselect(index); // cancel高亮当前记录
 				}
 			}]
 		});

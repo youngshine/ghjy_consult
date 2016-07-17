@@ -7,7 +7,8 @@ Ext.define('Youngshine.controller.Assess', {
            	assess: 'assess',
 			assessaddnew: 'assess-addnew',
 			student: 'assess-student',
-			assesschart: 'assess-chart',
+			assesstopic: 'assess-topic',
+			zsd: 'topic-zsd'
         },
         control: {
 			assess: {
@@ -24,6 +25,16 @@ Ext.define('Youngshine.controller.Assess', {
 				//search: '', //itemtap
 				itemtap: 'studentItemtap'
 			},
+			'assess-topic': {
+				back: 'assesstopicBack',
+				addnew: 'assesstopicAddnew',
+				//save: '',
+				hist: 'assesstopicHist', //历年考点雷达图
+				itemtap: 'assesstopicItemtap', //答案及评分
+			},
+			'topic-zsd': { //zsd
+				choose: 'zsdChoose' // itemtap
+			}
         }
     },
 
@@ -59,24 +70,39 @@ Ext.define('Youngshine.controller.Assess', {
 	assessItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		console.log(e.target.className)
-		
 		//if(e.target.className == 'kcb'){
-			me.kcbteacher = Ext.create('Youngshine.view.assess.Teacher');
-			Ext.Viewport.add(me.kcbteacher); //否则build后无法显示
+			me.assesstopic = Ext.create('Youngshine.view.assess.Topic');
+			//Ext.Viewport.add(me.assesstopic); //否则build后无法显示
 			//me.studykcb.show()
-			console.log(record.data)
-			me.kcbteacher.setRecord(record)
-			
-			// 任课教师selectfield，没有store,这样才能显示名字
-			var selectBox = me.kcbteacher.down('selectfield[name=teacherID]')
-			console.log(selectBox)
-			selectBox.setOptions([
-			    {teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
-			    //{text: 'Third Option',  value: 'third'}
-			])
-			selectBox.setValue(record.data.teacherID);
-			console.log(selectBox.getValue())
+			me.assesstopic.setParentRecord(record)
+			var subject = record.data.subjectName + '｜' + record.data.gradeName + record.data.semester
+			me.assesstopic.down('toolbar').setTitle('测评：'+subject)
 		//}	
+		
+		// 获取当前测评记录
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
+		var obj = {
+			"assessID": record.data.assessID,
+			"subjectID": record.data.subjectID, //题目按学科分3个表
+		};
+		console.log(obj)
+		var store = Ext.getStore('Topic'); 
+		store.removeAll();
+		store.clearFilter()
+        var url = this.getApplication().dataUrl + 
+			'readTopicList.php?data=' + JSON.stringify(obj);
+		store.getProxy().setUrl(url);
+        store.load({
+			callback: function(records, operation, success){
+				Ext.Viewport.setMasked(false);
+				if (success){
+					Ext.Viewport.add(me.assesstopic) // build?
+					Ext.Viewport.setActiveItem(me.assesstopic);
+				}else{
+					Ext.toast(result.message,3000);
+				};
+			} 
+        }); 
 	},	
 	// 向左滑动，删除
 	assessItemswipe: function( list, index, target, record, e, eOpts ){
@@ -187,6 +213,141 @@ Ext.define('Youngshine.controller.Assess', {
 		me.assessaddnew.down('textfield[name=studentName]')
 			.setValue(record.data.studentName+'［'+record.data.grade+'］')
 		me.assessaddnew.down('hiddenfield[name=studentID]').setValue(record.data.studentID)
+	},
+	
+	// 返回
+	assesstopicBack: function(oldView){		
+		var me = this;
+		//oldView.destroy()	
+		console.log(me.assess)	
+		//Ext.Viewport.remove(me.teachercourse); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.assess);
+	},
+	// 答案及对错评分
+	assesstopicItemtap: function(list, index, target, record, e, eOpts){		
+		var me = this;
+		if(e.target.className=='answer'){
+			answer()
+		}
+		// 评分
+		// 开始上课 ，small window-overlay
+		function answer(){
+			list.overlay = Ext.Viewport.add({
+				xtype: 'panel',
+				modal: true,
+				hideOnMaskTap: true,
+				centered: true,
+				width: '80%',
+				height: 350,
+				scrollable: true,
+
+		        items: [{	
+		        	xtype: 'toolbar',
+		        	docked: 'top',
+		        	title: '答案',
+					ui: 'gray',
+					items: [{
+						text: '错误',
+						ui: 'decline',
+						handler: function(btn){
+							this.up('panel').onDone(0)
+						}
+					},{
+						xtype: 'spacer'
+					},{		
+						text : '正确',
+						ui: 'confirm',
+						handler: function(btn){
+							this.up('panel').onDone(1)
+						}	
+					}]
+				},{
+					xtype: 'component',
+					styleHtmlContent: true,
+					html: '做题结果：'+record.data.fullDone,
+					style: 'background:#eee;'
+				},{
+					xtype: 'component',
+					styleHtmlContent: true,
+					html: record.data.answer
+				}],	
+				
+				onDone: function(done){
+					var obj = {
+						"done": done,
+						"assesstopicID": record.data.assesstopicID
+					}
+					console.log(obj)
+					Ext.Ajax.request({
+						url: me.getApplication().dataUrl + 'updateTopicAssess.php',
+						params: obj,
+						success: function(response){				
+	
+						}
+					});
+				}
+			})
+			list.overlay.show()
+		}
+	},	
+	assesstopicAddnew: function(obj,oldView){		
+    	var me = this; 
+		me.zsd = Ext.create('Youngshine.view.assess.Zsd');
+		me.zsd.setParentRecord(obj)
+		Ext.Viewport.add(me.zsd); //否则build后无法显示
+		//me.topiczsd.show(); // overlay show
+		
+		// 当前学科年级学期的历年考试知识点hist
+		var store = Ext.getStore('Zsd'); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readZsdhistList.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				console.log(records)
+				me.zsd.show();
+				console.log(me.zsd.getParentRecord())
+			}   		
+		});	
+	},
+	// 选中测评年级学科知识点，添加其题目用于测评
+	zsdChoose: function( obj,oldView)	{
+    	var me = this; 
+		//list.hide()
+		
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'正在创建题目'});
+    	Ext.Ajax.request({			
+		    url: Youngshine.app.getApplication().dataUrl + 
+				'readTopicAndInsert.php',
+			//callbackKey: 'callback',
+			//timeout: 9000,
+			params: obj,
+			success: function(response){ // 服务器连接成功 
+				Ext.Viewport.setMasked(false);
+				var ret = JSON.parse(response.responseText);
+				console.log(ret)
+				Ext.getStore('Topic').insert(0,ret); //.load()
+			},
+		});
+	},
+	// 历年考点雷达图
+	assesstopicHist: function(obj)	{
+    	var me = this; 
+		var store = Ext.getStore('Zsdhist'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readZsdhistList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        console.log(records)
+				if (success){
+					//Ext.Viewport.setActiveItem(me.student);
+					me.assesshist = Ext.create('Youngshine.view.assess.PolarChart');
+					//Ext.Viewport.add(me.assesshist); //否则build后无法显示
+					me.assesshist.show(); // overlay show
+				};
+			}   		
+		});	
 	},
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */

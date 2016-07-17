@@ -31,15 +31,6 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onStudent()
 			}
 		},{
-			text: '教师',
-			iconCls: 'user',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onTeacher()
-			}
-			//iconCls: 'compose'
-		},{
 			text: '水平测试',
 			iconCls: 'compose',
 			handler: function(btn){
@@ -57,12 +48,20 @@ Ext.define('Youngshine.view.Menu', {
 			}	
 		},{
 			text: '排课',
-			iconCls: 'action',
+			iconCls: 'time',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onKcb()
 			}	
+		},{
+			text: '教师',
+			iconCls: 'user',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onTeacher()
+			}
 		},{
 			text: '课时套餐价格',
 			iconCls: 'info',

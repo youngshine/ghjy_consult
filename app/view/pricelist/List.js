@@ -2,19 +2,11 @@
  * Displays a list of 各个校区课时套餐价格
  */
 Ext.define('Youngshine.view.pricelist.List', {
-    extend: 'Ext.dataview.List',
+    extend: 'Ext.Panel',
 	xtype: 'pricelist',
 
     config: {
-        store: 'Pricelist',
-        //itemHeight: 89,
-        //emptyText: '学生列表',
-		disableSelection: true,
-		striped: true,
-        itemTpl: [
-            '<div>{title}</div>'
-        ],
-		
+		layout: 'fit',
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
@@ -35,30 +27,31 @@ Ext.define('Youngshine.view.pricelist.List', {
 				iconCls: 'add',
 				//text : '＋新增',
 				handler: function(){
-					this.up('list').onAddnew()
+					this.up('panel').onAddnew()
 				}		
 			}]
+		},{
+			xtype: 'dataview',
+			inline: true,
+	        store: 'Pricelist',
+	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;height:150px;">'+
+				'{title}</div>',
     	}],
+		
+		listeners: [{
+			delegate: 'dataview',
+			event: 'itemtaphold',
+			fn: 'onItemtaphold'
+		}]
     },
-/*	
-	initialize: function(){
-		this.callParent(arguments)
-		//this.on('itemtap',this.onItemtap)
-	},
-	
-	// 显示详情
-    onItemtap: function(list, index, item, record){
-		var vw = Ext.create('Youngshine.view.student.Show');
-		Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
-		vw.down('panel[itemId=my_show]').setData(record.data)
-		vw.show(); 
-		vw.setRecord(record); // 当前记录参数
-    }, */
+
     onAddnew: function(btn){
 		this.fireEvent('addnew',this)
 		//var vw = Ext.create('Youngshine.view.pricelist.Addnew');
 		//Ext.Viewport.add(vw); 
 		//vw.show(); //ext.setactive?
     },
-	
+    onItemtaphold: function(btn){
+		this.fireEvent('itemtaphold',this)
+    },
 });

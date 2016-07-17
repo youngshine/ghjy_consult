@@ -4,7 +4,7 @@ Ext.define('Youngshine.view.orders.study.Zsd',{
 	xtype: 'study-zsd',
 
 	config: {
-		emptyText: '选择学科',
+		//emptyText: '选择学科',
 		striped: true,
 		store: 'Zsd',
 		itemTpl: '<div><span>{zsdName}</span>'+
