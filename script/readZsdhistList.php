@@ -14,7 +14,7 @@ require_once('db/database_connection.php');
 	$semester = addslashes($arr->semester); //学期：上下	
 	$schoolID = $arr->schoolID; //加盟校区
 	
-	$sql = " SELECT a.*,b.subjectName,c.zsdName   
+	$sql = " SELECT a.*,ceil((a.Y1+a.Y2+a.Y3)/3) as Yavg,b.subjectName,c.zsdName   
 		From `ghjy_hist` a 
 		Join `ghjy_subject` b On a.subjectID=b.subjectID 
 		Join `ghjy_zsd` c On (a.zsdID=c.zsdID And a.subjectID=c.subjectID) 

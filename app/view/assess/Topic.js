@@ -96,7 +96,19 @@ Ext.define('Youngshine.view.assess.Topic', {
 		me.fireEvent('hist',obj, me);
 	},	
 	onReport: function(){
-		var me = this;
+		var me = this; 
 		if(me.getStore().getCount()==0) Ext.toast('尚无测评内容',3000)
+			
+		var obj = {
+			subjectID: me.getParentRecord().data.subjectID,
+			gradeID: me.getParentRecord().data.gradeID,
+			semester: me.getParentRecord().data.semester,
+			schoolID: localStorage.schoolID,
+			studentName: me.getParentRecord().data.studentName,
+			subjectName: me.getParentRecord().data.subjectName,
+			gradeName: me.getParentRecord().data.gradeName
+		} 
+		console.log(obj);
+		me.fireEvent('report',obj, me);	
 	}
 });

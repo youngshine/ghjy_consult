@@ -28,8 +28,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 		if(curView.xtype == 'pricelist') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
-		me.teacher = Ext.create('Youngshine.view.pricelist.List');
-		Ext.Viewport.add(me.teacher);
+		me.pricelist = Ext.create('Youngshine.view.pricelist.List');
 		//view.onGenreChange(); //默认
 		var obj = {
 			"schoolID": localStorage.schoolID
@@ -43,7 +42,8 @@ Ext.define('Youngshine.controller.Pricelist', {
 			callback: function(records, operation, success){
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
-					Ext.Viewport.setActiveItem(me.teacher);
+					Ext.Viewport.add(me.pricelist);
+					//Ext.Viewport.setActiveItem(me.pricelist);
 				};
 			} 
 		})	  			 
@@ -51,7 +51,6 @@ Ext.define('Youngshine.controller.Pricelist', {
 	// 显示教师上课课时
 	pricelistItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
-
 	},
 	// 向左滑动，删除
 	pricelistItemtaphold: function( list, index, target, record, e, eOpts ){
@@ -102,19 +101,20 @@ Ext.define('Youngshine.controller.Pricelist', {
 
 	pricelistAddnew: function(win){		
 		var me = this;
-
+		console.log(me.pricelistaddnew)
 		if(!me.pricelistaddnew){
 			me.pricelistaddnew = Ext.create('Youngshine.view.pricelist.Addnew');
-			Ext.Viewport.add(me.pricelistaddnew)
+			Ext.Viewport.add(me.pricelistaddnew); // build?
 		}
 		Ext.Viewport.setActiveItem(me.pricelistaddnew)
+		//me.pricelistaddnew.show()
 	},
 	
 	// 取消添加
-	pricelistaddnewCancel: function(oldView){		
+	pricelistaddnewCancel: function(){		
 		var me = this; 
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面	
-		Ext.Viewport.remove(oldView)
+		//Ext.Viewport.remove(me.pricelistaddnew)
+		//me.pricelistaddnew.destroy()
 		Ext.Viewport.setActiveItem(me.pricelist);
 	},	
 	pricelistaddnewSave: function( obj,oldView )	{

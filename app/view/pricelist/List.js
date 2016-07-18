@@ -51,7 +51,7 @@ Ext.define('Youngshine.view.pricelist.List', {
 		//Ext.Viewport.add(vw); 
 		//vw.show(); //ext.setactive?
     },
-    onItemtaphold: function(btn){
+    onItemtaphold: function(){
 		this.fireEvent('itemtaphold',this)
     },
 });

@@ -771,6 +771,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.model.Student": [],
   "Youngshine.model.Study": [],
   "Youngshine.model.Teacher": [],
+  "Youngshine.model.Topic": [],
   "Youngshine.model.Zsd": [],
   "Youngshine.store.Assess": [],
   "Youngshine.store.Course": [],
@@ -779,14 +780,20 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.store.Student": [],
   "Youngshine.store.Study": [],
   "Youngshine.store.Teacher": [],
+  "Youngshine.store.Topic": [],
   "Youngshine.store.Zsd": [],
+  "Youngshine.store.Zsdhist": [],
   "Youngshine.view.Login": [],
   "Youngshine.view.Main": [],
   "Youngshine.view.Menu": [],
   "Youngshine.view.assess.Addnew": [],
   "Youngshine.view.assess.Chart": [],
   "Youngshine.view.assess.List": [],
+  "Youngshine.view.assess.PolarChart": [],
+  "Youngshine.view.assess.ReportChart": [],
   "Youngshine.view.assess.Student": [],
+  "Youngshine.view.assess.Topic": [],
+  "Youngshine.view.assess.Zsd": [],
   "Youngshine.view.kcb.List": [],
   "Youngshine.view.kcb.Teacher": [],
   "Youngshine.view.member.Edit": [],
@@ -1776,6 +1783,7 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.model.Student": [],
   "Youngshine.model.Study": [],
   "Youngshine.model.Teacher": [],
+  "Youngshine.model.Topic": [],
   "Youngshine.model.Zsd": [],
   "Youngshine.store.Assess": [],
   "Youngshine.store.Course": [],
@@ -1784,7 +1792,11 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.store.Student": [],
   "Youngshine.store.Study": [],
   "Youngshine.store.Teacher": [],
+  "Youngshine.store.Topic": [],
   "Youngshine.store.Zsd": [],
+  "Youngshine.store.Zsdhist": [
+    "store.Zsdhist"
+  ],
   "Youngshine.view.Login": [
     "widget.login"
   ],
@@ -1803,8 +1815,20 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.assess.List": [
     "widget.assess"
   ],
+  "Youngshine.view.assess.PolarChart": [
+    "widget.assess-hist"
+  ],
+  "Youngshine.view.assess.ReportChart": [
+    "widget.assess-report"
+  ],
   "Youngshine.view.assess.Student": [
     "widget.assess-student"
+  ],
+  "Youngshine.view.assess.Topic": [
+    "widget.assess-topic"
+  ],
+  "Youngshine.view.assess.Zsd": [
+    "widget.topic-zsd"
   ],
   "Youngshine.view.kcb.List": [
     "widget.kcb"

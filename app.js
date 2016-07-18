@@ -17,11 +17,11 @@ Ext.application({
         'Ext.MessageBox',
 		'Ext.Toast',
 		'Ext.data.JsonP',
-		//'Ext.chart.*',
-		//'Ext.draw.*'
+		'Ext.chart.*',
+		'Ext.draw.*'
     ],
 	
-	dataUrl: 'http://www.xzpt.org/app/consult/script/', //服务端,全局变量大写???
+	dataUrl: 'http://www.xzpt.org/app/consult/script/', //ÊúçÂä°Á´Ø,ÂÖ®Â±ÄÂèòÈáèÂ§ßÂÜô???
 
     views: [
         //'Main'

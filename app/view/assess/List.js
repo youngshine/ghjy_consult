@@ -35,6 +35,7 @@ Ext.define('Youngshine.view.assess.List', {
 				ui : 'action',
 				action: 'addnew',
 				iconCls: 'add',
+				//text: '＋新增',
 				handler: function(){
 					this.up('list').onAddnew()
 				}		

@@ -30,7 +30,9 @@ Ext.define('Youngshine.controller.Assess', {
 				addnew: 'assesstopicAddnew',
 				//save: '',
 				hist: 'assesstopicHist', //历年考点雷达图
+				report: 'assesstopicReport', //报告
 				itemtap: 'assesstopicItemtap', //答案及评分
+				itemswipe: 'assesstopicItemswipe' //delete
 			},
 			'topic-zsd': { //zsd
 				choose: 'zsdChoose' // itemtap
@@ -237,57 +239,119 @@ Ext.define('Youngshine.controller.Assess', {
 				modal: true,
 				hideOnMaskTap: true,
 				centered: true,
-				width: '80%',
-				height: 350,
+				width: 320,
+				height: 300,
 				scrollable: true,
+				styleHtmlContent: true,
 
 		        items: [{	
 		        	xtype: 'toolbar',
-		        	docked: 'top',
-		        	title: '答案',
-					ui: 'gray',
+		        	docked: 'bottom',
+					ui: 'light',
 					items: [{
-						text: '错误',
-						ui: 'decline',
-						handler: function(btn){
-							this.up('panel').onDone(0)
+						xtype: 'selectfield',
+						name: 'done', 
+						width: 200,
+						//label: '做题评分',
+						//labelWidth: 150,
+						autoSelect: false,
+						options: [
+						    {text: '做对', value: 1},
+						    {text: '做错', value: 0},
+							//{text: '尚未做题', value: 2},
+						],
+						value: record.data.done,
+						defaultPhonePickerConfig: {
+							doneButton: '确定',
+							cancelButton: '取消'
+						},
+						listeners: {
+							change: function(){
+								this.up('panel').down('button[action=submit]').setDisabled(false)
+							}
 						}
-					},{
-						xtype: 'spacer'
-					},{		
-						text : '正确',
+					},{	
+						text: '提交结果',
 						ui: 'confirm',
+						disabled: true,
+						action: 'submit',
 						handler: function(btn){
-							this.up('panel').onDone(1)
-						}	
+							this.up('panel').onDone()
+						}
 					}]
 				},{
 					xtype: 'component',
-					styleHtmlContent: true,
-					html: '做题结果：'+record.data.fullDone,
-					style: 'background:#eee;'
-				},{
-					xtype: 'component',
-					styleHtmlContent: true,
 					html: record.data.answer
 				}],	
 				
-				onDone: function(done){
+				onDone: function(doneObj,view){
+					var modal = this;
 					var obj = {
-						"done": done,
+						"done": modal.down('selectfield[name=done]').getValue(), //doneObj.done,
+						//'fullDone': doneObj.fullDone,
 						"assesstopicID": record.data.assesstopicID
 					}
-					console.log(obj)
+					console.log(obj);
 					Ext.Ajax.request({
 						url: me.getApplication().dataUrl + 'updateTopicAssess.php',
 						params: obj,
-						success: function(response){				
-	
+						success: function(response){	
+							modal.destroy()
+							// 更新前端	
+							record.set('done',obj.done)		
+							//record.set('fullDone',doneObj.fullDone)
+							Ext.toast('测评评分完成')
 						}
 					});
 				}
 			})
 			list.overlay.show()
+		}
+	},	
+	// 向左滑动，删除
+	assesstopicItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteTopicAssess.php',
+			    params: {
+					assesstopicID: rec.data.assesstopicID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Assess').remove(rec);
+					}		         
+			    }
+			});
 		}
 	},	
 	assesstopicAddnew: function(obj,oldView){		
@@ -334,6 +398,10 @@ Ext.define('Youngshine.controller.Assess', {
 	// 历年考点雷达图
 	assesstopicHist: function(obj)	{
     	var me = this; 
+		
+		me.assesshist = Ext.create('Youngshine.view.assess.PolarChart');
+		Ext.Viewport.add(me.assesshist); //否则build后无法显示
+		
 		var store = Ext.getStore('Zsdhist'); 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
 			'readZsdhistList.php?data=' + JSON.stringify(obj));
@@ -341,10 +409,39 @@ Ext.define('Youngshine.controller.Assess', {
 			callback: function(records, operation, success){
 		        console.log(records)
 				if (success){
-					//Ext.Viewport.setActiveItem(me.student);
-					me.assesshist = Ext.create('Youngshine.view.assess.PolarChart');
-					//Ext.Viewport.add(me.assesshist); //否则build后无法显示
+					//Ext.Viewport.setActiveItem(me.assesshist);
 					me.assesshist.show(); // overlay show
+				};
+			}   		
+		});	
+	},
+	// 测评报告
+	assesstopicReport: function(obj)	{
+    	var me = this; 
+		
+		me.assessreport = Ext.create('Youngshine.view.assess.ReportChart');
+		
+		var student = '<div>姓名：'+obj.studentName+'</div>' + 
+					  '<div>学科：'+obj.gradeName+obj.subjectName+'</div>' 
+		me.assessreport.down('component[itemId=student]').setHtml(student)
+		
+		var store = Ext.getStore('Topic')
+		var zsd = '<div>测评知识点：</div>'
+		store.each(function(record){
+			zsd = zsd + '<div>［'+record.data.fullDone + '］'+record.data.zsdName+'</div>'
+		})
+		me.assessreport.down('component[itemId=zsd]').setHtml(zsd)
+		
+		var store = Ext.getStore('Zsdhist'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readZsdhistList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        console.log(records)
+				if (success){
+					Ext.Viewport.add(me.assessreport); //否则build后无法显示
+					//Ext.Viewport.setActiveItem(me.assesshist);
+					me.assessreport.show(); // overlay show
 				};
 			}   		
 		});	

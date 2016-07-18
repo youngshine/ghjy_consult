@@ -33,9 +33,9 @@ Ext.define('Youngshine.model.Topic', {
 			},
 			{ name: 'fullDone', convert: function(value, record){
 					var done = record.get('done');
-					if(done==1) return '对';
-					if(done==0) return '错';
-					if(done==2) return '尚未做题';
+					if(done==1) return '做对';
+					if(done==0) return '做错';
+					if(done==2 ||done==null) return '尚未做题';
 				} 
 			},
 		]	

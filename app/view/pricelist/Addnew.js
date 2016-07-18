@@ -116,8 +116,8 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 		});	
 	},
 	onCancel: function(btn){
-		var me = this; 
-		me.fireEvent('cancel',me);
+		this.fireEvent('cancel',this);
+		//this.destroy()
 	}
 	
 });

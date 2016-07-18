@@ -47,7 +47,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onOrders()
 			}	
 		},{
-			text: '排课',
+			text: '待排课',
 			iconCls: 'time',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
