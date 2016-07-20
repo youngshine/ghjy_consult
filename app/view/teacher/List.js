@@ -6,9 +6,9 @@ Ext.define('Youngshine.view.teacher.List', {
 	xtype: 'teacher',
 
     config: {
+		ui: 'round',
 		store: 'Teacher',
         //itemHeight: 89,
-        //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
         itemTpl: [
@@ -22,11 +22,12 @@ Ext.define('Youngshine.view.teacher.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '教师',
+    		//title: '教师',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '教师',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
@@ -100,5 +101,22 @@ Ext.define('Youngshine.view.teacher.List', {
 		store.clearFilter();
         store.filter('subjectName', subject, true); 
 		// 正则表达，才能模糊搜索?? true就可以anymatch
-	} 
+	},
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    },  
 });

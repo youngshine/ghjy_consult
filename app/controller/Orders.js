@@ -54,8 +54,6 @@ Ext.define('Youngshine.controller.Orders', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.orders = Ext.create('Youngshine.view.orders.List');
-		Ext.Viewport.add(me.orders);
-		//me.student.onGenreChange(); //默认
 		
 		var obj = {
 			"consultID": localStorage.consultID
@@ -71,6 +69,7 @@ Ext.define('Youngshine.controller.Orders', {
 		        //Ext.Viewport.setMasked(false);
 				console.log(records)
 		        if (success){
+					Ext.Viewport.add(me.orders);
 					Ext.Viewport.setActiveItem(me.orders);
 				};
 			}   		
@@ -126,11 +125,14 @@ Ext.define('Youngshine.controller.Orders', {
 
 	ordersAddnew: function(win){		
 		var me = this;
-		
-		if(!me.studentaddnew){
+		/*
+		if(!me.ordersaddnew){
 			me.ordersaddnew = Ext.create('Youngshine.view.orders.Addnew');
 			Ext.Viewport.add(me.ordersaddnew)
-		}
+		} */
+		// have been destroyed
+		me.ordersaddnew = Ext.create('Youngshine.view.orders.Addnew');
+		Ext.Viewport.add(me.ordersaddnew)
 		Ext.Viewport.setActiveItem(me.ordersaddnew)
 		
 		// 当前校区的课时套餐价格表
@@ -150,8 +152,8 @@ Ext.define('Youngshine.controller.Orders', {
 	// 取消添加
 	ordersaddnewCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.ordersaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.orders);
 	},	
 	ordersaddnewSave: function( obj,oldView )	{
@@ -165,10 +167,11 @@ Ext.define('Youngshine.controller.Orders', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-						oldView.destroy(); console.log(result)
+						//oldView.destroy(); console.log(result)
+						Ext.Viewport.remove(me.ordersaddnew,true)
 						Ext.Viewport.setActiveItem(me.orders);
 						obj.prepaidID = result.data.prepaidID
-						//obj.created = new Date();
+						obj.created = '刚刚';
 						Ext.getStore('Orders').insert(0,obj)					
 				    }
 				});
@@ -182,7 +185,8 @@ Ext.define('Youngshine.controller.Orders', {
 		Ext.Viewport.add(me.student); //否则build后无法显示
 
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID //必须带上校区，否则公众号学生没归属咨询师
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 

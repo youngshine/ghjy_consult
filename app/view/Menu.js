@@ -4,7 +4,7 @@ Ext.define('Youngshine.view.Menu', {
 	//id: 'mypopmenu',
 	
 	config: {
-		width: '34%',
+		width: '50%',
 		//scrollable: 'vertical',
 		items: [{
 			text: '根号教育',
@@ -31,7 +31,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onStudent()
 			}
 		},{
-			text: '水平测试',
+			text: '报读前测评',
 			iconCls: 'compose',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -39,7 +39,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onAssess()
 			}
 		},{
-			text: '购买课时套餐',
+			text: '销售课时',
 			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');

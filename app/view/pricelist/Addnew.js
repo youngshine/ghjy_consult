@@ -43,22 +43,23 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 				label: '标题',
 				clearIcon: false
 			},{
-				xtype: 'spinnerfield',
+				//xtype: 'spinnerfield',
+				xtype: 'numberfield',
 				name: 'hour', //绑定后台数据字段
 				label: '小时',
-			    minValue: 10,
-			    maxValue: 100,
-			    increment: 10,
-			    cycle: false
+			    //minValue: 10,
+			    //maxValue: 100,
+			    //increment: 10,
+			    //cycle: false
 			},{	
-				xtype: 'textfield',
+				xtype: 'numberfield',
 				name: 'amount', //绑定后台数据字段
 				label: '金额',
-				clearIcon: false,
+				clearIcon: false, /*
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
-				},		
+				},	*/	
 			}]	
 		}],		
 	
@@ -92,8 +93,8 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 		var me = this;
 		
 		var title = this.down('textfield[name=title]').getValue().trim(),
-			hour = this.down('spinnerfield[name=hour]').getValue(),
-			amount = this.down('textfield[name=amount]').getValue()
+			hour = this.down('numberfield[name=hour]').getValue(),
+			amount = this.down('numberfield[name=amount]').getValue()
 	
 		if (title == ''){
 			Ext.toast('标题不能空白',3000); return;

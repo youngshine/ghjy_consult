@@ -5,14 +5,17 @@ Ext.define('Youngshine.view.student.List', {
     extend: 'Ext.dataview.List',
 	xtype: 'student',
 
-    id: 'studentList',
+    //id: 'studentList',
 
     config: {
-        store: 'Student',
-		record: null,
+		//record: null,
+		//layout: 'fit',
+		ui: 'round',
+		store: 'Student',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
+		striped: true,
         itemTpl: [
             '<div>{studentName}<span style="color:#888;">［{grade}］</span>'+
 			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
@@ -21,16 +24,24 @@ Ext.define('Youngshine.view.student.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '注册学生',
+    		//title: '注册学生',
 			items: [{
+				text: '学生',
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
 					//btn.up('main').onMenu()
-					//console.log(Youngshine.app.getApplication().getController('Main').getLogin())
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
+			},{
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
 			},{
 				xtype: 'spacer'
 			},{
@@ -42,12 +53,6 @@ Ext.define('Youngshine.view.student.List', {
 					this.up('student').onAddnew()
 				}		
 			}]
-		},{
-    		xtype: 'searchfield',
-			scrollDock: 'top',
-			docked: 'top',
-			placeHolder: 'search...',
-			action: 'search'
     	}],
 		
     	listeners: [{
@@ -76,9 +81,7 @@ Ext.define('Youngshine.view.student.List', {
 		vw.setRecord(record); // 当前记录参数
     }, */
     onAddnew: function(list, index, item, record){
-		var vw = Ext.create('Youngshine.view.student.Addnew');
-		Ext.Viewport.add(vw); 
-		vw.show(); //ext.setactive?
+		this.fireEvent('addnew',this)
     },
 	
 	// 搜索过滤
@@ -92,4 +95,21 @@ Ext.define('Youngshine.view.student.List', {
 		var store = Ext.getStore('Student');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });

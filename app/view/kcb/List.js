@@ -5,8 +5,8 @@ Ext.define('Youngshine.view.kcb.List', {
 
     config: {
         layout: 'fit',
-		record: null,
-		
+		//record: null,
+		ui: 'round',
 		store: 'Study',
 		disableSelection: true,
 		striped: true,
@@ -21,11 +21,12 @@ Ext.define('Youngshine.view.kcb.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '待排课的',
+    		//title: '待排课的',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '待排课的',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 	
@@ -33,4 +34,21 @@ Ext.define('Youngshine.view.kcb.List', {
     	}],
     },
 
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+			//this.destroy();
+        };     
+    }, 
 });

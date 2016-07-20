@@ -1,6 +1,7 @@
 <?php
 /*
-  * 读取某个咨询师的报名学生
+  * 读取某个校区咨询师的报名学生
+  * 来自公众号的学生，没有归属咨询师怎么办？
 */
 	require_once 'db/response.php';
 	require_once 'db/request.php';
@@ -12,9 +13,11 @@
 	$arr = $req->params;
 
 	$consultID = $arr->consultID;
+	$schoolID = $arr->schoolID;
 	//group by student+zsd?，一个学生可以报读同样知识点？？
-	$query = " SELECT * from `ghjy_student`  
-		Where consultID=$consultID Order by created Desc ";
+	$query = "SELECT * From `ghjy_student`  
+		Where consultID=$consultID And schoolID=$schoolID 
+		Order By created Desc ";
     
     $result = mysql_query($query) 
 		or die("Invalid query: readStudentListByConsult" . mysql_error());

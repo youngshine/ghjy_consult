@@ -14,7 +14,7 @@ require_once('db/database_connection.php');
 	$studentID = $arr->studentID;
 	$subjectID = $arr->subjectID;
 	$gradeID = $arr->gradeID;
-	$semster = addslashes($arr->semester);
+	$semester = addslashes($arr->semester);
 	//$consultID = $arr->consultID; //属于哪个咨询师？？还是按学生
 		
 	$query = "INSERT INTO `ghjy_student-assess` 

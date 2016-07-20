@@ -6,11 +6,13 @@ Ext.define('Youngshine.view.assess.List', {
 	xtype: 'assess',
 	
     config: {
+		ui: 'round',
 		store: 'Assess',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
+		pinHeaders: false,
         itemTpl: [
 			'<div>{studentName}'+
 			'<span style="float:right;color:#888;">'+
@@ -21,31 +23,45 @@ Ext.define('Youngshine.view.assess.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '测评记录',
+    		//title: '测评记录',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '测评记录',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
-				xtype: 'spacer'
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
+			},{
+				xtype: 'spacer'	
 			},{
 				ui : 'action',
 				action: 'addnew',
 				iconCls: 'add',
-				//text: '＋新增',
+				//text: '新增',
 				handler: function(){
 					this.up('list').onAddnew()
 				}		
 			}]
-		},{
+/*		},{
     		xtype: 'searchfield',
 			scrollDock: 'top',
 			docked: 'top',
 			placeHolder: 'search...',
-			action: 'search'
+			action: 'search' */
     	}],	
 		
     	listeners: [{
@@ -91,4 +107,21 @@ Ext.define('Youngshine.view.assess.List', {
 		var store = this.getStore(); //Ext.getStore('Orders');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });

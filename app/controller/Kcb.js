@@ -25,7 +25,7 @@ Ext.define('Youngshine.controller.Kcb', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.kcb = Ext.create('Youngshine.view.kcb.List');
-		Ext.Viewport.add(me.kcb);
+		
 		//view.onGenreChange(); //默认
 		var obj = {
 			"consultID": localStorage.getItem('consultID'),
@@ -40,6 +40,7 @@ Ext.define('Youngshine.controller.Kcb', {
 			callback: function(records, operation, success){
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
+					Ext.Viewport.add(me.kcb);
 					Ext.Viewport.setActiveItem(me.kcb);
 				};
 			} 

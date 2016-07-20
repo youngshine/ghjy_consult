@@ -3,18 +3,7 @@ Ext.define('Youngshine.view.student.Addnew', {
     xtype: 'student-addnew',
 
     config: {
-        /*
-		showAnimation: {
-            type: "slideIn",
-            direction: "left",
-            duration: 200
-        },
-        hideAnimation: {
-            type: "slideOut",
-            direction: "right",
-            duration: 200
-        }, */
-		
+ 
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
@@ -145,6 +134,12 @@ Ext.define('Youngshine.view.student.Addnew', {
 		if (studentName == ''){
 			Ext.toast('姓名不能空白',3000); return;
 		}
+		if (gender == null){
+			Ext.toast('请选择性别',3000); return;
+		}
+		if (grade == null){
+			Ext.toast('请选择年级',3000); return;
+		}
 		if (phone == ''){
 			Ext.toast('电话不能空白',3000); return;
 		}
@@ -154,7 +149,8 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
-			consultID: localStorage.consultID //归属哪个咨询师
+			consultID: localStorage.consultID,
+			schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);

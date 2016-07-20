@@ -94114,466 +94114,6 @@ Ext.define('Ext.field.Search', {
 });
 
 /**
- * A wrapper class which can be applied to any element. Fires a "tap" event while
- * touching the device. The interval between firings may be specified in the config but
- * defaults to 20 milliseconds.
- */
-Ext.define('Ext.util.TapRepeater', {
-                                 
-
-    mixins: {
-        observable:  Ext.mixin.Observable 
-    },
-
-    /**
-     * @event touchstart
-     * Fires when the touch is started.
-     * @param {Ext.util.TapRepeater} this
-     * @param {Ext.event.Event} e
-     */
-
-    /**
-     * @event tap
-     * Fires on a specified interval during the time the element is pressed.
-     * @param {Ext.util.TapRepeater} this
-     * @param {Ext.event.Event} e
-     */
-
-    /**
-     * @event touchend
-     * Fires when the touch is ended.
-     * @param {Ext.util.TapRepeater} this
-     * @param {Ext.event.Event} e
-     */
-
-    config: {
-        el: null,
-        accelerate: true,
-        interval: 10,
-        delay: 250,
-        preventDefault: true,
-        stopDefault: false,
-        timer: 0,
-        pressCls: null
-    },
-
-    /**
-     * Creates new TapRepeater.
-     * @param {Object} config
-     */
-    constructor: function(config) {
-        var me = this;
-        for (var configName in config) {
-            if (me.self.prototype.config && !(configName in me.self.prototype.config)) {
-                me[configName] = config[configName];
-                Ext.Logger.warn('Applied config as instance property: "' + configName + '"', me);
-            }
-        }
-        me.initConfig(config);
-    },
-
-    updateEl: function(newEl, oldEl) {
-        var eventCfg = {
-                touchstart: 'onTouchStart',
-                touchend: 'onTouchEnd',
-                tap: 'eventOptions',
-                scope: this
-            };
-        if (oldEl) {
-            oldEl.un(eventCfg)
-        }
-        newEl.on(eventCfg);
-    },
-
-    // @private
-    eventOptions: function(e) {
-        if (this.getPreventDefault()) {
-            e.preventDefault();
-        }
-        if (this.getStopDefault()) {
-            e.stopEvent();
-        }
-    },
-
-    // @private
-    destroy: function() {
-        this.clearListeners();
-        Ext.destroy(this.el);
-    },
-
-    // @private
-    onTouchStart: function(e) {
-        var me = this,
-            pressCls = me.getPressCls();
-        clearTimeout(me.getTimer());
-        if (pressCls) {
-            me.getEl().addCls(pressCls);
-        }
-        me.tapStartTime = new Date();
-
-        me.fireEvent('touchstart', me, e);
-        me.fireEvent('tap', me, e);
-
-        // Do not honor delay or interval if acceleration wanted.
-        if (me.getAccelerate()) {
-            me.delay = 400;
-        }
-        me.setTimer(Ext.defer(me.tap, me.getDelay() || me.getInterval(), me, [e]));
-    },
-
-    // @private
-    tap: function(e) {
-        var me = this;
-        me.fireEvent('tap', me, e);
-        me.setTimer(Ext.defer(me.tap, me.getAccelerate() ? me.easeOutExpo(Ext.Date.getElapsed(me.tapStartTime),
-            400,
-            -390,
-            12000) : me.getInterval(), me, [e]));
-    },
-
-    // Easing calculation
-    // @private
-    easeOutExpo: function(t, b, c, d) {
-        return (t == d) ? b + c : c * ( - Math.pow(2, -10 * t / d) + 1) + b;
-    },
-
-    // @private
-    onTouchEnd: function(e) {
-        var me = this;
-        clearTimeout(me.getTimer());
-        me.getEl().removeCls(me.getPressCls());
-        me.fireEvent('touchend', me, e);
-    }
-});
-
-/**
- * Wraps an HTML5 number field. Example usage:
- *
- *     @example miniphone
- *     var spinner = Ext.create('Ext.field.Spinner', {
- *         label     : 'Spinner Field',
- *         minValue  : 0,
- *         maxValue  : 100,
- *         stepValue : 2,
- *         cycle     : true
- *     });
- *     Ext.Viewport.add({ xtype: 'container', items: [spinner] });
- *
- * For more information regarding forms and fields, please review [Using Forms in Sencha Touch Guide](../../../components/forms.html)
- */
-Ext.define('Ext.field.Spinner', {
-    extend:  Ext.field.Number ,
-    xtype: 'spinnerfield',
-    alternateClassName: 'Ext.form.Spinner',
-                                       
-
-    /**
-     * @event spin
-     * Fires when the value is changed via either spinner buttons.
-     * @param {Ext.field.Spinner} this
-     * @param {Number} value
-     * @param {String} direction 'up' or 'down'.
-     */
-
-    /**
-     * @event spindown
-     * Fires when the value is changed via the spinner down button.
-     * @param {Ext.field.Spinner} this
-     * @param {Number} value
-     */
-
-    /**
-     * @event spinup
-     * Fires when the value is changed via the spinner up button.
-     * @param {Ext.field.Spinner} this
-     * @param {Number} value
-     */
-
-    /**
-     * @event change
-     * Fires just before the field blurs if the field value has changed.
-     * @param {Ext.field.Text} this This field.
-     * @param {Number} newValue The new value.
-     * @param {Number} oldValue The original value.
-     */
-
-    /**
-     * @event updatedata
-     * @hide
-     */
-
-    /**
-     * @event action
-     * @hide
-     */
-
-    config: {
-        /**
-         * @cfg
-         * @inheritdoc
-         */
-        cls: Ext.baseCSSPrefix + 'spinner',
-
-        /**
-         * @cfg {Number} [minValue=-infinity] The minimum allowed value.
-         * @accessor
-         */
-        minValue: Number.NEGATIVE_INFINITY,
-
-        /**
-         * @cfg {Number} [maxValue=infinity] The maximum allowed value.
-         * @accessor
-         */
-        maxValue: Number.MAX_VALUE,
-
-        /**
-         * @cfg {Number} stepValue Value that is added or subtracted from the current value when a spinner is used.
-         * @accessor
-         */
-        stepValue: 0.1,
-
-        /**
-         * @cfg {Boolean} accelerateOnTapHold True if autorepeating should start slowly and accelerate.
-         * @accessor
-         */
-        accelerateOnTapHold: true,
-
-        /**
-         * @cfg {Boolean} cycle When set to `true`, it will loop the values of a minimum or maximum is reached.
-         * If the maximum value is reached, the value will be set to the minimum.
-         * @accessor
-         */
-        cycle: false,
-
-        /**
-         * @cfg {Boolean} clearIcon
-         * @hide
-         * @accessor
-         */
-        clearIcon: false,
-
-        /**
-         * @cfg {Number} defaultValue The default value for this field when no value has been set.
-         * It is also used when the value is set to `NaN`.
-         */
-        defaultValue: 0,
-
-        /**
-         * @cfg {Number} tabIndex
-         * @hide
-         */
-        tabIndex: -1,
-
-        /**
-         * @cfg {Boolean} groupButtons
-         * `true` if you want to group the buttons to the right of the fields. `false` if you want the buttons
-         * to be at either side of the field.
-         */
-        groupButtons: true,
-
-        /**
-         * @cfg component
-         * @inheritdoc
-         */
-        component: {
-            disabled: true
-        }
-    },
-
-    platformConfig: [{
-        platform: 'android',
-        component: {
-            disabled: false,
-            readOnly: true
-        }
-    }],
-
-    constructor: function() {
-        var me = this;
-
-        me.callParent(arguments);
-
-        if (!me.getValue()) {
-            me.suspendEvents();
-            me.setValue(me.getDefaultValue());
-            me.resumeEvents();
-        }
-    },
-
-    syncEmptyCls: Ext.emptyFn,
-
-    /**
-     * Updates the {@link #component} configuration
-     */
-    updateComponent: function(newComponent) {
-        this.callParent(arguments);
-
-        var cls = this.getCls();
-
-        if (newComponent) {
-            this.spinDownButton = Ext.Element.create({
-                cls : cls + '-button ' + cls + '-button-down',
-                html: '-'
-            });
-
-            this.spinUpButton = Ext.Element.create({
-                cls : cls + '-button ' + cls + '-button-up',
-                html: '+'
-            });
-
-            this.downRepeater = this.createRepeater(this.spinDownButton, this.onSpinDown);
-            this.upRepeater = this.createRepeater(this.spinUpButton,     this.onSpinUp);
-        }
-    },
-
-    updateGroupButtons: function(newGroupButtons, oldGroupButtons) {
-        var me = this,
-            innerElement = me.innerElement,
-            cls = me.getBaseCls() + '-grouped-buttons';
-
-        me.getComponent();
-
-        if (newGroupButtons != oldGroupButtons) {
-            if (newGroupButtons) {
-                this.addCls(cls);
-                innerElement.appendChild(me.spinDownButton);
-                innerElement.appendChild(me.spinUpButton);
-            } else {
-                this.removeCls(cls);
-                innerElement.insertFirst(me.spinDownButton);
-                innerElement.appendChild(me.spinUpButton);
-            }
-        }
-    },
-
-    applyValue: function(value) {
-        value = parseFloat(value);
-        if (isNaN(value) || value === null) {
-            value = this.getDefaultValue();
-        }
-
-        //round the value to 1 decimal
-        value = Math.round(value * 10) / 10;
-
-        return this.callParent([value]);
-    },
-
-    // @private
-    createRepeater: function(el, fn) {
-        var me = this,
-            repeater = Ext.create('Ext.util.TapRepeater', {
-                el: el,
-                accelerate: me.getAccelerateOnTapHold()
-            });
-
-        repeater.on({
-            tap: fn,
-            touchstart: 'onTouchStart',
-            touchend: 'onTouchEnd',
-            scope: me
-        });
-
-        return repeater;
-    },
-
-    // @private
-    onSpinDown: function() {
-        if (!this.getDisabled() && !this.getReadOnly()) {
-            this.spin(true);
-        }
-    },
-
-    // @private
-    onSpinUp: function() {
-        if (!this.getDisabled() && !this.getReadOnly()) {
-            this.spin(false);
-        }
-    },
-
-    // @private
-    onTouchStart: function(repeater) {
-        if (!this.getDisabled() && !this.getReadOnly()) {
-            repeater.getEl().addCls(Ext.baseCSSPrefix + 'button-pressed');
-        }
-    },
-
-    // @private
-    onTouchEnd: function(repeater) {
-        repeater.getEl().removeCls(Ext.baseCSSPrefix + 'button-pressed');
-    },
-
-    // @private
-    spin: function(down) {
-        var me = this,
-            originalValue = me.getValue(),
-            stepValue = me.getStepValue(),
-            direction = down ? 'down' : 'up',
-            minValue = me.getMinValue(),
-            maxValue = me.getMaxValue(),
-            value;
-
-        if (down) {
-            value = originalValue - stepValue;
-        }
-        else {
-            value = originalValue + stepValue;
-        }
-
-        //if cycle is true, then we need to check fi the value hasn't changed and we cycle the value
-        if (me.getCycle()) {
-            if (originalValue == minValue && value < minValue) {
-                value = maxValue;
-            }
-
-            if (originalValue == maxValue && value > maxValue) {
-                value = minValue;
-            }
-        }
-
-        me.setValue(value);
-        value = me.getValue();
-
-        me.fireEvent('spin', me, value, direction);
-        me.fireEvent('spin' + direction, me, value);
-    },
-
-    /**
-     * @private
-     */
-    doSetDisabled: function(disabled) {
-        Ext.Component.prototype.doSetDisabled.apply(this, arguments);
-    },
-
-    /**
-     * @private
-     */
-    setDisabled: function() {
-        Ext.Component.prototype.setDisabled.apply(this, arguments);
-    },
-
-    reset: function() {
-        this.setValue(this.getDefaultValue());
-    },
-
-//    setValue: function(value){
-//        this.callSuper(arguments);
-
-        // @TODO: Isn't this already done by the framework by default?
-//        if(Ext.getThemeName() == 'WP'){
-//            this.getComponent().element.dom.setAttribute('value',value);
-//        }
-//    },
-
-    // @private
-    destroy: function() {
-        var me = this;
-        Ext.destroy(me.downRepeater, me.upRepeater, me.spinDownButton, me.spinUpButton);
-        me.callParent(arguments);
-    }
-}, function() {
-});
-
-/**
  * A FieldSet is a great way to visually separate elements of a form. It's normally used when you have a form with
  * fields that can be divided into groups - for example a customer's billing details in one fieldset and their shipping
  * address in another. A fieldset can be used inside a form or on its own elsewhere in your app. Fieldsets can
@@ -99153,7 +98693,7 @@ Ext.define('Youngshine.controller.Student', {
            	student: 'student',
 			studentaddnew: 'student-addnew',
 			studentedit: 'student-edit',
-			studentstudy: 'studentstudy',
+			studentstudy: 'student-study',
 			studentshow: 'student-show'
         },
         control: {
@@ -99181,11 +98721,11 @@ Ext.define('Youngshine.controller.Student', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.student = Ext.create('Youngshine.view.student.List');
-		Ext.Viewport.add(me.student);
 		//me.student.onGenreChange(); //默认
 		
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID //来自公众号的学生，没有归属咨询师怎么办？ 
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -99197,6 +98737,7 @@ Ext.define('Youngshine.controller.Student', {
 			callback: function(records, operation, success){
 		        //Ext.Viewport.setMasked(false);
 		        if (success){
+					Ext.Viewport.add(me.student);
 					Ext.Viewport.setActiveItem(me.student);
 				};
 			}   		
@@ -99302,18 +98843,23 @@ Ext.define('Youngshine.controller.Student', {
 	studentAddnew: function(win){		
 		var me = this;
 		
-		if(!me.studentaddnew){
+		//if(!me.studentaddnew){
 			me.studentaddnew = Ext.create('Youngshine.view.student.Addnew');
-			Ext.Viewport.add(me.studentaddnew)
-		}
+			Ext.Viewport.add(me.studentaddnew);
+		/*}else{
+			// 清除部分，保留重复填写项，就不能destroy or remove
+			me.studentaddnew.down('textfield[name=studentName]').setValue('')
+			me.studentaddnew.down('textfield[name=phone]').setValue('')
+			me.studentaddnew.down('textfield[name=addr]').setValue('')
+		} */
 		Ext.Viewport.setActiveItem(me.studentaddnew)
 	},
 	
 	// 取消添加
 	studentaddnewCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
 	studentaddnewSave: function( obj,oldView )	{
@@ -99327,12 +98873,17 @@ Ext.define('Youngshine.controller.Student', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-				        //var text = response.responseText; JSON.parse()
-						oldView.destroy()
-						Ext.Viewport.setActiveItem(me.student);
-						obj.studentID = result.data.studentID; //删除用
-						//obj.created = new Date();
-						Ext.getStore('Student').insert(0,obj)
+				        console.log(result)
+						Ext.toast(result.message,3000)
+						if(result.success){
+							//var text = response.responseText; JSON.parse()
+							//oldView.destroy()
+							Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+							Ext.Viewport.setActiveItem(me.student);
+							obj.studentID = result.data.studentID; //删除用
+							//obj.created = new Date();
+							Ext.getStore('Student').insert(0,obj)
+						}
 				    }
 				});
 			}
@@ -99341,8 +98892,8 @@ Ext.define('Youngshine.controller.Student', {
 	// 取消添加
 	studenteditCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
 	studenteditSave: function( obj,oldView )	{
@@ -99353,10 +98904,11 @@ Ext.define('Youngshine.controller.Student', {
 		    params: obj,
 		    success: function(result){
 		        //var text = response.responseText; JSON.parse()
-				oldView.destroy()
+				//oldView.destroy()
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改成功',3000)
+				Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		    }
 		});
 	},
@@ -99558,15 +99110,10 @@ Ext.define('Youngshine.controller.Teacher', {
 
 	teacherAddnew: function(win){		
 		var me = this;
-		//var vw = Ext.create('Youngshine.view.teacher.Addnew');
-		//Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
-		//vw.down('panel[itemId=my_show]').setData(record.data)
-		//vw.show();
-		
-		if(!me.teacheraddnew){
-			me.teacheraddnew = Ext.create('Youngshine.view.teacher.Addnew');
-			Ext.Viewport.add(me.teacheraddnew)
-		}
+
+		me.teacheraddnew = Ext.create('Youngshine.view.teacher.Addnew');
+		Ext.Viewport.add(me.teacheraddnew)
+
 		Ext.Viewport.setActiveItem(me.teacheraddnew)
 	},
 	
@@ -99574,7 +99121,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	teacheraddnewCancel: function(oldView){		
 		var me = this;
 		//oldView.destroy()
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
 	teacheraddnewSave: function( obj,oldView )	{
@@ -99589,6 +99136,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		        console.log(result)
 		        //record.set('fullEndtime','')
 				//oldView.destroy()
+				Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 				Ext.Viewport.setActiveItem(me.teacher);
 				obj.teacherID = result.data.teacherID
 				//obj.created = new Date();
@@ -99599,8 +99147,8 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 取消添加
 	teachereditCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.teacheredit,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
 	teachereditSave: function( obj,oldView )	{
@@ -99612,10 +99160,10 @@ Ext.define('Youngshine.controller.Teacher', {
 		    success: function(result){
 		        //var text = response.responseText; JSON.parse()
 				console.log(result)
-				oldView.destroy()
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改成功',3000)
+				Ext.Viewport.remove(me.teacheredit,true); //remove 当前界面
 		    }
 		});
 	},
@@ -99706,7 +99254,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
 					Ext.Viewport.add(me.pricelist);
-					//Ext.Viewport.setActiveItem(me.pricelist);
+					Ext.Viewport.setActiveItem(me.pricelist);
 				};
 			} 
 		})	  			 
@@ -99717,9 +99265,9 @@ Ext.define('Youngshine.controller.Pricelist', {
 	},
 	// 向左滑动，删除
 	pricelistItemtaphold: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(record)
+		console.log(e.target);
 		//if(e.direction !== 'left') return false
-
+		//e.target.parentNode.setAttribute('style','background:gray;')
 		var me = this;
 		//list.select(index,true); // 高亮当前记录 disableSelection
 		var actionSheet = Ext.create('Ext.ActionSheet', {
@@ -99765,10 +99313,10 @@ Ext.define('Youngshine.controller.Pricelist', {
 	pricelistAddnew: function(win){		
 		var me = this;
 		console.log(me.pricelistaddnew)
-		if(!me.pricelistaddnew){
+		//if(!me.pricelistaddnew){ // null to error
 			me.pricelistaddnew = Ext.create('Youngshine.view.pricelist.Addnew');
 			Ext.Viewport.add(me.pricelistaddnew); // build?
-		}
+		//}
 		Ext.Viewport.setActiveItem(me.pricelistaddnew)
 		//me.pricelistaddnew.show()
 	},
@@ -99776,7 +99324,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 	// 取消添加
 	pricelistaddnewCancel: function(){		
 		var me = this; 
-		//Ext.Viewport.remove(me.pricelistaddnew)
+		Ext.Viewport.remove(me.pricelistaddnew,true)
 		//me.pricelistaddnew.destroy()
 		Ext.Viewport.setActiveItem(me.pricelist);
 	},	
@@ -99791,7 +99339,8 @@ Ext.define('Youngshine.controller.Pricelist', {
 		    success: function(result){
 		        console.log(result)
 		        //record.set('fullEndtime','')
-				oldView.destroy()
+				//oldView.destroy()
+				Ext.Viewport.remove(me.pricelistaddnew,true)
 				Ext.Viewport.setActiveItem(me.pricelist);
 				//obj.teacherID = result.data.teacherID
 				//obj.created = new Date();
@@ -99867,8 +99416,6 @@ Ext.define('Youngshine.controller.Orders', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.orders = Ext.create('Youngshine.view.orders.List');
-		Ext.Viewport.add(me.orders);
-		//me.student.onGenreChange(); //默认
 		
 		var obj = {
 			"consultID": localStorage.consultID
@@ -99884,6 +99431,7 @@ Ext.define('Youngshine.controller.Orders', {
 		        //Ext.Viewport.setMasked(false);
 				console.log(records)
 		        if (success){
+					Ext.Viewport.add(me.orders);
 					Ext.Viewport.setActiveItem(me.orders);
 				};
 			}   		
@@ -99939,11 +99487,14 @@ Ext.define('Youngshine.controller.Orders', {
 
 	ordersAddnew: function(win){		
 		var me = this;
-		
-		if(!me.studentaddnew){
+		/*
+		if(!me.ordersaddnew){
 			me.ordersaddnew = Ext.create('Youngshine.view.orders.Addnew');
 			Ext.Viewport.add(me.ordersaddnew)
-		}
+		} */
+		// have been destroyed
+		me.ordersaddnew = Ext.create('Youngshine.view.orders.Addnew');
+		Ext.Viewport.add(me.ordersaddnew)
 		Ext.Viewport.setActiveItem(me.ordersaddnew)
 		
 		// 当前校区的课时套餐价格表
@@ -99963,8 +99514,8 @@ Ext.define('Youngshine.controller.Orders', {
 	// 取消添加
 	ordersaddnewCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.ordersaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.orders);
 	},	
 	ordersaddnewSave: function( obj,oldView )	{
@@ -99978,10 +99529,11 @@ Ext.define('Youngshine.controller.Orders', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-						oldView.destroy(); console.log(result)
+						//oldView.destroy(); console.log(result)
+						Ext.Viewport.remove(me.ordersaddnew,true)
 						Ext.Viewport.setActiveItem(me.orders);
 						obj.prepaidID = result.data.prepaidID
-						//obj.created = new Date();
+						obj.created = '刚刚';
 						Ext.getStore('Orders').insert(0,obj)					
 				    }
 				});
@@ -99995,7 +99547,8 @@ Ext.define('Youngshine.controller.Orders', {
 		Ext.Viewport.add(me.student); //否则build后无法显示
 
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID //必须带上校区，否则公众号学生没归属咨询师
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -100260,7 +99813,7 @@ Ext.define('Youngshine.controller.Kcb', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.kcb = Ext.create('Youngshine.view.kcb.List');
-		Ext.Viewport.add(me.kcb);
+		
 		//view.onGenreChange(); //默认
 		var obj = {
 			"consultID": localStorage.getItem('consultID'),
@@ -100275,6 +99828,7 @@ Ext.define('Youngshine.controller.Kcb', {
 			callback: function(records, operation, success){
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
+					Ext.Viewport.add(me.kcb);
 					Ext.Viewport.setActiveItem(me.kcb);
 				};
 			} 
@@ -100380,7 +99934,7 @@ Ext.define('Youngshine.controller.Assess', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.assess = Ext.create('Youngshine.view.assess.List');
-		Ext.Viewport.add(me.assess);
+		
 		//Ext.Viewport.setActiveItem(me.assess);
 		//view.onGenreChange(); //默认
 		var obj = {
@@ -100395,6 +99949,7 @@ Ext.define('Youngshine.controller.Assess', {
 		store.load({
 			callback: function(records, operation, success){
 			    if (success){
+					Ext.Viewport.add(me.assess);
 					Ext.Viewport.setActiveItem(me.assess);
 				};
 			} 
@@ -100440,9 +99995,15 @@ Ext.define('Youngshine.controller.Assess', {
 	},	
 	// 向左滑动，删除
 	assessItemswipe: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(record)
-		if(e.direction !== 'left') return false
-
+		console.log(e);console.log(list)
+		var me = this;
+		/* swipe right to pop menu
+		if(e.direction == 'right'){ 
+			me.getApplication().getController('Main').menuNav()
+			return 
+		}  */
+		if(e.direction != 'left') return
+		// left to delete
 		var me = this;
 		list.select(index,true); // 高亮当前记录
 		var actionSheet = Ext.create('Ext.ActionSheet', {
@@ -100487,16 +100048,16 @@ Ext.define('Youngshine.controller.Assess', {
 	
 	assessAddnew: function(win){		
 		var me = this;
-		if(!me.assessaddnew){
+		//if(!me.assessaddnew){
 			me.assessaddnew = Ext.create('Youngshine.view.assess.Addnew');
 			Ext.Viewport.add(me.assessaddnew)
-		}
+		//}
 		Ext.Viewport.setActiveItem(me.assessaddnew)
 	},
 	// 取消添加
 	assessaddnewCancel: function(oldView){		
 		var me = this;
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.remove(me.assessaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.assess);
 	},	
 	assessaddnewSave: function( obj,oldView )	{
@@ -100510,10 +100071,11 @@ Ext.define('Youngshine.controller.Assess', {
 		    success: function(result){
 		        console.log(result)
 		        //record.set('fullEndtime','')
-				oldView.destroy()
+				//oldView.destroy()
+				Ext.Viewport.remove(me.assessaddnew,true); //remove 当前界面
 				Ext.Viewport.setActiveItem(me.assess);
 				obj.assessID = result.data.assessID
-				obj.created = new Date();
+				obj.created = '刚刚';
 				Ext.getStore('Assess').insert(0,obj)
 		    }
 		});
@@ -100525,7 +100087,8 @@ Ext.define('Youngshine.controller.Assess', {
 		Ext.Viewport.add(me.student); //否则build后无法显示
 
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -100608,36 +100171,37 @@ Ext.define('Youngshine.controller.Assess', {
 						disabled: true,
 						action: 'submit',
 						handler: function(btn){
-							this.up('panel').onDone()
+							//this.up('panel').onDone()
+							done()
 						}
 					}]
 				},{
 					xtype: 'component',
 					html: record.data.answer
 				}],	
-				
-				onDone: function(doneObj,view){
-					var modal = this;
-					var obj = {
-						"done": modal.down('selectfield[name=done]').getValue(), //doneObj.done,
-						//'fullDone': doneObj.fullDone,
-						"assesstopicID": record.data.assesstopicID
-					}
-					console.log(obj);
-					Ext.Ajax.request({
-						url: me.getApplication().dataUrl + 'updateTopicAssess.php',
-						params: obj,
-						success: function(response){	
-							modal.destroy()
-							// 更新前端	
-							record.set('done',obj.done)		
-							//record.set('fullDone',doneObj.fullDone)
-							Ext.toast('测评评分完成')
-						}
-					});
-				}
 			})
 			list.overlay.show()
+			
+			//评分
+			function done(doneObj,view){
+				var obj = {
+					"done": list.overlay.down('selectfield[name=done]').getValue(), //doneObj.done,
+					//'fullDone': doneObj.fullDone,
+					"assesstopicID": record.data.assesstopicID
+				}
+				console.log(obj);
+				Ext.Ajax.request({
+					url: me.getApplication().dataUrl + 'updateTopicAssess.php',
+					params: obj,
+					success: function(response){	
+						// 更新前端	
+						record.set('done',obj.done)		
+						//record.set('fullDone',doneObj.fullDone)
+						Ext.toast('测评评分完成')
+						list.overlay.destroy()
+					}
+				});
+			}
 		}
 	},	
 	// 向左滑动，删除
@@ -101243,6 +100807,10 @@ Ext.define('Youngshine.store.Assess', {
 				rootProperty: "data"
 			}
         },
+		sorters: {
+			property: 'created',
+			direction: 'DESC'
+		}
     }
 });
 
@@ -101462,7 +101030,7 @@ Ext.define('Youngshine.view.Menu', {
 	//id: 'mypopmenu',
 	
 	config: {
-		width: '34%',
+		width: '50%',
 		//scrollable: 'vertical',
 		items: [{
 			text: '根号教育',
@@ -101489,7 +101057,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onStudent()
 			}
 		},{
-			text: '水平测试',
+			text: '报读前测评',
 			iconCls: 'compose',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -101497,7 +101065,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onAssess()
 			}
 		},{
-			text: '购买课时套餐',
+			text: '销售课时',
 			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -101670,17 +101238,26 @@ Ext.define('Youngshine.view.Main', {
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 330,height: 270,
+			width: 330,height: 220,
 			scrollable: true,
 
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
 	        	title: '密码修改',
+				items: [{
+					text: '保存'	,
+					ui: 'confirm',
+					handler: function(btn){
+						btn.up('panel').onSave()
+					}
+				}]
 			},{
 				xtype: 'fieldset',
-				width: 300,
-				//margin: '10 10 0 10',
+				width: 320,
+				defaults: {
+					//labelAlign: 'right'
+				},
 				items: [{
 					xtype: 'textfield',
 					readOnly: true,
@@ -101699,39 +101276,35 @@ Ext.define('Youngshine.view.Main', {
 					label : '确认密码', 
 					scope: this
 				}]	
-			},{
-				xtype: 'button',
-				text: '保存',
-				action: 'save',
-				margin: '-15 10 15',
-				ui: 'confirm',
-				handler: function(btn){
-					var me = this;
-					var psw1 = this.up('panel').down('passwordfield[itemId=psw1]').getValue().trim(),
-						psw2 = this.up('panel').down('passwordfield[itemId=psw2]').getValue().trim()
-					console.log(psw1)
-					if(psw1.length<6){
-						Ext.toast('密码少于6位',3000); return
-					}
-					if(psw1!= psw2){
-						Ext.toast('确认密码错误',3000); return
-					}
-					// ajax
-					Ext.Ajax.request({
-					    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
-					    params: {
-					        psw1     : psw1,
-							consultID: localStorage.consultID
-					    },
-					    success: function(response){
-					        var text = response.responseText;
-					        // process server response here
-							Ext.toast('密码修改成功',3000)
-							me.up('panel').destroy()
-					    }
-					});
-				}
 			}],	
+			
+			onSave: function(){
+				var me = this;
+				var psw1 = this.down('passwordfield[itemId=psw1]').getValue().trim(),
+					psw2 = this.down('passwordfield[itemId=psw2]').getValue().trim()
+				console.log(psw1)
+				if(psw1.length<6){
+					Ext.toast('密码少于6位',3000); return
+				}
+				if(psw1!= psw2){
+					Ext.toast('确认密码错误',3000); return
+				}
+				// ajax
+				Ext.Ajax.request({
+				    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
+				    params: {
+				        psw1     : psw1,
+						consultID: localStorage.consultID
+				    },
+				    success: function(response){
+				        var text = response.responseText;
+				        // process server response here
+						//setTimeout(function(){},3000)
+						Ext.toast('密码修改成功',3000)
+						me.destroy()
+				    }
+				});
+			}
 		})
 		this.overlay.show()
 	},	
@@ -101792,7 +101365,7 @@ Ext.define('Youngshine.view.assess.Addnew', {
 				},{
 					xtype: 'button',
 					action: 'student',
-					text: '﹍﹍',
+					text: '...',
 					//iconCls: 'search',
 					ui: 'plain',
 					width: 60,
@@ -101923,11 +101496,13 @@ Ext.define('Youngshine.view.assess.List', {
 	xtype: 'assess',
 	
     config: {
+		ui: 'round',
 		store: 'Assess',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
+		pinHeaders: false,
         itemTpl: [
 			'<div>{studentName}'+
 			'<span style="float:right;color:#888;">'+
@@ -101938,31 +101513,45 @@ Ext.define('Youngshine.view.assess.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '测评记录',
+    		//title: '测评记录',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '测评记录',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
-				xtype: 'spacer'
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
+			},{
+				xtype: 'spacer'	
 			},{
 				ui : 'action',
 				action: 'addnew',
 				iconCls: 'add',
-				//text: '＋新增',
+				//text: '新增',
 				handler: function(){
 					this.up('list').onAddnew()
 				}		
 			}]
-		},{
+/*		},{
     		xtype: 'searchfield',
 			scrollDock: 'top',
 			docked: 'top',
 			placeHolder: 'search...',
-			action: 'search'
+			action: 'search' */
     	}],	
 		
     	listeners: [{
@@ -102008,6 +101597,23 @@ Ext.define('Youngshine.view.assess.List', {
 		var store = this.getStore(); //Ext.getStore('Orders');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });
 
 Ext.define('Youngshine.view.assess.PolarChart', {
@@ -102286,11 +101892,11 @@ Ext.define('Youngshine.view.assess.Topic', {
 				xtype: 'spacer'
 			},{
 				ui : 'action',
-				text: '历年考点',
+				text: '测评报告',
 				//action: 'addnew',
 				//iconCls: 'add',
 				handler: function(){
-					this.up('list').onHistChart()
+					this.up('list').onReport()
 				}		
 			}]
 		},{
@@ -102299,7 +101905,7 @@ Ext.define('Youngshine.view.assess.Topic', {
 			docked: 'top',
 			html: '<span class="addnew">＋添加题目</span>'+
 				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-				'<span class="report">测评报告</span>',
+				'<span class="hist">历年考点</span>',
 			//itemId: 'zsd',
 			style: 'text-align:center;color:green;margin:10px;'
     	}],	
@@ -102311,9 +101917,9 @@ Ext.define('Youngshine.view.assess.Topic', {
 			fn: 'onAddnew'
 		},{
 			element: 'element',
-			delegate: 'span.report',
+			delegate: 'span.hist',
 			event: 'tap',
-			fn: 'onReport'	
+			fn: 'onHistChart'	
 		}],
     },
 	
@@ -102348,7 +101954,10 @@ Ext.define('Youngshine.view.assess.Topic', {
 	},	
 	onReport: function(){
 		var me = this; 
-		if(me.getStore().getCount()==0) Ext.toast('尚无测评内容',3000)
+		if(me.getStore().getCount()==0){
+			Ext.toast('尚无测评内容',3000)
+			return false
+		}	
 			
 		var obj = {
 			subjectID: me.getParentRecord().data.subjectID,
@@ -102583,8 +102192,8 @@ Ext.define('Youngshine.view.kcb.List', {
 
     config: {
         layout: 'fit',
-		record: null,
-		
+		//record: null,
+		ui: 'round',
 		store: 'Study',
 		disableSelection: true,
 		striped: true,
@@ -102599,11 +102208,12 @@ Ext.define('Youngshine.view.kcb.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '待排课的',
+    		//title: '待排课的',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '待排课的',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 	
@@ -102611,6 +102221,23 @@ Ext.define('Youngshine.view.kcb.List', {
     	}],
     },
 
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+			//this.destroy();
+        };     
+    }, 
 });
 
 // 待排课的排课
@@ -102912,7 +102539,7 @@ Ext.define('Youngshine.view.orders.Addnew', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增购买',
+			title: '新增销售',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -103057,7 +102684,8 @@ Ext.define('Youngshine.view.orders.Addnew', {
 			hour: hour,
 			amount: amount,
 			payment: payment,
-			consultID: localStorage.consultID //归属哪个咨询师
+			//consultID: localStorage.consultID,
+			//schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);
@@ -103090,7 +102718,8 @@ Ext.define('Youngshine.view.orders.List', {
 	xtype: 'orders',
 	
     config: {
-		record: null, //父窗口传递的记录参数
+		//record: null, //父窗口传递的记录参数
+		ui: 'round',
 		store: 'Orders',
         //itemHeight: 89,
         //emptyText: '学生列表',
@@ -103104,14 +102733,21 @@ Ext.define('Youngshine.view.orders.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '课时套餐订单',
+    		//title: '课时套餐订单',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '课时订单',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
+			},{
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				action: 'search',
 			},{
 				xtype: 'spacer'
 			},{
@@ -103122,12 +102758,6 @@ Ext.define('Youngshine.view.orders.List', {
 					this.up('list').onAddnew()
 				}		
 			}]
-		},{
-    		xtype: 'searchfield',
-			scrollDock: 'top',
-			docked: 'top',
-			placeHolder: 'search...',
-			action: 'search'
     	}],	
 		
     	listeners: [{
@@ -103172,6 +102802,23 @@ Ext.define('Youngshine.view.orders.List', {
 		var store = Ext.getStore('Orders');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });
 
 // 查找选择课时套餐
@@ -103502,22 +103149,23 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 				label: '标题',
 				clearIcon: false
 			},{
-				xtype: 'spinnerfield',
+				//xtype: 'spinnerfield',
+				xtype: 'numberfield',
 				name: 'hour', //绑定后台数据字段
 				label: '小时',
-			    minValue: 10,
-			    maxValue: 100,
-			    increment: 10,
-			    cycle: false
+			    //minValue: 10,
+			    //maxValue: 100,
+			    //increment: 10,
+			    //cycle: false
 			},{	
-				xtype: 'textfield',
+				xtype: 'numberfield',
 				name: 'amount', //绑定后台数据字段
 				label: '金额',
-				clearIcon: false,
+				clearIcon: false, /*
 				component: { // 显示数字键
 					xtype: 'input',
 					type: 'tel'
-				},		
+				},	*/	
 			}]	
 		}],		
 	
@@ -103551,8 +103199,8 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 		var me = this;
 		
 		var title = this.down('textfield[name=title]').getValue().trim(),
-			hour = this.down('spinnerfield[name=hour]').getValue(),
-			amount = this.down('textfield[name=amount]').getValue()
+			hour = this.down('numberfield[name=hour]').getValue(),
+			amount = this.down('numberfield[name=amount]').getValue()
 	
 		if (title == ''){
 			Ext.toast('标题不能空白',3000); return;
@@ -103585,7 +103233,7 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
  * Displays a list of 各个校区课时套餐价格
  */
 Ext.define('Youngshine.view.pricelist.List', {
-    extend:  Ext.Panel ,
+    extend:  Ext.Container ,
 	xtype: 'pricelist',
 
     config: {
@@ -103593,11 +103241,12 @@ Ext.define('Youngshine.view.pricelist.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '课时套餐价格',
+    		//title: '课时套餐价格',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '课时套餐价格',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -103609,34 +103258,55 @@ Ext.define('Youngshine.view.pricelist.List', {
 				action: 'addnew',
 				iconCls: 'add',
 				//text : '＋新增',
-				handler: function(){
-					this.up('panel').onAddnew()
-				}		
+				action: 'addnew'	
 			}]
 		},{
 			xtype: 'dataview',
+			store: 'Pricelist',
 			inline: true,
-	        store: 'Pricelist',
-	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;height:150px;">'+
-				'{title}</div>',
+			scrollable: true,
+			style: 'text-align:center;margin:10px 0px',
+	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;">'+
+				'<div>{title}</div><hr>'+
+				'<div style="color:#888;font-size:0.8em;">课时：{hour}</div>'+
+				'<div style="color:#888;font-size:0.8em;">金额：{unitprice}元</div></div>',
     	}],
 		
 		listeners: [{
 			delegate: 'dataview',
 			event: 'itemtaphold',
 			fn: 'onItemtaphold'
+		},{
+			delegate: 'button[action=addnew]',
+			event: 'tap',
+			fn: 'onAddnew'	
 		}]
     },
 
     onAddnew: function(btn){
 		this.fireEvent('addnew',this)
-		//var vw = Ext.create('Youngshine.view.pricelist.Addnew');
-		//Ext.Viewport.add(vw); 
-		//vw.show(); //ext.setactive?
     },
-    onItemtaphold: function(){
-		this.fireEvent('itemtaphold',this)
+    onItemtaphold: function(dataview, index, target, record,e){
+		this.fireEvent('itemtaphold',dataview, index, target, record,e)
     },
+
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+			//this.destroy();
+        };     
+    }, 
 });
 
 Ext.define('Youngshine.view.student.Addnew', {
@@ -103644,18 +103314,7 @@ Ext.define('Youngshine.view.student.Addnew', {
     xtype: 'student-addnew',
 
     config: {
-        /*
-		showAnimation: {
-            type: "slideIn",
-            direction: "left",
-            duration: 200
-        },
-        hideAnimation: {
-            type: "slideOut",
-            direction: "right",
-            duration: 200
-        }, */
-		
+ 
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
@@ -103786,6 +103445,12 @@ Ext.define('Youngshine.view.student.Addnew', {
 		if (studentName == ''){
 			Ext.toast('姓名不能空白',3000); return;
 		}
+		if (gender == null){
+			Ext.toast('请选择性别',3000); return;
+		}
+		if (grade == null){
+			Ext.toast('请选择年级',3000); return;
+		}
 		if (phone == ''){
 			Ext.toast('电话不能空白',3000); return;
 		}
@@ -103795,7 +103460,8 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
-			consultID: localStorage.consultID //归属哪个咨询师
+			consultID: localStorage.consultID,
+			schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);
@@ -103884,7 +103550,7 @@ Ext.define('Youngshine.view.student.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{	
@@ -103900,7 +103566,7 @@ Ext.define('Youngshine.view.student.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{
@@ -103964,14 +103630,17 @@ Ext.define('Youngshine.view.student.List', {
     extend:  Ext.dataview.List ,
 	xtype: 'student',
 
-    id: 'studentList',
+    //id: 'studentList',
 
     config: {
-        store: 'Student',
-		record: null,
+		//record: null,
+		//layout: 'fit',
+		ui: 'round',
+		store: 'Student',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
+		striped: true,
         itemTpl: [
             '<div>{studentName}<span style="color:#888;">［{grade}］</span>'+
 			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
@@ -103980,16 +103649,24 @@ Ext.define('Youngshine.view.student.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '注册学生',
+    		//title: '注册学生',
 			items: [{
+				text: '学生',
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
 					//btn.up('main').onMenu()
-					//console.log(Youngshine.app.getApplication().getController('Main').getLogin())
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
+			},{
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
 			},{
 				xtype: 'spacer'
 			},{
@@ -104001,12 +103678,6 @@ Ext.define('Youngshine.view.student.List', {
 					this.up('student').onAddnew()
 				}		
 			}]
-		},{
-    		xtype: 'searchfield',
-			scrollDock: 'top',
-			docked: 'top',
-			placeHolder: 'search...',
-			action: 'search'
     	}],
 		
     	listeners: [{
@@ -104035,9 +103706,7 @@ Ext.define('Youngshine.view.student.List', {
 		vw.setRecord(record); // 当前记录参数
     }, */
     onAddnew: function(list, index, item, record){
-		var vw = Ext.create('Youngshine.view.student.Addnew');
-		Ext.Viewport.add(vw); 
-		vw.show(); //ext.setactive?
+		this.fireEvent('addnew',this)
     },
 	
 	// 搜索过滤
@@ -104051,6 +103720,23 @@ Ext.define('Youngshine.view.student.List', {
 		var store = Ext.getStore('Student');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });
 
 // 学生的报读内容（知识点）
@@ -104436,7 +104122,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{	
@@ -104448,7 +104134,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{
@@ -104591,9 +104277,9 @@ Ext.define('Youngshine.view.teacher.List', {
 	xtype: 'teacher',
 
     config: {
+		ui: 'round',
 		store: 'Teacher',
         //itemHeight: 89,
-        //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
         itemTpl: [
@@ -104607,11 +104293,12 @@ Ext.define('Youngshine.view.teacher.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '教师',
+    		//title: '教师',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '教师',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
@@ -104685,7 +104372,24 @@ Ext.define('Youngshine.view.teacher.List', {
 		store.clearFilter();
         store.filter('subjectName', subject, true); 
 		// 正则表达，才能模糊搜索?? true就可以anymatch
-	} 
+	},
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    },  
 });
 
 // 显示课时的评价

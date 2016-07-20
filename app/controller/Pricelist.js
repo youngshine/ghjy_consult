@@ -43,7 +43,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
 					Ext.Viewport.add(me.pricelist);
-					//Ext.Viewport.setActiveItem(me.pricelist);
+					Ext.Viewport.setActiveItem(me.pricelist);
 				};
 			} 
 		})	  			 
@@ -54,9 +54,9 @@ Ext.define('Youngshine.controller.Pricelist', {
 	},
 	// 向左滑动，删除
 	pricelistItemtaphold: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(record)
+		console.log(e.target);
 		//if(e.direction !== 'left') return false
-
+		//e.target.parentNode.setAttribute('style','background:gray;')
 		var me = this;
 		//list.select(index,true); // 高亮当前记录 disableSelection
 		var actionSheet = Ext.create('Ext.ActionSheet', {
@@ -102,10 +102,10 @@ Ext.define('Youngshine.controller.Pricelist', {
 	pricelistAddnew: function(win){		
 		var me = this;
 		console.log(me.pricelistaddnew)
-		if(!me.pricelistaddnew){
+		//if(!me.pricelistaddnew){ // null to error
 			me.pricelistaddnew = Ext.create('Youngshine.view.pricelist.Addnew');
 			Ext.Viewport.add(me.pricelistaddnew); // build?
-		}
+		//}
 		Ext.Viewport.setActiveItem(me.pricelistaddnew)
 		//me.pricelistaddnew.show()
 	},
@@ -113,7 +113,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 	// 取消添加
 	pricelistaddnewCancel: function(){		
 		var me = this; 
-		//Ext.Viewport.remove(me.pricelistaddnew)
+		Ext.Viewport.remove(me.pricelistaddnew,true)
 		//me.pricelistaddnew.destroy()
 		Ext.Viewport.setActiveItem(me.pricelist);
 	},	
@@ -128,7 +128,8 @@ Ext.define('Youngshine.controller.Pricelist', {
 		    success: function(result){
 		        console.log(result)
 		        //record.set('fullEndtime','')
-				oldView.destroy()
+				//oldView.destroy()
+				Ext.Viewport.remove(me.pricelistaddnew,true)
 				Ext.Viewport.setActiveItem(me.pricelist);
 				//obj.teacherID = result.data.teacherID
 				//obj.created = new Date();

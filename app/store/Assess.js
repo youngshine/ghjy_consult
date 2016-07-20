@@ -14,5 +14,9 @@ Ext.define('Youngshine.store.Assess', {
 				rootProperty: "data"
 			}
         },
+		sorters: {
+			property: 'created',
+			direction: 'DESC'
+		}
     }
 });

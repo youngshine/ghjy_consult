@@ -19,20 +19,21 @@ require_once('db/database_connection.php');
 	$subjectID = $arr->subjectID;
 	$schoolID = $arr->schoolID; //所属校区
 
-	$query = "INSERT INTO `ghjy_teacher`(teacherName,gender,phone,note,subjectID,schoolID) 
+	$query = "INSERT INTO `ghjy_teacher`
+		(teacherName,gender,phone,note,subjectID,schoolID) 
 		VALUES('$teacherName','$gender','$phone','$note',$subjectID,$schoolID)";
 	$result = mysql_query($query) or die("Invalid query: readTeacher by school" . mysql_error());
 	
 	if($result){
 		$id = mysql_insert_id(); 	
 		$res->success = true;
-		$res->message = "创建教师teacher成功";
+		$res->message = "创建教师成功";
 		$res->data = array("teacherID" => $id);
 	}else{
 		$res->success = false;
 		$res->message = "出错！重复";
 	}
 
-echo $_GET['callback']."(".$res->to_json().")";
+	echo $_GET['callback']."(".$res->to_json().")";
 
 ?>

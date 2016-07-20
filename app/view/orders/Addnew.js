@@ -18,7 +18,7 @@ Ext.define('Youngshine.view.orders.Addnew', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增购买',
+			title: '新增销售',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -163,7 +163,8 @@ Ext.define('Youngshine.view.orders.Addnew', {
 			hour: hour,
 			amount: amount,
 			payment: payment,
-			consultID: localStorage.consultID //归属哪个咨询师
+			//consultID: localStorage.consultID,
+			//schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);

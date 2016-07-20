@@ -48,7 +48,7 @@ Ext.define('Youngshine.controller.Assess', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.assess = Ext.create('Youngshine.view.assess.List');
-		Ext.Viewport.add(me.assess);
+		
 		//Ext.Viewport.setActiveItem(me.assess);
 		//view.onGenreChange(); //默认
 		var obj = {
@@ -63,6 +63,7 @@ Ext.define('Youngshine.controller.Assess', {
 		store.load({
 			callback: function(records, operation, success){
 			    if (success){
+					Ext.Viewport.add(me.assess);
 					Ext.Viewport.setActiveItem(me.assess);
 				};
 			} 
@@ -108,9 +109,15 @@ Ext.define('Youngshine.controller.Assess', {
 	},	
 	// 向左滑动，删除
 	assessItemswipe: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(record)
-		if(e.direction !== 'left') return false
-
+		console.log(e);console.log(list)
+		var me = this;
+		/* swipe right to pop menu
+		if(e.direction == 'right'){ 
+			me.getApplication().getController('Main').menuNav()
+			return 
+		}  */
+		if(e.direction != 'left') return
+		// left to delete
 		var me = this;
 		list.select(index,true); // 高亮当前记录
 		var actionSheet = Ext.create('Ext.ActionSheet', {
@@ -155,16 +162,16 @@ Ext.define('Youngshine.controller.Assess', {
 	
 	assessAddnew: function(win){		
 		var me = this;
-		if(!me.assessaddnew){
+		//if(!me.assessaddnew){
 			me.assessaddnew = Ext.create('Youngshine.view.assess.Addnew');
 			Ext.Viewport.add(me.assessaddnew)
-		}
+		//}
 		Ext.Viewport.setActiveItem(me.assessaddnew)
 	},
 	// 取消添加
 	assessaddnewCancel: function(oldView){		
 		var me = this;
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.remove(me.assessaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.assess);
 	},	
 	assessaddnewSave: function( obj,oldView )	{
@@ -178,10 +185,11 @@ Ext.define('Youngshine.controller.Assess', {
 		    success: function(result){
 		        console.log(result)
 		        //record.set('fullEndtime','')
-				oldView.destroy()
+				//oldView.destroy()
+				Ext.Viewport.remove(me.assessaddnew,true); //remove 当前界面
 				Ext.Viewport.setActiveItem(me.assess);
 				obj.assessID = result.data.assessID
-				obj.created = new Date();
+				obj.created = '刚刚';
 				Ext.getStore('Assess').insert(0,obj)
 		    }
 		});
@@ -193,7 +201,8 @@ Ext.define('Youngshine.controller.Assess', {
 		Ext.Viewport.add(me.student); //否则build后无法显示
 
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -276,36 +285,37 @@ Ext.define('Youngshine.controller.Assess', {
 						disabled: true,
 						action: 'submit',
 						handler: function(btn){
-							this.up('panel').onDone()
+							//this.up('panel').onDone()
+							done()
 						}
 					}]
 				},{
 					xtype: 'component',
 					html: record.data.answer
 				}],	
-				
-				onDone: function(doneObj,view){
-					var modal = this;
-					var obj = {
-						"done": modal.down('selectfield[name=done]').getValue(), //doneObj.done,
-						//'fullDone': doneObj.fullDone,
-						"assesstopicID": record.data.assesstopicID
-					}
-					console.log(obj);
-					Ext.Ajax.request({
-						url: me.getApplication().dataUrl + 'updateTopicAssess.php',
-						params: obj,
-						success: function(response){	
-							modal.destroy()
-							// 更新前端	
-							record.set('done',obj.done)		
-							//record.set('fullDone',doneObj.fullDone)
-							Ext.toast('测评评分完成')
-						}
-					});
-				}
 			})
 			list.overlay.show()
+			
+			//评分
+			function done(doneObj,view){
+				var obj = {
+					"done": list.overlay.down('selectfield[name=done]').getValue(), //doneObj.done,
+					//'fullDone': doneObj.fullDone,
+					"assesstopicID": record.data.assesstopicID
+				}
+				console.log(obj);
+				Ext.Ajax.request({
+					url: me.getApplication().dataUrl + 'updateTopicAssess.php',
+					params: obj,
+					success: function(response){	
+						// 更新前端	
+						record.set('done',obj.done)		
+						//record.set('fullDone',doneObj.fullDone)
+						Ext.toast('测评评分完成')
+						list.overlay.destroy()
+					}
+				});
+			}
 		}
 	},	
 	// 向左滑动，删除

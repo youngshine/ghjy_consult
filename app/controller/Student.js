@@ -7,7 +7,7 @@ Ext.define('Youngshine.controller.Student', {
            	student: 'student',
 			studentaddnew: 'student-addnew',
 			studentedit: 'student-edit',
-			studentstudy: 'studentstudy',
+			studentstudy: 'student-study',
 			studentshow: 'student-show'
         },
         control: {
@@ -35,11 +35,11 @@ Ext.define('Youngshine.controller.Student', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.student = Ext.create('Youngshine.view.student.List');
-		Ext.Viewport.add(me.student);
 		//me.student.onGenreChange(); //默认
 		
 		var obj = {
-			"consultID": localStorage.consultID
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID //来自公众号的学生，没有归属咨询师怎么办？ 
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -51,6 +51,7 @@ Ext.define('Youngshine.controller.Student', {
 			callback: function(records, operation, success){
 		        //Ext.Viewport.setMasked(false);
 		        if (success){
+					Ext.Viewport.add(me.student);
 					Ext.Viewport.setActiveItem(me.student);
 				};
 			}   		
@@ -156,18 +157,23 @@ Ext.define('Youngshine.controller.Student', {
 	studentAddnew: function(win){		
 		var me = this;
 		
-		if(!me.studentaddnew){
+		//if(!me.studentaddnew){
 			me.studentaddnew = Ext.create('Youngshine.view.student.Addnew');
-			Ext.Viewport.add(me.studentaddnew)
-		}
+			Ext.Viewport.add(me.studentaddnew);
+		/*}else{
+			// 清除部分，保留重复填写项，就不能destroy or remove
+			me.studentaddnew.down('textfield[name=studentName]').setValue('')
+			me.studentaddnew.down('textfield[name=phone]').setValue('')
+			me.studentaddnew.down('textfield[name=addr]').setValue('')
+		} */
 		Ext.Viewport.setActiveItem(me.studentaddnew)
 	},
 	
 	// 取消添加
 	studentaddnewCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
 	studentaddnewSave: function( obj,oldView )	{
@@ -181,12 +187,17 @@ Ext.define('Youngshine.controller.Student', {
 						data: JSON.stringify(obj)
 					},
 				    success: function(result){
-				        //var text = response.responseText; JSON.parse()
-						oldView.destroy()
-						Ext.Viewport.setActiveItem(me.student);
-						obj.studentID = result.data.studentID; //删除用
-						//obj.created = new Date();
-						Ext.getStore('Student').insert(0,obj)
+				        console.log(result)
+						Ext.toast(result.message,3000)
+						if(result.success){
+							//var text = response.responseText; JSON.parse()
+							//oldView.destroy()
+							Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+							Ext.Viewport.setActiveItem(me.student);
+							obj.studentID = result.data.studentID; //删除用
+							//obj.created = new Date();
+							Ext.getStore('Student').insert(0,obj)
+						}
 				    }
 				});
 			}
@@ -195,8 +206,8 @@ Ext.define('Youngshine.controller.Student', {
 	// 取消添加
 	studenteditCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
 	},	
 	studenteditSave: function( obj,oldView )	{
@@ -207,10 +218,11 @@ Ext.define('Youngshine.controller.Student', {
 		    params: obj,
 		    success: function(result){
 		        //var text = response.responseText; JSON.parse()
-				oldView.destroy()
+				//oldView.destroy()
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改成功',3000)
+				Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		    }
 		});
 	},

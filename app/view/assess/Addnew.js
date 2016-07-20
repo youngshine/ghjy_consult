@@ -38,7 +38,7 @@ Ext.define('Youngshine.view.assess.Addnew', {
 				},{
 					xtype: 'button',
 					action: 'student',
-					text: '﹍﹍',
+					text: '...',
 					//iconCls: 'search',
 					ui: 'plain',
 					width: 60,

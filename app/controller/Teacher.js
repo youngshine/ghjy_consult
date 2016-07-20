@@ -184,15 +184,10 @@ Ext.define('Youngshine.controller.Teacher', {
 
 	teacherAddnew: function(win){		
 		var me = this;
-		//var vw = Ext.create('Youngshine.view.teacher.Addnew');
-		//Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
-		//vw.down('panel[itemId=my_show]').setData(record.data)
-		//vw.show();
-		
-		if(!me.teacheraddnew){
-			me.teacheraddnew = Ext.create('Youngshine.view.teacher.Addnew');
-			Ext.Viewport.add(me.teacheraddnew)
-		}
+
+		me.teacheraddnew = Ext.create('Youngshine.view.teacher.Addnew');
+		Ext.Viewport.add(me.teacheraddnew)
+
 		Ext.Viewport.setActiveItem(me.teacheraddnew)
 	},
 	
@@ -200,7 +195,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	teacheraddnewCancel: function(oldView){		
 		var me = this;
 		//oldView.destroy()
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+		Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
 	teacheraddnewSave: function( obj,oldView )	{
@@ -215,6 +210,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		        console.log(result)
 		        //record.set('fullEndtime','')
 				//oldView.destroy()
+				Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 				Ext.Viewport.setActiveItem(me.teacher);
 				obj.teacherID = result.data.teacherID
 				//obj.created = new Date();
@@ -225,8 +221,8 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 取消添加
 	teachereditCancel: function(oldView){		
 		var me = this; 
-		oldView.destroy()
-		//Ext.Viewport.remove(me.studentaddnew,true); //remove 当前界面
+		//oldView.destroy()
+		Ext.Viewport.remove(me.teacheredit,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
 	teachereditSave: function( obj,oldView )	{
@@ -238,10 +234,10 @@ Ext.define('Youngshine.controller.Teacher', {
 		    success: function(result){
 		        //var text = response.responseText; JSON.parse()
 				console.log(result)
-				oldView.destroy()
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改成功',3000)
+				Ext.Viewport.remove(me.teacheredit,true); //remove 当前界面
 		    }
 		});
 	},

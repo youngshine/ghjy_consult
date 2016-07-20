@@ -10,7 +10,7 @@ require_once('db/database_connection.php');
 
 $assessID = $_REQUEST['assessID'];	
 
-$sql = "SELECT 1 FROM `ghjy_student-student-topic` Where assessID = $assessID";
+$sql = "SELECT 1 FROM `ghjy_student-assess-topic` Where assessID = $assessID";
 $result = mysql_query($sql);
 if(mysql_num_rows($result) > 0){
     echo json_encode(array(

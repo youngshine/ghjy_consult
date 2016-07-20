@@ -787,7 +787,6 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.Main": [],
   "Youngshine.view.Menu": [],
   "Youngshine.view.assess.Addnew": [],
-  "Youngshine.view.assess.Chart": [],
   "Youngshine.view.assess.List": [],
   "Youngshine.view.assess.PolarChart": [],
   "Youngshine.view.assess.ReportChart": [],
@@ -1808,9 +1807,6 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.assess.Addnew": [
     "widget.assess-addnew"
-  ],
-  "Youngshine.view.assess.Chart": [
-    "widget.assess-chart"
   ],
   "Youngshine.view.assess.List": [
     "widget.assess"

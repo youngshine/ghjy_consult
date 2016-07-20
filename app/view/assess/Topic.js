@@ -35,11 +35,11 @@ Ext.define('Youngshine.view.assess.Topic', {
 				xtype: 'spacer'
 			},{
 				ui : 'action',
-				text: '历年考点',
+				text: '测评报告',
 				//action: 'addnew',
 				//iconCls: 'add',
 				handler: function(){
-					this.up('list').onHistChart()
+					this.up('list').onReport()
 				}		
 			}]
 		},{
@@ -48,7 +48,7 @@ Ext.define('Youngshine.view.assess.Topic', {
 			docked: 'top',
 			html: '<span class="addnew">＋添加题目</span>'+
 				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-				'<span class="report">测评报告</span>',
+				'<span class="hist">历年考点</span>',
 			//itemId: 'zsd',
 			style: 'text-align:center;color:green;margin:10px;'
     	}],	
@@ -60,9 +60,9 @@ Ext.define('Youngshine.view.assess.Topic', {
 			fn: 'onAddnew'
 		},{
 			element: 'element',
-			delegate: 'span.report',
+			delegate: 'span.hist',
 			event: 'tap',
-			fn: 'onReport'	
+			fn: 'onHistChart'	
 		}],
     },
 	
@@ -97,7 +97,10 @@ Ext.define('Youngshine.view.assess.Topic', {
 	},	
 	onReport: function(){
 		var me = this; 
-		if(me.getStore().getCount()==0) Ext.toast('尚无测评内容',3000)
+		if(me.getStore().getCount()==0){
+			Ext.toast('尚无测评内容',3000)
+			return false
+		}	
 			
 		var obj = {
 			subjectID: me.getParentRecord().data.subjectID,

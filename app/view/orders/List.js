@@ -6,7 +6,8 @@ Ext.define('Youngshine.view.orders.List', {
 	xtype: 'orders',
 	
     config: {
-		record: null, //父窗口传递的记录参数
+		//record: null, //父窗口传递的记录参数
+		ui: 'round',
 		store: 'Orders',
         //itemHeight: 89,
         //emptyText: '学生列表',
@@ -20,14 +21,21 @@ Ext.define('Youngshine.view.orders.List', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '课时套餐订单',
+    		//title: '课时套餐订单',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '课时订单',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
+			},{
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				action: 'search',
 			},{
 				xtype: 'spacer'
 			},{
@@ -38,12 +46,6 @@ Ext.define('Youngshine.view.orders.List', {
 					this.up('list').onAddnew()
 				}		
 			}]
-		},{
-    		xtype: 'searchfield',
-			scrollDock: 'top',
-			docked: 'top',
-			placeHolder: 'search...',
-			action: 'search'
     	}],	
 		
     	listeners: [{
@@ -88,4 +90,21 @@ Ext.define('Youngshine.view.orders.List', {
 		var store = Ext.getStore('Orders');
 		store.clearFilter();
 	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
 });

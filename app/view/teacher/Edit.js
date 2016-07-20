@@ -74,7 +74,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{	
@@ -86,7 +86,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 					focus: function(e){
 						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
 						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
-						//window.scrollTo(0,0);
+						window.scrollTo(0,0);
 					}
 				}
 			},{

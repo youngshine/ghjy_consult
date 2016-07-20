@@ -81,17 +81,26 @@ Ext.define('Youngshine.view.Main', {
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 330,height: 270,
+			width: 330,height: 220,
 			scrollable: true,
 
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
 	        	title: '密码修改',
+				items: [{
+					text: '保存'	,
+					ui: 'confirm',
+					handler: function(btn){
+						btn.up('panel').onSave()
+					}
+				}]
 			},{
 				xtype: 'fieldset',
-				width: 300,
-				//margin: '10 10 0 10',
+				width: 320,
+				defaults: {
+					//labelAlign: 'right'
+				},
 				items: [{
 					xtype: 'textfield',
 					readOnly: true,
@@ -110,39 +119,35 @@ Ext.define('Youngshine.view.Main', {
 					label : '确认密码', 
 					scope: this
 				}]	
-			},{
-				xtype: 'button',
-				text: '保存',
-				action: 'save',
-				margin: '-15 10 15',
-				ui: 'confirm',
-				handler: function(btn){
-					var me = this;
-					var psw1 = this.up('panel').down('passwordfield[itemId=psw1]').getValue().trim(),
-						psw2 = this.up('panel').down('passwordfield[itemId=psw2]').getValue().trim()
-					console.log(psw1)
-					if(psw1.length<6){
-						Ext.toast('密码少于6位',3000); return
-					}
-					if(psw1!= psw2){
-						Ext.toast('确认密码错误',3000); return
-					}
-					// ajax
-					Ext.Ajax.request({
-					    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
-					    params: {
-					        psw1     : psw1,
-							consultID: localStorage.consultID
-					    },
-					    success: function(response){
-					        var text = response.responseText;
-					        // process server response here
-							Ext.toast('密码修改成功',3000)
-							me.up('panel').destroy()
-					    }
-					});
-				}
 			}],	
+			
+			onSave: function(){
+				var me = this;
+				var psw1 = this.down('passwordfield[itemId=psw1]').getValue().trim(),
+					psw2 = this.down('passwordfield[itemId=psw2]').getValue().trim()
+				console.log(psw1)
+				if(psw1.length<6){
+					Ext.toast('密码少于6位',3000); return
+				}
+				if(psw1!= psw2){
+					Ext.toast('确认密码错误',3000); return
+				}
+				// ajax
+				Ext.Ajax.request({
+				    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
+				    params: {
+				        psw1     : psw1,
+						consultID: localStorage.consultID
+				    },
+				    success: function(response){
+				        var text = response.responseText;
+				        // process server response here
+						//setTimeout(function(){},3000)
+						Ext.toast('密码修改成功',3000)
+						me.destroy()
+				    }
+				});
+			}
 		})
 		this.overlay.show()
 	},	
