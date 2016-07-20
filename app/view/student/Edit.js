@@ -23,7 +23,7 @@ Ext.define('Youngshine.view.student.Edit', {
 		},{
 			xtype: 'fieldset',
 			defaults: {
-				labelWidth: 65,
+				labelWidth: 85,
 				xtype: 'textfield'
 			},
 			//title: '个人资料',
@@ -35,7 +35,6 @@ Ext.define('Youngshine.view.student.Edit', {
 			},{
 				xtype: 'selectfield',
 				name: 'gender', 
-				autoSelect: false,
 				label: '性别',
 				options: [
 				    {text: '男', value: '男'},
@@ -94,6 +93,20 @@ Ext.define('Youngshine.view.student.Edit', {
 						window.scrollTo(0,0);
 					}
 				}
+			},{
+				disabled: true,
+				xtype: 'selectfield',
+				name: 'consultID', 
+				label: '咨询师',
+				options: [
+				    {text: '男', value: '男'},
+				    {text: '女', value: '女'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			},{
 				xtype: 'hiddenfield',
 				name: 'studentID' //修改的unique			

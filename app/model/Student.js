@@ -25,6 +25,13 @@ Ext.define('Youngshine.model.Student', {
 					return record.get('pass')==1?'通过学习':''
 				} 
 			},
+			// 组合字段，搜索过滤用, 中间间隔空格， 避免...
+			{ name: 'fullStudent', convert: function(value, record){
+					//var date = record.get('drive_date');
+					return record.get('studentName') + ' ' + record.get('gender') + ' ' +
+					record.get('grade') + ' ' + record.get('phone'); 
+				} 
+			},
         ]
     }
 });

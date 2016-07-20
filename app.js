@@ -30,7 +30,7 @@ Ext.application({
         'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess'
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist'
+    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist','Followup'
     ],
 
     icon: {

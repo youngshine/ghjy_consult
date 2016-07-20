@@ -98694,7 +98694,8 @@ Ext.define('Youngshine.controller.Student', {
 			studentaddnew: 'student-addnew',
 			studentedit: 'student-edit',
 			studentstudy: 'student-study',
-			studentshow: 'student-show'
+			studentshow: 'student-show',
+			studentfollowup: 'student-followup'
         },
         control: {
 			student: {
@@ -98709,6 +98710,10 @@ Ext.define('Youngshine.controller.Student', {
 			studentedit: {
 				save: 'studenteditSave', 
 				cancel: 'studenteditCancel'
+			},
+			studentfollowup: {
+				back: 'studentfollowupBack',
+				save: 'studentfollowupSave', 
 			},
         }
     },
@@ -98799,6 +98804,34 @@ Ext.define('Youngshine.controller.Student', {
 			Ext.Viewport.setActiveItem(me.studentedit); //show()?
 			console.log(record.data)
 			me.studentedit.setRecord(record)
+			return
+		}
+		// 沟通联络记录
+		if(e.target.className == 'followup'){
+			me.studentfollowup = Ext.create('Youngshine.view.student.Followup');
+			me.studentfollowup.setParentRecord(record)
+			
+			Ext.Viewport.setMasked({xtype:'loadmask',message:'读取联络记录'});
+			// 预先加载的数据
+			var obj = {
+				"studentID": record.data.studentID,
+			}
+			var store = Ext.getStore('Followup'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(this.getApplication().dataUrl + 
+				'readFollowupList.php?data='+JSON.stringify(obj) );
+			store.load({ //异步async
+				callback: function(records, operation, success){
+					Ext.Viewport.setMasked(false);
+					if (success){
+						Ext.Viewport.add(me.studentfollowup) // build?
+						Ext.Viewport.setActiveItem(me.studentfollowup);
+					}else{
+						Ext.toast(result.message,3000);
+					};
+				}   		
+			});	
 			return
 		}
 /*		
@@ -98911,6 +98944,33 @@ Ext.define('Youngshine.controller.Student', {
 				Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		    }
 		});
+	},
+	
+	studentfollowupBack: function(oldView){		
+		var me = this;
+		//oldView.destroy()	
+		Ext.Viewport.remove(me.studentfollowup,true); //remove/destroy 当前界面
+		Ext.Viewport.setActiveItem(me.student);
+	},
+	// 添加沟通记录
+	studentfollowupSave: function(obj,oldView){		
+		var me = this;
+		Ext.data.JsonP.request({
+            url: me.getApplication().dataUrl + 'createFollowup.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				console.log(result)
+				if(result.success){
+					obj.studentfollowID = result.data.studentfollowID; 
+					obj.created = '刚刚'
+					Ext.getStore('Followup').insert(0,obj)
+				}	
+				Ext.toast(result.message,3000)
+			},
+        });
 	},
 
 			
@@ -99173,7 +99233,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		var me = this;
 		//oldView.destroy()	
 		console.log(me.teacher)	
-		//Ext.Viewport.remove(me.teachercourse); //remove 当前界面
+		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},
 	// 显示该堂课时的家长评价
@@ -99894,6 +99954,7 @@ Ext.define('Youngshine.controller.Assess', {
 			assessaddnew: 'assess-addnew',
 			student: 'assess-student',
 			assesstopic: 'assess-topic',
+			topicshow: 'topic-show',
 			zsd: 'topic-zsd'
         },
         control: {
@@ -100124,10 +100185,17 @@ Ext.define('Youngshine.controller.Assess', {
 	assesstopicItemtap: function(list, index, target, record, e, eOpts){		
 		var me = this;
 		if(e.target.className=='answer'){
-			answer()
+			answer() //评分
+			return false
 		}
+		
+		me.topicshow = Ext.create('Youngshine.view.assess.Show');
+		Ext.Viewport.add(me.topicshow); //很重要，否则build后无法菜单，出错
+		me.topicshow.down('panel[itemId=my_show]').setData(record.data)
+		me.topicshow.show(); 
+		//me.studentshow.setRecord(record); // 当前记录参数
+		
 		// 评分
-		// 开始上课 ，small window-overlay
 		function answer(){
 			list.overlay = Ext.Viewport.add({
 				xtype: 'panel',
@@ -100242,9 +100310,10 @@ Ext.define('Youngshine.controller.Assess', {
 			    },
 			    success: function(response){
 					var ret = JSON.parse(response.responseText)
+					console.log(ret)
 					Ext.toast(ret.message,3000)
 					if(ret.success){
-						Ext.getStore('Assess').remove(rec);
+						Ext.getStore('Topic').remove(rec);
 					}		         
 			    }
 			});
@@ -100378,6 +100447,13 @@ Ext.define('Youngshine.model.Student', {
 			
 			{ name: 'fullPass', convert: function(value, record){
 					return record.get('pass')==1?'通过学习':''
+				} 
+			},
+			// 组合字段，搜索过滤用, 中间间隔空格， 避免...
+			{ name: 'fullStudent', convert: function(value, record){
+					//var date = record.get('drive_date');
+					return record.get('studentName') + ' ' + record.get('gender') + ' ' +
+					record.get('grade') + ' ' + record.get('phone'); 
 				} 
 			},
         ]
@@ -100838,6 +100914,38 @@ Ext.define('Youngshine.store.Zsdhist', {
     }
 });
 
+// 与学生沟通联络记录
+Ext.define('Youngshine.store.Followup', {
+    extend:  Ext.data.Store ,
+	//requires: 'Youngshine.model.Assess',
+	
+    config: {
+        //model: 'Youngshine.model.Assess',
+	    fields: [
+			{name: 'studentfollowID'}, 
+			{name: 'studentID'}, // 学生
+			{name: 'studentName'},
+			{name: 'content'}, // 沟通内容
+			{name: 'consultID'}, 
+			{name: 'created'},
+
+	    ],
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+		sorters: {
+			property: 'created',
+			direction: 'DESC'
+		}
+    }
+});
+
 /*
     This file is generated and updated by Sencha Cmd. You can edit this file as
     needed for your application, but these edits will have to be merged by
@@ -100870,7 +100978,7 @@ Ext.application({
         'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess'
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist'
+    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist','Followup'
     ],
 
     icon: {
@@ -101803,6 +101911,81 @@ Ext.define('Youngshine.view.assess.ReportChart', {
     }
 });
 
+//显示题目
+Ext.define('Youngshine.view.assess.Show',{
+	extend:  Ext.Sheet ,
+	xtype: 'topic-show',
+
+	config: {
+		//floating: true,
+		//centered: true,
+		// We give it a left and top property to make it floating by default
+		//scrollable: 'vertical',
+		enter: 'right',
+		exit: 'right',
+		right: 0,
+		//top: 0,
+		width: '80%',
+		stretchY: true,
+
+		hideOnMaskTap: true,
+		modal: true, 
+		
+		styleHtmlContent: true,
+		style: 'background:#fff;border-radius:10px 0 0 10px;',
+		//cls: 'x-confirm',
+        layout: {
+            type: 'vbox',
+            align: 'stretch'
+        },
+		items: [{
+			xtype: 'panel',
+			scrollable: 'vertical',
+			itemId: 'my_show',
+			tpl: [
+				'<div>{content}</div>',
+			].join(''),
+			flex: 1 
+			/*},{	
+			xtype: 'button',
+			text: '确定',
+			style: 'margin-top:5px;',
+			//docked: 'bottom',
+			//margin: '15 30',
+			handler: function(){
+				this.up('sheet').hide();
+			}	*/
+		}],
+		
+		record: null, //保存当前记录参数，setRecord, updateRecord
+	},
+
+    hide: function(animation) {
+        this.callParent();
+		this.destroy();
+    },
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        //it's important to callParent to not break inheritance
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElementSwipe', //not use anonymous functions
+			//tap	  : 'onTapToHide',
+        });
+    },   
+    // swipe right to return to the previous
+    onElementSwipe : function(e) {
+        //fire event on component so swipe event is now on the component
+        if(e.direction=='right'){
+        	this.hide();
+        };     
+    },  	
+    onTapToHide : function(e) {
+        this.hide();    
+    },
+});
+
 // 查找选择学生
 Ext.define('Youngshine.view.assess.Student',{
 	extend:  Ext.dataview.List ,
@@ -101867,7 +102050,7 @@ Ext.define('Youngshine.view.assess.Topic', {
 		
 		store: 'Topic',
         //itemHeight: 89,
-		disableSelection: true,
+		//disableSelection: true,
 		striped: true,
         itemTpl: [
 			'<div>{content}</div>' +
@@ -102001,7 +102184,13 @@ Ext.define('Youngshine.view.assess.Zsd',{
             docked: 'top',
             xtype: 'toolbar',
 			ui: 'gray',
-  		    title: '选择知识点'
+  		    title: '选择知识点',
+			items: [{
+				text: '确定',
+				ui: 'confirm',
+				disabled: true,
+				action: 'choose'
+			}]
         }],
 		
 		parentRecord: null
@@ -102009,12 +102198,31 @@ Ext.define('Youngshine.view.assess.Zsd',{
 	
 	initialize: function(){
 		this.callParent(arguments)
-		this.on('itemtap',this.onItemtap)
+		//this.on('itemtap',this.onItemtap)
+		this.on('select',this.onSelect)
+	},
+	onSelect: function(list, record){
+		var me = this
+		me.down('button[action=choose]').setDisabled(false)
+		
+		me.down('button[action=choose]').on('tap',function(){
+			var obj = {
+				level: 3, //测评选择难度高3
+				zsdID: record.data.zsdID, //选择知识点列表,zsdID非唯一unique
+				subjectID: record.data.subjectID,
+				gradeID: record.data.gradeID,
+				assessID: me.getParentRecord().assessID
+				//consultID: sessionStorage.consultID
+		    }
+			console.log(obj);	
+			me.fireEvent('choose',obj,me)
+			me.destroy()
+		})
 	},
 	
 	// 显示详情
     onItemtap: function(list, index, item, record){
-		var me = this
+		var me = this;return
 		console.log(me.getParentRecord())
 		//console.log(record)
 		var obj = {
@@ -103498,7 +103706,7 @@ Ext.define('Youngshine.view.student.Edit', {
 		},{
 			xtype: 'fieldset',
 			defaults: {
-				labelWidth: 65,
+				labelWidth: 85,
 				xtype: 'textfield'
 			},
 			//title: '个人资料',
@@ -103510,7 +103718,6 @@ Ext.define('Youngshine.view.student.Edit', {
 			},{
 				xtype: 'selectfield',
 				name: 'gender', 
-				autoSelect: false,
 				label: '性别',
 				options: [
 				    {text: '男', value: '男'},
@@ -103570,6 +103777,20 @@ Ext.define('Youngshine.view.student.Edit', {
 					}
 				}
 			},{
+				disabled: true,
+				xtype: 'selectfield',
+				name: 'consultID', 
+				label: '咨询师',
+				options: [
+				    {text: '男', value: '男'},
+				    {text: '女', value: '女'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
 				xtype: 'hiddenfield',
 				name: 'studentID' //修改的unique			
 			}]	
@@ -103624,6 +103845,95 @@ Ext.define('Youngshine.view.student.Edit', {
 });
 
 /**
+ * Displays a list of 与学生联络记录
+ */
+Ext.define('Youngshine.view.student.Followup', {
+    extend:  Ext.dataview.List ,
+	xtype: 'student-followup',
+	
+    config: {
+		parentRecord: null,
+		
+		store: 'Followup',
+        //itemHeight: 89,
+		//disableSelection: true,
+		striped: true,
+        itemTpl: [
+			'<div>{content}</div>' +
+			'<div style="color:#888;font-size:0.8em;">'+
+			'<span style="float:right;">{created}</span>'+
+			'</div>'			
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '沟通联络记录',
+			items: [{
+				ui : 'back',
+				action: 'back',
+				text : '返回',
+				handler: function(){
+					this.up('list').onBack()
+				}	
+			}]
+		},{
+    		xtype: 'label',
+			scrollDock: 'top',
+			docked: 'top',
+			html: '<span class="addnew">＋添加</span>',
+			//itemId: 'zsd',
+			style: 'text-align:center;color:green;margin:10px;'
+    	}],	
+		
+		listeners: [{
+			element: 'element',
+			delegate: 'span.addnew',
+			event: 'tap',
+			fn: 'onAddnew'
+		}],
+    },
+	
+    onAddnew: function(btn){
+		var me = this; console.log(me.getParentRecord())
+		
+		Ext.Msg.show({
+		  //title   : '',
+		  msg     : null,
+		  buttons : [{
+		    itemId : 'cancel',
+		    text   : '取消'
+		  },{
+		    itemId : 'ok',
+		    text   : '提交',
+		    ui     : 'confirm'
+		  }],
+		  prompt  : { 
+			maxlength : 180, 
+			autocapitalize : false ,
+			xtype: 'textareafield',
+			//value: 'test'
+		  },
+		  fn      : function(btn,text) {
+		    // do some stuff
+			  if(btn=='ok' && text.trim() != '') {
+				  var obj = {
+					  studentID: me.getParentRecord().data.studentID,
+					  content: text
+				  }
+				  me.fireEvent('save',obj, me);
+			  }
+				  
+		  }
+		});
+    },
+    onBack: function(btn){
+		var me = this;
+		me.fireEvent('back', me);
+    },
+});
+
+/**
  * Displays a list of 报读某个知识点的学生列表
  */
 Ext.define('Youngshine.view.student.List', {
@@ -103642,8 +103952,9 @@ Ext.define('Youngshine.view.student.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div>{studentName}<span style="color:#888;">［{grade}］</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
+            '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
+			'<span class="followup" style="float:right;color:green;">联络</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑｜</span></div>'
         ],
 		
     	items: [{
@@ -103714,7 +104025,7 @@ Ext.define('Youngshine.view.student.List', {
 		var store = Ext.getStore('Student');
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
-        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('fullStudent', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
 		var store = Ext.getStore('Student');
@@ -104017,7 +104328,8 @@ Ext.define('Youngshine.view.teacher.Course', {
 		var store = this.getStore();
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
-        store.filter('zsdName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('zsdName', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
 		var store = this.getStore();

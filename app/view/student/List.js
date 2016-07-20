@@ -17,8 +17,9 @@ Ext.define('Youngshine.view.student.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div>{studentName}<span style="color:#888;">［{grade}］</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span></div>'
+            '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
+			'<span class="followup" style="float:right;color:green;">联络</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑｜</span></div>'
         ],
 		
     	items: [{
@@ -89,7 +90,7 @@ Ext.define('Youngshine.view.student.List', {
 		var store = Ext.getStore('Student');
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
-        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('fullStudent', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
 		var store = Ext.getStore('Student');

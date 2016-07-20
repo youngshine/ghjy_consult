@@ -26,7 +26,13 @@ Ext.define('Youngshine.view.assess.Zsd',{
             docked: 'top',
             xtype: 'toolbar',
 			ui: 'gray',
-  		    title: '选择知识点'
+  		    title: '选择知识点',
+			items: [{
+				text: '确定',
+				ui: 'confirm',
+				disabled: true,
+				action: 'choose'
+			}]
         }],
 		
 		parentRecord: null
@@ -34,12 +40,31 @@ Ext.define('Youngshine.view.assess.Zsd',{
 	
 	initialize: function(){
 		this.callParent(arguments)
-		this.on('itemtap',this.onItemtap)
+		//this.on('itemtap',this.onItemtap)
+		this.on('select',this.onSelect)
+	},
+	onSelect: function(list, record){
+		var me = this
+		me.down('button[action=choose]').setDisabled(false)
+		
+		me.down('button[action=choose]').on('tap',function(){
+			var obj = {
+				level: 3, //测评选择难度高3
+				zsdID: record.data.zsdID, //选择知识点列表,zsdID非唯一unique
+				subjectID: record.data.subjectID,
+				gradeID: record.data.gradeID,
+				assessID: me.getParentRecord().assessID
+				//consultID: sessionStorage.consultID
+		    }
+			console.log(obj);	
+			me.fireEvent('choose',obj,me)
+			me.destroy()
+		})
 	},
 	
 	// 显示详情
     onItemtap: function(list, index, item, record){
-		var me = this
+		var me = this;return
 		console.log(me.getParentRecord())
 		//console.log(record)
 		var obj = {

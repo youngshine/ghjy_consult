@@ -247,7 +247,7 @@ Ext.define('Youngshine.controller.Teacher', {
 		var me = this;
 		//oldView.destroy()	
 		console.log(me.teacher)	
-		//Ext.Viewport.remove(me.teachercourse); //remove 当前界面
+		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},
 	// 显示该堂课时的家长评价

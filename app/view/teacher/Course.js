@@ -59,7 +59,8 @@ Ext.define('Youngshine.view.teacher.Course', {
 		var store = this.getStore();
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
-        store.filter('zsdName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('zsdName', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
 		var store = this.getStore();

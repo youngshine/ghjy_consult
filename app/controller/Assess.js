@@ -8,6 +8,7 @@ Ext.define('Youngshine.controller.Assess', {
 			assessaddnew: 'assess-addnew',
 			student: 'assess-student',
 			assesstopic: 'assess-topic',
+			topicshow: 'topic-show',
 			zsd: 'topic-zsd'
         },
         control: {
@@ -238,10 +239,17 @@ Ext.define('Youngshine.controller.Assess', {
 	assesstopicItemtap: function(list, index, target, record, e, eOpts){		
 		var me = this;
 		if(e.target.className=='answer'){
-			answer()
+			answer() //评分
+			return false
 		}
+		
+		me.topicshow = Ext.create('Youngshine.view.assess.Show');
+		Ext.Viewport.add(me.topicshow); //很重要，否则build后无法菜单，出错
+		me.topicshow.down('panel[itemId=my_show]').setData(record.data)
+		me.topicshow.show(); 
+		//me.studentshow.setRecord(record); // 当前记录参数
+		
 		// 评分
-		// 开始上课 ，small window-overlay
 		function answer(){
 			list.overlay = Ext.Viewport.add({
 				xtype: 'panel',
@@ -356,9 +364,10 @@ Ext.define('Youngshine.controller.Assess', {
 			    },
 			    success: function(response){
 					var ret = JSON.parse(response.responseText)
+					console.log(ret)
 					Ext.toast(ret.message,3000)
 					if(ret.success){
-						Ext.getStore('Assess').remove(rec);
+						Ext.getStore('Topic').remove(rec);
 					}		         
 			    }
 			});

@@ -8,7 +8,8 @@ Ext.define('Youngshine.controller.Student', {
 			studentaddnew: 'student-addnew',
 			studentedit: 'student-edit',
 			studentstudy: 'student-study',
-			studentshow: 'student-show'
+			studentshow: 'student-show',
+			studentfollowup: 'student-followup'
         },
         control: {
 			student: {
@@ -23,6 +24,10 @@ Ext.define('Youngshine.controller.Student', {
 			studentedit: {
 				save: 'studenteditSave', 
 				cancel: 'studenteditCancel'
+			},
+			studentfollowup: {
+				back: 'studentfollowupBack',
+				save: 'studentfollowupSave', 
 			},
         }
     },
@@ -113,6 +118,34 @@ Ext.define('Youngshine.controller.Student', {
 			Ext.Viewport.setActiveItem(me.studentedit); //show()?
 			console.log(record.data)
 			me.studentedit.setRecord(record)
+			return
+		}
+		// 沟通联络记录
+		if(e.target.className == 'followup'){
+			me.studentfollowup = Ext.create('Youngshine.view.student.Followup');
+			me.studentfollowup.setParentRecord(record)
+			
+			Ext.Viewport.setMasked({xtype:'loadmask',message:'读取联络记录'});
+			// 预先加载的数据
+			var obj = {
+				"studentID": record.data.studentID,
+			}
+			var store = Ext.getStore('Followup'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(this.getApplication().dataUrl + 
+				'readFollowupList.php?data='+JSON.stringify(obj) );
+			store.load({ //异步async
+				callback: function(records, operation, success){
+					Ext.Viewport.setMasked(false);
+					if (success){
+						Ext.Viewport.add(me.studentfollowup) // build?
+						Ext.Viewport.setActiveItem(me.studentfollowup);
+					}else{
+						Ext.toast(result.message,3000);
+					};
+				}   		
+			});	
 			return
 		}
 /*		
@@ -225,6 +258,33 @@ Ext.define('Youngshine.controller.Student', {
 				Ext.Viewport.remove(me.studentedit,true); //remove 当前界面
 		    }
 		});
+	},
+	
+	studentfollowupBack: function(oldView){		
+		var me = this;
+		//oldView.destroy()	
+		Ext.Viewport.remove(me.studentfollowup,true); //remove/destroy 当前界面
+		Ext.Viewport.setActiveItem(me.student);
+	},
+	// 添加沟通记录
+	studentfollowupSave: function(obj,oldView){		
+		var me = this;
+		Ext.data.JsonP.request({
+            url: me.getApplication().dataUrl + 'createFollowup.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				console.log(result)
+				if(result.success){
+					obj.studentfollowID = result.data.studentfollowID; 
+					obj.created = '刚刚'
+					Ext.getStore('Followup').insert(0,obj)
+				}	
+				Ext.toast(result.message,3000)
+			},
+        });
 	},
 
 			

@@ -10,7 +10,7 @@ Ext.define('Youngshine.view.assess.Topic', {
 		
 		store: 'Topic',
         //itemHeight: 89,
-		disableSelection: true,
+		//disableSelection: true,
 		striped: true,
         itemTpl: [
 			'<div>{content}</div>' +
