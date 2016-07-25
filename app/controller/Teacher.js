@@ -25,7 +25,7 @@ Ext.define('Youngshine.controller.Teacher', {
 				save: 'teachereditSave', 
 				cancel: 'teachereditCancel'
 			},
-			teachercourse: {
+			'teacher-course': {
 				back: 'teachercourseBack',
 				itemtap: 'teachercourseItemtap'
 			},
@@ -108,6 +108,8 @@ Ext.define('Youngshine.controller.Teacher', {
 
 		if(!me.teachercourse){
 			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
+		}else{
+			me.teachercourse.down('searchfield').setValue('')
 		}		
 		me.teachercourse.setRecord(record); //带入当前知识点
 		//me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
@@ -246,9 +248,9 @@ Ext.define('Youngshine.controller.Teacher', {
 	teachercourseBack: function(oldView){		
 		var me = this;
 		//oldView.destroy()	
-		console.log(me.teacher)	
-		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
+		//console.log(me.teacher)	
 		Ext.Viewport.setActiveItem(me.teacher);
+		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
 	},
 	// 显示该堂课时的家长评价
 	teachercourseItemtap: function( list, index, target, record, e, eOpts )	{

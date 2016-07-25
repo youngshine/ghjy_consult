@@ -18,6 +18,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 			},{
 				ui: 'confirm',
 				text: '保存',
+				disabled: true,// 微信企业号才能新增，修改 by 执行校长
 				action: 'save'
 			}]
 		},{

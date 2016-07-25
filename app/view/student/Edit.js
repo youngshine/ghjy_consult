@@ -94,20 +94,6 @@ Ext.define('Youngshine.view.student.Edit', {
 					}
 				}
 			},{
-				disabled: true,
-				xtype: 'selectfield',
-				name: 'consultID', 
-				label: '咨询师',
-				options: [
-				    {text: '男', value: '男'},
-				    {text: '女', value: '女'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
 				xtype: 'hiddenfield',
 				name: 'studentID' //修改的unique			
 			}]	

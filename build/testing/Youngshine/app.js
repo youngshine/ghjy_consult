@@ -99011,7 +99011,7 @@ Ext.define('Youngshine.controller.Teacher', {
 				save: 'teachereditSave', 
 				cancel: 'teachereditCancel'
 			},
-			teachercourse: {
+			'teacher-course': {
 				back: 'teachercourseBack',
 				itemtap: 'teachercourseItemtap'
 			},
@@ -99094,6 +99094,8 @@ Ext.define('Youngshine.controller.Teacher', {
 
 		if(!me.teachercourse){
 			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
+		}else{
+			me.teachercourse.down('searchfield').setValue('')
 		}		
 		me.teachercourse.setRecord(record); //带入当前知识点
 		//me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
@@ -99232,9 +99234,9 @@ Ext.define('Youngshine.controller.Teacher', {
 	teachercourseBack: function(oldView){		
 		var me = this;
 		//oldView.destroy()	
-		console.log(me.teacher)	
-		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
+		//console.log(me.teacher)	
 		Ext.Viewport.setActiveItem(me.teacher);
+		//Ext.Viewport.remove(me.teachercourse,true); //remove 当前界面
 	},
 	// 显示该堂课时的家长评价
 	teachercourseItemtap: function( list, index, target, record, e, eOpts )	{
@@ -103777,20 +103779,6 @@ Ext.define('Youngshine.view.student.Edit', {
 					}
 				}
 			},{
-				disabled: true,
-				xtype: 'selectfield',
-				name: 'consultID', 
-				label: '咨询师',
-				options: [
-				    {text: '男', value: '男'},
-				    {text: '女', value: '女'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
 				xtype: 'hiddenfield',
 				name: 'studentID' //修改的unique			
 			}]	
@@ -104146,6 +104134,7 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 			},{
 				ui: 'confirm',
 				text: '保存',
+				disabled: true,
 				action: 'save'
 			}]
 		},{
@@ -104378,6 +104367,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 			},{
 				ui: 'confirm',
 				text: '保存',
+				disabled: true,// 微信企业号才能新增，修改 by 执行校长
 				action: 'save'
 			}]
 		},{

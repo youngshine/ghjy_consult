@@ -16,7 +16,7 @@
 	$schoolID = $arr->schoolID;
 	//group by student+zsd?，一个学生可以报读同样知识点？？
 	$query = "SELECT * From `ghjy_student`  
-		Where consultID=$consultID Or schoolID=$schoolID 
+		Where consultID=$consultID And schoolID=$schoolID 
 		Order By created Desc ";
     
     $result = mysql_query($query) 
