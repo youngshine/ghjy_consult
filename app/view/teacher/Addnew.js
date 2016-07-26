@@ -16,7 +16,6 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 			},{
 				ui: 'confirm',
 				text: '保存',
-				disabled: true,
 				action: 'save'
 			}]
 		},{

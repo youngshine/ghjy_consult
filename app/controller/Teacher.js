@@ -141,7 +141,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	teacherItemswipe: function( list, index, target, record, e, eOpts ){
 		console.log(e);console.log(record)
 		if(e.direction !== 'left') return false
-
+return // 咨询师不呢删除教师
 		var me = this;
 		list.select(index,true); // 高亮当前记录，必须disableSelection=true
 		var actionSheet = Ext.create('Ext.ActionSheet', {

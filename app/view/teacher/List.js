@@ -34,7 +34,8 @@ Ext.define('Youngshine.view.teacher.List', {
 			},{
 				xtype: 'spacer'
 			},{
-				//ui : 'action',
+				ui : 'plain',
+				disabled: true,
 				action: 'addnew',
 				iconCls: 'add',
 				//text : '＋新增',

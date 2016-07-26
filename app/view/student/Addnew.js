@@ -132,7 +132,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			addr = this.down('textfield[name=addr]').getValue().trim()
 	
 		if (studentName == ''){
-			Ext.toast('姓名不能空白',3000); return;
+			Ext.toast('请选择学生',3000); return;
 		}
 		if (gender == null){
 			Ext.toast('请选择性别',3000); return;

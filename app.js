@@ -27,10 +27,11 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess'
+        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess','Classes'
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist','Followup'
+    	'Student','Teacher','Course','Orders','Study',
+		'Zsd','Topic','Pricelist','Assess','Zsdhist','Followup','Classes'
     ],
 
     icon: {

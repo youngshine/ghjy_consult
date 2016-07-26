@@ -24,36 +24,12 @@ Ext.define('Youngshine.view.Menu', {
 			}
 		},{
 			text: '学生',
-			iconCls: 'team',
+			iconCls: 'user',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudent()
 			}
-		},{
-			text: '报读前测评',
-			iconCls: 'compose',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onAssess()
-			}
-		},{
-			text: '销售课时',
-			iconCls: 'organize',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onOrders()
-			}	
-		},{
-			text: '待排课',
-			iconCls: 'time',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onKcb()
-			}	
 		},{
 			text: '教师',
 			iconCls: 'user',
@@ -62,6 +38,38 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onTeacher()
 			}
+		},{
+			text: '大小班上课',
+			iconCls: 'team',
+			handler: function(btn){
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onClasses()
+			}
+		},{
+			text: '水平测评',
+			iconCls: 'compose',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAssess()
+			}
+		},{
+			text: '一对一课时销售',
+			iconCls: 'organize',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onOrders()
+			}	
+		},{
+			text: '一对一排课',
+			iconCls: 'time',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onKcb()
+			}	
+
 		},{
 			text: '课时套餐价格',
 			iconCls: 'info',
@@ -105,6 +113,9 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	onKcb: function(){
 		this.fireEvent('kcb') //安排课程及教师
+	},
+	onClasses: function(){
+		this.fireEvent('classes') //大小班级 instead of 一对一
 	},
 	onPricelist: function(){
 		this.fireEvent('pricelist') //课时套餐的校区价格设置

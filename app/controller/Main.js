@@ -16,7 +16,8 @@ Ext.define('Youngshine.controller.Main', {
 				home: 'menuHome',
 				student: 'menuStudent',
 				teacher: 'menuTeacher',
-				assess: 'menuAssess',
+				classes: 'menuClasses', // 1 to N
+				assess: 'menuAssess', // 1 to 1
 				orders: 'menuOrders',
 				kcb: 'menuKcb',//安排课程内容（知识点）及教师
 				pricelist: 'menuPricelist'
@@ -80,6 +81,9 @@ Ext.define('Youngshine.controller.Main', {
 	},
 	menuTeacher: function(){
 		this.getApplication().getController('Teacher').teacherList()		 
+	},
+	menuClasses: function(){
+		this.getApplication().getController('Classes').classesList()		 
 	},
 	menuAssess: function(){
 		this.getApplication().getController('Assess').assessList()		 

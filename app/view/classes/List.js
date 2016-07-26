@@ -1,38 +1,36 @@
 /**
- * Displays a list of 报读某个知识点的学生列表
+ * Displays a list of 各种班级（2015春季书法，2016秋季奥数
  */
-Ext.define('Youngshine.view.student.List', {
+Ext.define('Youngshine.view.classes.List', {
     extend: 'Ext.dataview.List',
-	xtype: 'student',
-
-    //id: 'studentList',
-
+	xtype: 'classes',
+	
     config: {
-		//record: null,
-		//layout: 'fit',
 		ui: 'round',
-		store: 'Student',
+		store: 'Classes',
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
+		pinHeaders: false,
         itemTpl: [
-            '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
-			'<span class="edit" style="float:right;color:green;">｜编辑</span>' +
-			'<span class="followup" style="float:right;color:green;">联络记录</span></div>'
+			'<div>{title}</div>'+
+			'<div style="color:#888;">'+
+			'<span>开课日期：{beginDate}</span>'+
+			'<span style="float:right;">教师：{teacherName}</span>'+
+			'</div>'
         ],
 		
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		//title: '注册学生',
+    		//title: '测评记录',
 			items: [{
-				text: '学生',
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
+				text: '大小班',
 				handler: function(btn){
-					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
@@ -43,18 +41,29 @@ Ext.define('Youngshine.view.student.List', {
 				//width: 150,
 				//label: '测评记录',
 				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
 			},{
-				xtype: 'spacer'
+				xtype: 'spacer'	
 			},{
 				ui : 'plain',
 				action: 'addnew',
 				iconCls: 'add',
-				//text : '＋新增',
+				//text: '新增',
 				handler: function(){
-					this.up('student').onAddnew()
+					this.up('list').onAddnew()
 				}		
 			}]
-    	}],
+/*		},{
+    		xtype: 'searchfield',
+			scrollDock: 'top',
+			docked: 'top',
+			placeHolder: 'search...',
+			action: 'search' */
+    	}],	
 		
     	listeners: [{
 			delegate: 'searchfield[action=search]',
@@ -67,33 +76,22 @@ Ext.define('Youngshine.view.student.List', {
 			fn: 'onSearchClear'	 						
     	}]
     },
-/*	
-	initialize: function(){
-		this.callParent(arguments)
-		//this.on('itemtap',this.onItemtap)
-	},
 	
-	// 显示详情
-    onItemtap: function(list, index, item, record){
-		var vw = Ext.create('Youngshine.view.student.Show');
-		Ext.Viewport.add(vw); //很重要，否则build后无法菜单，出错
-		vw.down('panel[itemId=my_show]').setData(record.data)
-		vw.show(); 
-		vw.setRecord(record); // 当前记录参数
-    }, */
-    onAddnew: function(list, index, item, record){
-		this.fireEvent('addnew',this)
+    onAddnew: function(btn){
+		var me = this;
+		me.fireEvent('addnew', me);
     },
 	
 	// 搜索过滤
     onSearchChange: function(field,newValue,oldValue){
-		var store = Ext.getStore('Student');
-		// var store = this.down('list').store; //得到list的store: Myaroundroute
+		//var store = Ext.getStore('Orders');
+		var store = this.getStore(); 
 		store.clearFilter();
-        store.filter('fullStudent', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('title', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
-		var store = Ext.getStore('Student');
+		var store = this.getStore(); //Ext.getStore('Orders');
 		store.clearFilter();
 	},	
 	

@@ -99127,7 +99127,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	teacherItemswipe: function( list, index, target, record, e, eOpts ){
 		console.log(e);console.log(record)
 		if(e.direction !== 'left') return false
-
+return // 咨询师不呢删除教师
 		var me = this;
 		list.select(index,true); // 高亮当前记录，必须disableSelection=true
 		var actionSheet = Ext.create('Ext.ActionSheet', {
@@ -104367,7 +104367,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 			},{
 				ui: 'confirm',
 				text: '保存',
-				disabled: true,// 微信企业号才能新增，修改 by 执行校长
+				//disabled: true,// 微信企业号才能新增，修改 by 执行校长
 				action: 'save'
 			}]
 		},{
@@ -104381,6 +104381,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 				xtype: 'textfield',
 				name: 'teacherName', //绑定后台数据字段
 				label: '姓名',
+				disabled: true,
 				clearIcon: false
 			},{
 				xtype: 'selectfield',
@@ -104400,7 +104401,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 				xtype: 'selectfield',
 				name: 'subjectID', 
 				label: '学科',
-				autoSelect: false,
+				disabled: true,
 				options: [
 				    {text: '数学', value: 1},
 				    {text: '物理', value: 2},
