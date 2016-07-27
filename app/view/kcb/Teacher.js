@@ -1,4 +1,4 @@
-// 待排课的排课
+// 选择教师及其上课时间，进行排课
 Ext.define('Youngshine.view.kcb.Teacher',{
 	extend: 'Ext.form.Panel',
 	xtype: 'kcb-teacher',
@@ -121,7 +121,12 @@ Ext.define('Youngshine.view.kcb.Teacher',{
 			studentstudyID: studentstudyID
 		}	
 		console.log(obj)
-		me.fireEvent('done',obj,me);	
+		//me.fireEvent('done',obj,me);	
+    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+			if(btn == 'yes'){
+				me.fireEvent('done',obj,me);
+			}
+		});	
 	},
 	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
 	onTeacher: function(weekday,timespan,selectBox){

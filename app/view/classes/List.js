@@ -12,11 +12,11 @@ Ext.define('Youngshine.view.classes.List', {
         //emptyText: '学生列表',
 		disableSelection: true,
 		striped: true,
-		pinHeaders: false,
+		//pinHeaders: false,
         itemTpl: [
 			'<div>{title}</div>'+
 			'<div style="color:#888;">'+
-			'<span>开课日期：{beginDate}</span>'+
+			'<span>{beginDate}开课｜{hour}课时{amount}元</span>'+
 			'<span style="float:right;">教师：{teacherName}</span>'+
 			'</div>'
         ],
@@ -25,10 +25,11 @@ Ext.define('Youngshine.view.classes.List', {
     		xtype: 'toolbar',
     		docked: 'top',
     		//title: '测评记录',
+			ui: 'dark',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
-				ui: 'plain',
+				ui: 'gray',
 				text: '大小班',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()

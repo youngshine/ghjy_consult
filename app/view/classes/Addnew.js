@@ -28,7 +28,8 @@ Ext.define('Youngshine.view.classes.Addnew', {
 			items: [{
 				xtype: 'textfield',
 				name: 'title', //绑定后台数据字段
-				label: '标题',
+				label: '名称',
+				placeHolder: '格式：2016年秋季奥数班',
 				clearIcon: false
 			},{
 				xtype: 'datepickerfield',
@@ -73,7 +74,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 			amount = this.down('numberfield[name=amount]').getValue()
 		console.log(beginDate,hour,amount)
 		if (title == ''){
-			Ext.toast('班级标题不能空白',3000); return;
+			Ext.toast('班级名称不能空白',3000); return;
 		}
 		if (hour == 0 || hour == null){
 			Ext.toast('请填写所需课时',3000); return;

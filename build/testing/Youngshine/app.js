@@ -93603,6 +93603,850 @@ Ext.define('Ext.field.Select', {
 });
 
 /**
+ * A date picker component which shows a Date Picker on the screen. This class extends from {@link Ext.picker.Picker}
+ * and {@link Ext.Sheet} so it is a popup.
+ *
+ * This component has no required configurations.
+ *
+ * ## Examples
+ *
+ *     @example miniphone preview
+ *     var datePicker = Ext.create('Ext.picker.Date');
+ *     Ext.Viewport.add(datePicker);
+ *     datePicker.show();
+ *
+ * You may want to adjust the {@link #yearFrom} and {@link #yearTo} properties:
+ *
+ *     @example miniphone preview
+ *     var datePicker = Ext.create('Ext.picker.Date', {
+ *         yearFrom: 2000,
+ *         yearTo  : 2015
+ *     });
+ *     Ext.Viewport.add(datePicker);
+ *     datePicker.show();
+ *
+ * You can set the value of the {@link Ext.picker.Date} to the current date using `new Date()`:
+ *
+ *     @example miniphone preview
+ *     var datePicker = Ext.create('Ext.picker.Date', {
+ *         value: new Date()
+ *     });
+ *     Ext.Viewport.add(datePicker);
+ *     datePicker.show();
+ *
+ * And you can hide the titles from each of the slots by using the {@link #useTitles} configuration:
+ *
+ *     @example miniphone preview
+ *     var datePicker = Ext.create('Ext.picker.Date', {
+ *         useTitles: false
+ *     });
+ *     Ext.Viewport.add(datePicker);
+ *     datePicker.show();
+ */
+Ext.define('Ext.picker.Date', {
+    extend:  Ext.picker.Picker ,
+    xtype: 'datepicker',
+    alternateClassName: 'Ext.DatePicker',
+                                                          
+
+    /**
+     * @event change
+     * Fired when the value of this picker has changed and the done button is pressed.
+     * @param {Ext.picker.Date} this This Picker
+     * @param {Date} value The date value
+     */
+
+    config: {
+        /**
+         * @cfg {Number} yearFrom
+         * The start year for the date picker. If {@link #yearFrom} is greater than
+         * {@link #yearTo} then the order of years will be reversed.
+         * @accessor
+         */
+        yearFrom: 1980,
+
+        /**
+         * @cfg {Number} [yearTo=new Date().getFullYear()]
+         * The last year for the date picker. If {@link #yearFrom} is greater than
+         * {@link #yearTo} then the order of years will be reversed.
+         * @accessor
+         */
+        yearTo: new Date().getFullYear(),
+
+        /**
+         * @cfg {String} monthText
+         * The label to show for the month column.
+         * @accessor
+         */
+        monthText: 'Month',
+
+        /**
+         * @cfg {String} dayText
+         * The label to show for the day column.
+         * @accessor
+         */
+        dayText: 'Day',
+
+        /**
+         * @cfg {String} yearText
+         * The label to show for the year column.
+         * @accessor
+         */
+        yearText: 'Year',
+
+        /**
+         * @cfg {Array} slotOrder
+         * An array of strings that specifies the order of the slots.
+         * @accessor
+         */
+        slotOrder: ['month', 'day', 'year'],
+
+        /**
+         * @cfg {Object/Date} value
+         * Default value for the field and the internal {@link Ext.picker.Date} component. Accepts an object of 'year',
+         * 'month' and 'day' values, all of which should be numbers, or a {@link Date}.
+         *
+         * Examples:
+         *
+         * - `{year: 1989, day: 1, month: 5}` = 1st May 1989
+         * - `new Date()` = current date
+         * @accessor
+         */
+
+        /**
+         * @cfg {Array} slots
+         * @hide
+         * @accessor
+         */
+
+        /**
+         * @cfg {String/Mixed} doneButton
+         * Can be either:
+         *
+         * - A {String} text to be used on the Done button.
+         * - An {Object} as config for {@link Ext.Button}.
+         * - `false` or `null` to hide it.
+         * @accessor
+         */
+        doneButton: true
+    },
+
+    platformConfig: [{
+        theme: ['Windows'],
+        doneButton: {
+            iconCls: 'check2',
+            ui: 'round',
+            text: ''
+        }
+    }],
+
+    initialize: function() {
+        this.callParent();
+
+        this.on({
+            scope: this,
+            delegate: '> slot',
+            slotpick: this.onSlotPick
+        });
+
+        this.on({
+            scope: this,
+            show: this.onSlotPick
+        });
+    },
+
+    setValue: function(value, animated) {
+        if (Ext.isDate(value)) {
+            value = {
+                day  : value.getDate(),
+                month: value.getMonth() + 1,
+                year : value.getFullYear()
+            };
+        }
+
+        this.callParent([value, animated]);
+        this.onSlotPick();
+    },
+
+    getValue: function(useDom) {
+        var values = {},
+            items = this.getItems().items,
+            ln = items.length,
+            daysInMonth, day, month, year, item, i;
+
+        for (i = 0; i < ln; i++) {
+            item = items[i];
+            if (item instanceof Ext.picker.Slot) {
+                values[item.getName()] = item.getValue(useDom);
+            }
+        }
+
+        //if all the slots return null, we should not return a date
+        if (values.year === null && values.month === null && values.day === null) {
+            return null;
+        }
+
+        year = Ext.isNumber(values.year) ? values.year : 1;
+        month = Ext.isNumber(values.month) ? values.month : 1;
+        day = Ext.isNumber(values.day) ? values.day : 1;
+
+        if (month && year && month && day) {
+            daysInMonth = this.getDaysInMonth(month, year);
+        }
+        day = (daysInMonth) ? Math.min(day, daysInMonth): day;
+
+        return new Date(year, month - 1, day);
+    },
+
+    /**
+     * Updates the yearFrom configuration
+     */
+    updateYearFrom: function() {
+        if (this.initialized) {
+            this.createSlots();
+        }
+    },
+
+    /**
+     * Updates the yearTo configuration
+     */
+    updateYearTo: function() {
+        if (this.initialized) {
+            this.createSlots();
+        }
+    },
+
+    /**
+     * Updates the monthText configuration
+     */
+    updateMonthText: function(newMonthText, oldMonthText) {
+        var innerItems = this.getInnerItems,
+            ln = innerItems.length,
+            item, i;
+
+        //loop through each of the current items and set the title on the correct slice
+        if (this.initialized) {
+            for (i = 0; i < ln; i++) {
+                item = innerItems[i];
+
+                if ((typeof item.title == "string" && item.title == oldMonthText) || (item.title.html == oldMonthText)) {
+                    item.setTitle(newMonthText);
+                }
+            }
+        }
+    },
+
+    /**
+     * Updates the {@link #dayText} configuration.
+     */
+    updateDayText: function(newDayText, oldDayText) {
+        var innerItems = this.getInnerItems,
+            ln = innerItems.length,
+            item, i;
+
+        //loop through each of the current items and set the title on the correct slice
+        if (this.initialized) {
+            for (i = 0; i < ln; i++) {
+                item = innerItems[i];
+
+                if ((typeof item.title == "string" && item.title == oldDayText) || (item.title.html == oldDayText)) {
+                    item.setTitle(newDayText);
+                }
+            }
+        }
+    },
+
+    /**
+     * Updates the yearText configuration
+     */
+    updateYearText: function(yearText) {
+        var innerItems = this.getInnerItems,
+            ln = innerItems.length,
+            item, i;
+
+        //loop through each of the current items and set the title on the correct slice
+        if (this.initialized) {
+            for (i = 0; i < ln; i++) {
+                item = innerItems[i];
+
+                if (item.title == this.yearText) {
+                    item.setTitle(yearText);
+                }
+            }
+        }
+    },
+
+    // @private
+    constructor: function() {
+        this.callParent(arguments);
+        this.createSlots();
+    },
+
+    /**
+     * Generates all slots for all years specified by this component, and then sets them on the component
+     * @private
+     */
+    createSlots: function() {
+        var me        = this,
+            slotOrder = me.getSlotOrder(),
+            yearsFrom = me.getYearFrom(),
+            yearsTo   = me.getYearTo(),
+            years     = [],
+            days      = [],
+            months    = [],
+            reverse   = yearsFrom > yearsTo,
+            ln, i, daysInMonth;
+
+        while (yearsFrom) {
+            years.push({
+                text  : yearsFrom,
+                value : yearsFrom
+            });
+
+            if (yearsFrom === yearsTo) {
+                break;
+            }
+
+            if (reverse) {
+                yearsFrom--;
+            } else {
+                yearsFrom++;
+            }
+        }
+
+        daysInMonth = me.getDaysInMonth(1, new Date().getFullYear());
+
+        for (i = 0; i < daysInMonth; i++) {
+            days.push({
+                text  : i + 1,
+                value : i + 1
+            });
+        }
+
+        for (i = 0, ln = Ext.Date.monthNames.length; i < ln; i++) {
+            months.push({
+                text  : Ext.Date.monthNames[i],
+                value : i + 1
+            });
+        }
+
+        var slots = [];
+
+        slotOrder.forEach(function (item) {
+            slots.push(me.createSlot(item, days, months, years));
+        });
+
+        me.setSlots(slots);
+    },
+
+    /**
+     * Returns a slot config for a specified date.
+     * @private
+     */
+    createSlot: function(name, days, months, years) {
+        switch (name) {
+            case 'year':
+                return {
+                    name: 'year',
+                    align: 'center',
+                    data: years,
+                    title: this.getYearText(),
+                    flex: 3
+                };
+            case 'month':
+                return {
+                    name: name,
+                    align: 'right',
+                    data: months,
+                    title: this.getMonthText(),
+                    flex: 4
+                };
+            case 'day':
+                return {
+                    name: 'day',
+                    align: 'center',
+                    data: days,
+                    title: this.getDayText(),
+                    flex: 2
+                };
+        }
+    },
+
+    onSlotPick: function() {
+        var value = this.getValue(true),
+            slot = this.getDaySlot(),
+            year = value.getFullYear(),
+            month = value.getMonth(),
+            days = [],
+            daysInMonth, i;
+
+        if (!value || !Ext.isDate(value) || !slot) {
+            return;
+        }
+
+        this.callParent(arguments);
+
+        //get the new days of the month for this new date
+        daysInMonth = this.getDaysInMonth(month + 1, year);
+        for (i = 0; i < daysInMonth; i++) {
+            days.push({
+                text: i + 1,
+                value: i + 1
+            });
+        }
+
+        // We don't need to update the slot days unless it has changed
+        if (slot.getStore().getCount() == days.length) {
+            return;
+        }
+
+        slot.getStore().setData(days);
+
+        // Now we have the correct amount of days for the day slot, lets update it
+        var store = slot.getStore(),
+            viewItems = slot.getViewItems(),
+            valueField = slot.getValueField(),
+            index, item;
+
+        index = store.find(valueField, value.getDate());
+        if (index == -1) {
+            return;
+        }
+
+        item = Ext.get(viewItems[index]);
+
+        slot.selectedIndex = index;
+        slot.scrollToItem(item);
+        slot.setValue(slot.getValue(true));
+    },
+
+    getDaySlot: function() {
+        var innerItems = this.getInnerItems(),
+            ln = innerItems.length,
+            i, slot;
+
+        if (this.daySlot) {
+            return this.daySlot;
+        }
+
+        for (i = 0; i < ln; i++) {
+            slot = innerItems[i];
+            if (slot.isSlot && slot.getName() == "day") {
+                this.daySlot = slot;
+                return slot;
+            }
+        }
+
+        return null;
+    },
+
+    // @private
+    getDaysInMonth: function(month, year) {
+        var daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        return month == 2 && this.isLeapYear(year) ? 29 : daysInMonth[month-1];
+    },
+
+    // @private
+    isLeapYear: function(year) {
+        return !!((year & 3) === 0 && (year % 100 || (year % 400 === 0 && year)));
+    },
+
+    onDoneButtonTap: function() {
+        var oldValue = this._value,
+            newValue = this.getValue(true),
+            testValue = newValue;
+
+        if (Ext.isDate(newValue)) {
+            testValue = newValue.toDateString();
+        }
+        if (Ext.isDate(oldValue)) {
+            oldValue = oldValue.toDateString();
+        }
+
+        if (testValue != oldValue) {
+            this.fireEvent('change', this, newValue);
+        }
+
+        this.hide();
+        Ext.util.InputBlocker.unblockInputs();
+    }
+});
+
+/**
+ * This is a specialized field which shows a {@link Ext.picker.Date} when tapped. If it has a predefined value,
+ * or a value is selected in the {@link Ext.picker.Date}, it will be displayed like a normal {@link Ext.field.Text}
+ * (but not selectable/changable).
+ *
+ *     Ext.create('Ext.field.DatePicker', {
+ *         label: 'Birthday',
+ *         value: new Date()
+ *     });
+ *
+ * {@link Ext.field.DatePicker} fields are very simple to implement, and have no required configurations.
+ *
+ * For more information regarding forms and fields, please review [Using Forms in Sencha Touch Guide](../../../components/forms.html)
+ * 
+ * ## Examples
+ *
+ * It can be very useful to set a default {@link #value} configuration on {@link Ext.field.DatePicker} fields. In
+ * this example, we set the {@link #value} to be the current date. You can also use the {@link #setValue} method to
+ * update the value at any time.
+ *
+ *     @example miniphone preview
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'fieldset',
+ *                 items: [
+ *                     {
+ *                         xtype: 'datepickerfield',
+ *                         label: 'Birthday',
+ *                         name: 'birthday',
+ *                         value: new Date()
+ *                     }
+ *                 ]
+ *             },
+ *             {
+ *                 xtype: 'toolbar',
+ *                 docked: 'bottom',
+ *                 items: [
+ *                     { xtype: 'spacer' },
+ *                     {
+ *                         text: 'setValue',
+ *                         handler: function() {
+ *                             var datePickerField = Ext.ComponentQuery.query('datepickerfield')[0];
+ *
+ *                             var randomNumber = function(from, to) {
+ *                                 return Math.floor(Math.random() * (to - from + 1) + from);
+ *                             };
+ *
+ *                             datePickerField.setValue({
+ *                                 month: randomNumber(0, 11),
+ *                                 day  : randomNumber(0, 28),
+ *                                 year : randomNumber(1980, 2011)
+ *                             });
+ *                         }
+ *                     },
+ *                     { xtype: 'spacer' }
+ *                 ]
+ *             }
+ *         ]
+ *     });
+ *
+ * When you need to retrieve the date from the {@link Ext.field.DatePicker}, you can either use the {@link #getValue} or
+ * {@link #getFormattedValue} methods:
+ *
+ *     @example preview
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'fieldset',
+ *                 items: [
+ *                     {
+ *                         xtype: 'datepickerfield',
+ *                         label: 'Birthday',
+ *                         name: 'birthday',
+ *                         value: new Date()
+ *                     }
+ *                 ]
+ *             },
+ *             {
+ *                 xtype: 'toolbar',
+ *                 docked: 'bottom',
+ *                 items: [
+ *                     {
+ *                         text: 'getValue',
+ *                         handler: function() {
+ *                             var datePickerField = Ext.ComponentQuery.query('datepickerfield')[0];
+ *                             Ext.Msg.alert(null, datePickerField.getValue());
+ *                         }
+ *                     },
+ *                     { xtype: 'spacer' },
+ *                     {
+ *                         text: 'getFormattedValue',
+ *                         handler: function() {
+ *                             var datePickerField = Ext.ComponentQuery.query('datepickerfield')[0];
+ *                             Ext.Msg.alert(null, datePickerField.getFormattedValue());
+ *                         }
+ *                     }
+ *                 ]
+ *             }
+ *         ]
+ *     });
+ *
+ *
+ */
+Ext.define('Ext.field.DatePicker', {
+    extend:  Ext.field.Select ,
+    alternateClassName: 'Ext.form.DatePicker',
+    xtype: 'datepickerfield',
+               
+                          
+                        
+      
+
+    /**
+     * @event change
+     * Fires when a date is selected
+     * @param {Ext.field.DatePicker} this
+     * @param {Date} newDate The new date
+     * @param {Date} oldDate The old date
+     */
+
+    config: {
+        ui: 'select',
+
+        /**
+         * @cfg {Object/Ext.picker.Date} picker
+         * An object that is used when creating the internal {@link Ext.picker.Date} component or a direct instance of {@link Ext.picker.Date}.
+         * @accessor
+         */
+        picker: true,
+
+        /**
+         * @cfg {Boolean}
+         * @hide
+         * @accessor
+         */
+        clearIcon: false,
+
+        /**
+         * @cfg {Object/Date} value
+         * Default value for the field and the internal {@link Ext.picker.Date} component. Accepts an object of 'year',
+         * 'month' and 'day' values, all of which should be numbers, or a {@link Date}.
+         *
+         * Example: {year: 1989, day: 1, month: 5} = 1st May 1989 or new Date()
+         * @accessor
+         */
+
+        /**
+         * @cfg {Boolean} destroyPickerOnHide
+         * Whether or not to destroy the picker widget on hide. This save memory if it's not used frequently,
+         * but increase delay time on the next show due to re-instantiation.
+         * @accessor
+         */
+        destroyPickerOnHide: false,
+
+        /**
+         * @cfg {String} [dateFormat=Ext.util.Format.defaultDateFormat] The format to be used when displaying the date in this field.
+         * Accepts any valid date format. You can view formats over in the {@link Ext.Date} documentation.
+         */
+        dateFormat: null,
+
+        /**
+         * @cfg {Object}
+         * @hide
+         */
+        component: {
+            useMask: true
+        }
+    },
+
+    initialize: function() {
+        var me = this,
+            component = me.getComponent();
+
+        me.callParent();
+
+        component.on({
+            scope: me,
+            masktap: 'onMaskTap'
+        });
+
+
+        component.doMaskTap = Ext.emptyFn;
+
+        if (Ext.browser.is.AndroidStock2) {
+            component.input.dom.disabled = true;
+        }
+    },
+
+    syncEmptyCls: Ext.emptyFn,
+
+    applyValue: function(value) {
+        if (!Ext.isDate(value) && !Ext.isObject(value)) {
+            return null;
+        }
+
+        if (Ext.isObject(value)) {
+            return new Date(value.year, value.month - 1, value.day);
+        }
+
+        return value;
+    },
+
+    updateValue: function(newValue, oldValue) {
+        var me     = this,
+            picker = me._picker;
+
+        if (picker && picker.isPicker) {
+            picker.setValue(newValue);
+        }
+
+        // Ext.Date.format expects a Date
+        if (newValue !== null) {
+            me.getComponent().setValue(Ext.Date.format(newValue, me.getDateFormat() || Ext.util.Format.defaultDateFormat));
+        } else {
+            me.getComponent().setValue('');
+        }
+
+        if (newValue !== oldValue) {
+            me.fireEvent('change', me, newValue, oldValue);
+        }
+    },
+
+    /**
+     * Updates the date format in the field.
+     * @private
+     */
+    updateDateFormat: function(newDateFormat, oldDateFormat) {
+        var value = this.getValue();
+        if (newDateFormat != oldDateFormat && Ext.isDate(value)) {
+            this.getComponent().setValue(Ext.Date.format(value, newDateFormat || Ext.util.Format.defaultDateFormat));
+        }
+    },
+
+    /**
+     * Returns the {@link Date} value of this field.
+     * If you wanted a formatted date use the {@link #getFormattedValue} method.
+     * @return {Date} The date selected
+     */
+    getValue: function() {
+        if (this._picker && this._picker instanceof Ext.picker.Date) {
+            return this._picker.getValue();
+        }
+
+        return this._value;
+    },
+
+    /**
+     * Returns the value of the field formatted using the specified format. If it is not specified, it will default to
+     * {@link #dateFormat} and then {@link Ext.util.Format#defaultDateFormat}.
+     * @param {String} format The format to be returned.
+     * @return {String} The formatted date.
+     */
+    getFormattedValue: function(format) {
+        var value = this.getValue();
+        return (Ext.isDate(value)) ? Ext.Date.format(value, format || this.getDateFormat() || Ext.util.Format.defaultDateFormat) : value;
+    },
+
+    applyPicker: function(picker, pickerInstance) {
+        if (pickerInstance && pickerInstance.isPicker) {
+            picker = pickerInstance.setConfig(picker);
+        }
+
+        return picker;
+    },
+
+    getPicker: function() {
+        var picker = this._picker,
+            value = this.getValue();
+
+        if (picker && !picker.isPicker) {
+            picker = Ext.factory(picker, Ext.picker.Date);
+            if (value != null) {
+                picker.setValue(value);
+            }
+        }
+
+        picker.on({
+            scope: this,
+            change: 'onPickerChange',
+            hide  : 'onPickerHide'
+        });
+
+        this._picker = picker;
+
+        return picker;
+    },
+
+    /**
+     * @private
+     * Listener to the tap event of the mask element. Shows the internal DatePicker component when the button has been tapped.
+     */
+    onMaskTap: function() {
+        if (this.getDisabled()) {
+            return false;
+        }
+
+        this.onFocus();
+
+        return false;
+    },
+
+    /**
+     * Called when the picker changes its value.
+     * @param {Ext.picker.Date} picker The date picker.
+     * @param {Object} value The new value from the date picker.
+     * @private
+     */
+    onPickerChange: function(picker, value) {
+        var me = this,
+            oldValue = me.getValue();
+
+        me.setValue(value);
+        me.fireEvent('select', me, value);
+        me.onChange(me, value, oldValue);
+    },
+
+    /**
+     * Override this or change event will be fired twice. change event is fired in updateValue
+     * for this field. TOUCH-2861
+     */
+    onChange: Ext.emptyFn,
+
+    /**
+     * Destroys the picker when it is hidden, if
+     * {@link Ext.field.DatePicker#destroyPickerOnHide destroyPickerOnHide} is set to `true`.
+     * @private
+     */
+    onPickerHide: function() {
+        var me     = this,
+            picker = me.getPicker();
+
+        if (me.getDestroyPickerOnHide() && picker) {
+            picker.destroy();
+            me._picker = me.getInitialConfig().picker || true;
+        }
+    },
+
+    reset: function() {
+        this.setValue(this.originalValue);
+    },
+
+    onFocus: function(e) {
+        var component = this.getComponent();
+        this.fireEvent('focus', this, e);
+
+        if (Ext.os.is.Android4) {
+            component.input.dom.focus();
+        }
+        component.input.dom.blur();
+
+        if (this.getReadOnly()) {
+            return false;
+        }
+
+        this.isFocused = true;
+
+        this.getPicker().show();
+    },
+
+    // @private
+    destroy: function() {
+        var picker = this._picker;
+
+        if (picker && picker.isPicker) {
+            picker.destroy();
+        }
+
+        this.callParent(arguments);
+    }
+});
+
+/**
  * Hidden fields allow you to easily inject additional data into a {@link Ext.form.Panel form} without displaying
  * additional fields on the screen. This is often useful for sending dynamic or previously collected data back to the
  * server in the same request as the normal form submission. For example, here is how we might set up a form to send
@@ -98580,7 +99424,8 @@ Ext.define('Youngshine.controller.Main', {
 				home: 'menuHome',
 				student: 'menuStudent',
 				teacher: 'menuTeacher',
-				assess: 'menuAssess',
+				classes: 'menuClasses', // 1 to N
+				assess: 'menuAssess', // 1 to 1
 				orders: 'menuOrders',
 				kcb: 'menuKcb',//安排课程内容（知识点）及教师
 				pricelist: 'menuPricelist'
@@ -98644,6 +99489,9 @@ Ext.define('Youngshine.controller.Main', {
 	},
 	menuTeacher: function(){
 		this.getApplication().getController('Teacher').teacherList()		 
+	},
+	menuClasses: function(){
+		this.getApplication().getController('Classes').classesList()		 
 	},
 	menuAssess: function(){
 		this.getApplication().getController('Assess').assessList()		 
@@ -100424,6 +101272,344 @@ Ext.define('Youngshine.controller.Assess', {
 	}
 });
 
+// 大小班级相关
+Ext.define('Youngshine.controller.Classes', {
+    extend:  Ext.app.Controller ,
+
+    config: {
+        refs: {
+           	classes: 'classes',
+			classesaddnew: 'classes-addnew',
+			classesattendee: 'classes-attendee',
+			student: 'classes-student', //查找选择学生
+        },
+        control: {
+			classes: {
+				addnew: 'classesAddnew',
+				itemtap: 'classesItemtap', //包括'排课‘’
+				itemswipe: 'classesItemswipe' //delete
+			},
+			classesaddnew: {
+				save: 'classesaddnewSave',
+				cancel: 'classesaddnewCancel',
+				student: 'classesaddnewStudent', //查找选择学生 
+			},
+			student: {
+				//search: '', //itemtap
+				itemtap: 'studentItemtap'
+			},
+			'classes-attendee': {
+				back: 'classesattendeeBack',
+				addnew: 'classesattendeeAddnew',
+				itemswipe: 'classesattendeeItemswipe' //delete
+			},
+        }
+    },
+
+	// sidemenu跳转这里：班级
+	classesList: function(){
+		var me = this;
+		var curView = Ext.Viewport.getActiveItem();
+		if(curView.xtype == 'classes') return
+ 
+		Ext.Viewport.remove(curView,true); //remove 当前界面
+		me.classes = Ext.create('Youngshine.view.classes.List');
+		
+		//Ext.Viewport.setActiveItem(me.classes);
+		//view.onGenreChange(); //默认
+		var obj = {
+			"consultID": localStorage.getItem('consultID'),
+			"teacherID": 0 //班级尚未确定教师
+		}		
+		var store = Ext.getStore('Classes');
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readClassesList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+			    console.log(records)
+				if (success){
+					Ext.Viewport.add(me.classes);
+					Ext.Viewport.setActiveItem(me.classes);
+				};
+			} 
+		})	  			 
+	},
+
+	classesItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+
+		me.classesattendee = Ext.create('Youngshine.view.classes.Attendee');
+		me.classesattendee.setParentRecord(record)
+		me.classesattendee.down('label[itemId=title]').setHtml(record.data.title)
+		
+		// 获取当前测评记录
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
+		var obj = {
+			"classID": record.data.classID,
+			//"subjectID": record.data.subjectID, //题目按学科分3个表
+		};
+		console.log(obj)
+		var store = Ext.getStore('Attendee'); 
+		store.removeAll();
+		store.clearFilter()
+        var url = this.getApplication().dataUrl + 
+			'readAttendeeList.php?data=' + JSON.stringify(obj);
+		store.getProxy().setUrl(url);
+        store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+				Ext.Viewport.setMasked(false);
+				if (success){
+					Ext.Viewport.add(me.classesattendee) // build?
+					Ext.Viewport.setActiveItem(me.classesattendee);
+				}else{
+					Ext.toast(result.message,3000);
+				};
+			} 
+        }); 
+	},	
+	// 向左滑动，删除
+	classesItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(list)
+		var me = this;
+		if(e.direction != 'left') return
+		// left to delete
+			
+		list.setDisableSelection(false)	
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					list.setDisableSelection(true)	
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+					list.setDisableSelection(true)	
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteClasses.php',
+			    params: {
+					classesID: rec.data.classesID
+			    },
+			    success: function(response){
+					console.log(response)
+					var ret = Ext.JSON.decode(response.responseText)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Classes').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},	
+	
+	classesAddnew: function(win){		
+		var me = this;
+		//if(!me.classesaddnew){
+			me.classesaddnew = Ext.create('Youngshine.view.classes.Addnew');
+			Ext.Viewport.add(me.classesaddnew)
+		//}
+		Ext.Viewport.setActiveItem(me.classesaddnew)
+	},
+	// 取消添加
+	classesaddnewCancel: function(oldView){		
+		var me = this;
+		Ext.Viewport.remove(me.classesaddnew,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.classes);
+	},	
+	classesaddnewSave: function( obj,oldView )	{
+    	var me = this; 
+		// ajax or jsonp(data:obj)
+		Ext.data.JsonP.request({
+		    url: me.getApplication().dataUrl + 'createClasses.php',
+		    params: {
+				data: JSON.stringify(obj)
+			},
+		    success: function(result){
+		        console.log(result)
+		        //record.set('fullEndtime','')
+				//oldView.destroy()
+				Ext.Viewport.remove(me.classesaddnew,true); //remove 当前界面
+				Ext.Viewport.setActiveItem(me.classes);
+				obj.classesID = result.data.classesID
+				obj.created = '刚刚';
+				Ext.getStore('Classes').insert(0,obj)
+				Ext.toast(result.message,3000)
+		    }
+		});
+	},
+	// 查找选择的学生
+	classesaddnewStudent: function(btn)	{
+    	var me = this; 
+		me.student = Ext.create('Youngshine.view.classes.Student');
+		Ext.Viewport.add(me.student); //否则build后无法显示
+
+		var obj = {
+			"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Student'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readStudentList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        //Ext.Viewport.setMasked(false);
+		        if (success){
+					//Ext.Viewport.setActiveItem(me.student);
+					me.student.showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	studentItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		list.hide()
+		me.classesaddnew.down('textfield[name=studentName]')
+			.setValue(record.data.studentName+'［'+record.data.grade+'］')
+		me.classesaddnew.down('hiddenfield[name=studentID]').setValue(record.data.studentID)
+	},
+	
+	// 返回
+	classesattendeeBack: function(oldView){		
+		var me = this;
+		//oldView.destroy()	
+		console.log(me.classes)	
+		Ext.Viewport.remove(me.classesattendee,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.classes);
+	},
+	
+	// 向左滑动，删除
+	classesattendeeItemswipe: function( list, index, target, record, e, eOpts ){
+		console.log(e);console.log(record)
+		if(e.direction !== 'left') return false
+
+		var me = this;
+		list.setDisableSelection(false)
+		list.select(index,true); // 高亮当前记录
+		var actionSheet = Ext.create('Ext.ActionSheet', {
+			items: [{
+				text: '删除当前行',
+				ui: 'decline',
+				handler: function(){
+					actionSheet.hide();
+					list.setDisableSelection(false)
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					del(record)
+				}
+			},{
+				text: '取消',
+				scope: this,
+				handler: function(){
+					actionSheet.hide();
+					Ext.Viewport.remove(actionSheet,true); //移除dom
+					list.deselect(index); // cancel高亮当前记录
+					list.setDisableSelection(false)
+				}
+			}]
+		});
+		Ext.Viewport.add(actionSheet);
+		actionSheet.show();	
+		
+		function del(rec){
+			// ajax instead of jsonp
+			Ext.Ajax.request({
+			    url: me.getApplication().dataUrl + 'deleteAttendee.php',
+			    params: {
+					classstudentID: rec.data.classstudentID
+			    },
+			    success: function(response){
+					var ret = Ext.JSON.decode(response.responseText)
+					console.log(ret)
+					Ext.toast(ret.message,3000)
+					if(ret.success){
+						Ext.getStore('Attendee').remove(rec);
+					}		         
+			    }
+			});
+		}
+	},	
+	classesattendeeAddnew: function(rec,oldView){		
+    	var me = this; 
+		me.student = Ext.create('Youngshine.view.classes.Student');
+		me.student.setParentRecord(rec) //参数：当前班级classID
+		Ext.Viewport.add(me.student); //否则build后无法显示
+		//me.topiczsd.show(); // overlay show
+		
+		var obj = {
+			"schoolID": localStorage.schoolID
+		}
+		// 报读学生范围：全校，而不是当前咨询师的学生
+		var store = Ext.getStore('Student'); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readStudentListByAll.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				console.log(records)
+				me.student.show(); //overlay.show
+				console.log(me.student.getParentRecord())
+			}   		
+		});	
+	},
+	
+	// itemtap添加班级的学生，如何修改报读课时费用？？
+	studentItemtap: function( list, index, target, record, e, eOpts)	{
+    	var me = this; 
+		
+		var obj = {
+			studentID: record.data.studentID,
+			studentName: record.data.studentName,
+			classID: me.classesattendee.getParentRecord().data.classID
+		}
+		console.log(obj);
+		Ext.Ajax.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
+            url: me.getApplication().dataUrl +  'createAttendee.php',
+            params: obj,
+            success: function(response){
+				console.log(response.responseText)
+				var ret = Ext.JSON.decode(response.responseText); // JSON.parse
+				console.log(ret)
+				//更新前端store，最新插入记录ID，才能删除修改
+				obj.classstudentID = ret.id; // model数组添加项目
+				Ext.getStore('Attendee').insert(0,obj); //新增记录，排在最前面
+				//Ext.toast('班级添加学生成功',3000)	
+				Ext.getStore('Student').remove(record) //选中的溢出	
+            }
+		});
+	},
+
+	
+	/* 如果用户登录的话，控制器launch加载相关的store */
+	launch: function(){
+	    this.callParent(arguments);
+	},
+	init: function(){
+		this.callParent(arguments);
+		console.log('classes controller init');
+	}
+});
+
 // 当堂课（知识点）的报读学生列表
 Ext.define('Youngshine.model.Student', {
     extend:  Ext.data.Model ,
@@ -100948,6 +102134,95 @@ Ext.define('Youngshine.store.Followup', {
     }
 });
 
+// 某个咨询师的班级
+Ext.define('Youngshine.model.Classes', {
+    extend:  Ext.data.Model ,
+
+    config: {
+	    fields: [
+			{name: 'classID'}, 
+			{name: 'beginDate'}, // 开课日期
+			{name: 'title'}, // 名称
+			{name: 'note'}, 
+			{name: 'hour'}, // 要测评学科
+			{name: 'amount'}, // 学科名称
+			{name: 'teacherID'}, // 班级教师，待定？
+			{name: 'teacherName'},
+			
+			{name: 'created'},		
+			{name: 'consultID'},//所属的咨询师
+		
+			{ name: 'fullDate', convert: function(value, record){
+					return record.get('beginDate').substr(2,8);
+				} 
+			}, 
+	    ]
+    }
+});
+
+// 大小班级
+Ext.define('Youngshine.store.Classes', {
+    extend:  Ext.data.Store ,
+	                                     
+	
+    config: {
+        model: 'Youngshine.model.Classes',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+		sorters: {
+			property: 'created',
+			direction: 'DESC'
+		}
+    }
+});
+
+// 某个班级的报读学生（可能学生报读课时与默认课时不同，少报）
+Ext.define('Youngshine.model.Attendee', {
+    extend:  Ext.data.Model ,
+
+    config: {
+	    fields: [
+			{name: 'classstudentID'}, 
+			{name: 'hour'}, // 该学生报读课时不同一，有的会少报
+			{name: 'amount'}, 
+			{name: 'studentID'}, 
+			{name: 'studentName'},
+			{name: 'gender'},
+			{name: 'classID'}, 
+	    ]
+    }
+});
+
+// 班级的子表：报读学生
+Ext.define('Youngshine.store.Attendee', {
+    extend:  Ext.data.Store ,
+	                                      
+	
+    config: {
+        model: 'Youngshine.model.Attendee',
+        proxy: {
+            type: 'jsonp',
+			callbackKey: 'callback',
+			url: '',
+			reader: {
+				type: "json",
+				rootProperty: "data"
+			}
+        },
+		sorters: {
+			property: 'created',
+			direction: 'DESC'
+		}
+    }
+});
+
 /*
     This file is generated and updated by Sencha Cmd. You can edit this file as
     needed for your application, but these edits will have to be merged by
@@ -100977,10 +102252,12 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess'
+        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess','Classes'
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study','Zsd','Topic','Pricelist','Assess','Zsdhist','Followup'
+    	'Student','Teacher','Course','Orders','Study',
+		'Zsd','Topic','Pricelist','Assess','Zsdhist','Followup',
+		'Classes','Attendee'
     ],
 
     icon: {
@@ -101160,36 +102437,12 @@ Ext.define('Youngshine.view.Menu', {
 			}
 		},{
 			text: '学生',
-			iconCls: 'team',
+			iconCls: 'user',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudent()
 			}
-		},{
-			text: '报读前测评',
-			iconCls: 'compose',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onAssess()
-			}
-		},{
-			text: '销售课时',
-			iconCls: 'organize',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onOrders()
-			}	
-		},{
-			text: '待排课',
-			iconCls: 'time',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onKcb()
-			}	
 		},{
 			text: '教师',
 			iconCls: 'user',
@@ -101198,6 +102451,38 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onTeacher()
 			}
+		},{
+			text: '大小班上课',
+			iconCls: 'team',
+			handler: function(btn){
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onClasses()
+			}
+		},{
+			text: '水平测评',
+			iconCls: 'compose',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAssess()
+			}
+		},{
+			text: '一对一课时销售',
+			iconCls: 'organize',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onOrders()
+			}	
+		},{
+			text: '一对一排课',
+			iconCls: 'time',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onKcb()
+			}	
+
 		},{
 			text: '课时套餐价格',
 			iconCls: 'info',
@@ -101241,6 +102526,9 @@ Ext.define('Youngshine.view.Menu', {
 	},
 	onKcb: function(){
 		this.fireEvent('kcb') //安排课程及教师
+	},
+	onClasses: function(){
+		this.fireEvent('classes') //大小班级 instead of 一对一
 	},
 	onPricelist: function(){
 		this.fireEvent('pricelist') //课时套餐的校区价格设置
@@ -102169,8 +103457,8 @@ Ext.define('Youngshine.view.assess.Zsd',{
 		itemTpl: '<div>{zsdName}</div>',
         // We give it a left and top property to make it floating by default
         right: 0,
-        top: 40,
-		width: 450,height: '80%',
+        top: 0,
+		width: 450,height: '100%',
 		border: 5,
 		style: 'border-color: black; border-style: solid;',
 
@@ -102185,7 +103473,7 @@ Ext.define('Youngshine.view.assess.Zsd',{
         items: [{
             docked: 'top',
             xtype: 'toolbar',
-			ui: 'gray',
+			ui: 'light',
   		    title: '选择知识点',
 			items: [{
 				text: '确定',
@@ -102241,158 +103529,406 @@ Ext.define('Youngshine.view.assess.Zsd',{
     }, 
 });
 
-// 排课
-Ext.define('Youngshine.view.orders.study.Kcb',{
-	extend:  Ext.form.Panel ,
-	xtype: 'study-kcb',
+Ext.define('Youngshine.view.classes.Addnew', {
+    extend:  Ext.form.Panel ,
+    xtype: 'classes-addnew',
 
-	config: {
-		record: null,
-		modal: true,
-		hideOnMaskTap: true,
-		centered: true,
-		width: 420,height: 260,
-		//scrollable: true,
-
-        items: [{	
-        	xtype: 'toolbar',
-        	docked: 'top',
-        	title: '一对一排课',
+    config: {
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '新增班级',
 			items: [{
-				text : '完成',
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
 				ui: 'confirm',
-				//disabled: true,
-				action: 'done',
+				text: '保存',
+				action: 'save'
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '95%',
+			defaults: {
+				labelWidth: 85,
+				xtype: 'textfield'
+			},
+			//title: '个人资料',
 			items: [{
-				xtype: 'selectfield',
-				label: '上课日', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				name: 'teach_weekday',
-				options: [
-				    {text: '周一', value: '周一'},
-				    {text: '周二', value: '周二'},
-				    {text: '周三', value: '周三'},
-				    {text: '周四', value: '周四'},
-				    {text: '周五', value: '周五'},
-				    {text: '周六', value: '周六'},
-				    {text: '周日', value: '周日'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
-				label: '时间段', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				name: 'teach_timespan',
-				options: [
-				    {text: '08-10', value: '08-10'},
-				    {text: '10-12', value: '10-12'},
-				    {text: '14-16', value: '14-16'},
-				    {text: '16-18', value: '16-18'},
-				    {text: '19-21', value: '19-21'},
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
-				label: '任课教师', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				name: 'teacherID',
-				valueField: 'teacherID',
-				displayField: 'teacherName',
-				autoSelect: false,
-				listeners: {
-					focus: function(selectBox, e, eOpts ){
-						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
-							timespan = this.up('fieldset').down('selectfield[name=teach_timespan]').getValue()
-						if(weekday==null || timespan==null){
-							return false
-							//Ext.toast('先选择上课时间');return false
-						}
-						// ajax读取可用学科教师
-						this.up('panel').onTeacher(weekday,timespan,selectBox)
-					},
-					change: function(e){
-						// 激活保存提交按钮
-						//this.up('panel').down('button[action=done]').setDisabled(false);
-					}
-				}
-			},{
 				xtype: 'textfield',
-				label: '备注',
-				labelWidth: 85,
-				name: 'note',
+				name: 'title', //绑定后台数据字段
+				label: '名称',
+				placeHolder: '格式：2016年秋季奥数班',
 				clearIcon: false
+			},{
+				xtype: 'datepickerfield',
+				name: 'beginDate', //绑定后台数据字段
+				label: '开课日期',
+				value: new Date()
+			},{
+				//xtype: 'spinnerfield',
+				xtype: 'numberfield',
+				name: 'hour', //绑定后台数据字段
+				label: '所需课时'
+			},{	
+				xtype: 'numberfield',
+				name: 'amount', //绑定后台数据字段
+				label: '收费金额',
+				clearIcon: false, /*
+				component: { // 显示数字键
+					xtype: 'input',
+					type: 'tel'
+				},	*/	
 			}]	
+		}],		
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'		
+		}]
+	},
 
-		}],	
+	onSave: function(){
+		//window.scrollTo(0,0);
+		var me = this;
+		
+		var title = this.down('textfield[name=title]').getValue().trim(),
+			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
+			hour = this.down('numberfield[name=hour]').getValue(),
+			amount = this.down('numberfield[name=amount]').getValue()
+		console.log(beginDate,hour,amount)
+		if (title == ''){
+			Ext.toast('班级名称不能空白',3000); return;
+		}
+		if (hour == 0 || hour == null){
+			Ext.toast('请填写所需课时',3000); return;
+		}
+		if (amount == 0 || amount == null){
+			Ext.toast('请填写收费金额',3000); return;
+		}
+
+    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+			if(btn == 'yes'){
+				var obj = {
+					title: title,
+					beginDate: beginDate,
+					hour: hour,
+					amount: amount,
+					consultID: localStorage.consultID //班级归属哪个咨询师
+				};
+				console.log(obj)
+				me.fireEvent('save', obj,me);
+			}
+		});	
+	},
+	onCancel: function(btn){
+		this.fireEvent('cancel',this);
+		//this.destroy()
+	}
+	
+});
+
+// 班级的子表：报读的学生，可能上的课时各不相同
+Ext.define('Youngshine.view.classes.Attendee', {
+    extend:  Ext.dataview.List ,
+	xtype: 'classes-attendee',
+
+    config: {
+        layout: 'fit',
+		parentRecord: null,
+		
+		store: 'Attendee',
+		disableSelection: true,
+		striped: true,
+        itemTpl: [
+			'<div><span>{studentName} • {gender}</span>'+
+			'<span style="float:right;color:#888;">{hour}小时{amount}元</span></div>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '班级学生',
+			items: [{
+				ui : 'back',
+				action: 'back',
+				text : '返回',
+			}]
+		},{
+			xtype: 'label',
+			docked: 'top',
+			html: '',
+			itemId: 'title',
+			style: 'text-align:center;color:#888;font-size:0.9em;margin:5px;'
+		},{
+    		xtype: 'button',
+			text: '＋添加',
+			action: 'addnew',
+			ui: 'plain',
+			scrollDock: 'bottom',
+			docked: 'bottom',
+			style: 'color:green;margin-top:10px;'
+    	}],
 		
 		listeners: [{
-			delegate: 'button[action=done]',
+			delegate: 'button[action=back]',
 			event: 'tap',
-			fn: 'onDone'	
-		}] 
-	},
-	
-	onDone: function(btn){
-		var me = this;
-		var teacherID = me.down('selectfield[name=teacherID]').getValue(),
-			weekday = me.down('selectfield[name=teach_weekday]').getValue(),
-			timespan = me.down('selectfield[name=teach_timespan]').getValue(),
-			note = me.down('textfield[name=note]').getValue(),
-			studentstudyID = me.getRecord().data.studentstudyID
+			fn: 'onBack'
+		},{
+			delegate: 'button[action=addnew]',
+			event: 'tap',
+			fn: 'onAddnew'		
+		}]
+    },
 
-		if(teacherID==null || teacherID==0){
-			Ext.toast('请选择任课教师',3000); return false
-		} 
-		
-		var obj = {
-			teacherID: teacherID,
-			weekday: weekday,
-			timespan: timespan,
-			note: note,
-			studentstudyID: studentstudyID
-		}	
-		console.log(obj)
-		me.fireEvent('done',obj,me);	
-	},
-	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
-	onTeacher: function(weekday,timespan,selectBox){
+    onAddnew: function(btn){
 		var me = this;
-		var obj = {
-			"weekday": weekday,
-			"timespan": timespan,
-			"subjectID": me.getRecord().data.subjectID,
-			"schoolID": localStorage.schoolID
-		}
-		console.log(obj)
-		
-		Ext.data.JsonP.request({ 
-            url: Youngshine.app.getApplication().dataUrl +  'readTeacherListByKcb.php',
-            callbackKey: 'callback',
-            params:{
-                data: JSON.stringify(obj)
-            },
-            success: function(result){
-				console.log(result.data)
-				selectBox.updateOptions(result.data)		
-            }
-		});
+		me.fireEvent('addnew',me.getRecord(), me);
+    },	
+	onBack: function(btn){
+		var me = this;
+		me.fireEvent('back',me);
 	},
 	
-	hide: function(){
-		this.destroy()
-	}
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		var me = this;
+		//if(e.target.className != "prodinfo") //滑动区域等panel才退回
+		//	return
+		if(e.direction=='right'){
+			me.onBack();
+        };     
+    }, 
+
+});
+
+/**
+ * Displays a list of 各种班级（2015春季书法，2016秋季奥数
+ */
+Ext.define('Youngshine.view.classes.List', {
+    extend:  Ext.dataview.List ,
+	xtype: 'classes',
+	
+    config: {
+		ui: 'round',
+		store: 'Classes',
+        //itemHeight: 89,
+        //emptyText: '学生列表',
+		disableSelection: true,
+		striped: true,
+		//pinHeaders: false,
+        itemTpl: [
+			'<div>{title}</div>'+
+			'<div style="color:#888;">'+
+			'<span>{beginDate}开课｜{hour}课时{amount}元</span>'+
+			'<span style="float:right;">教师：{teacherName}</span>'+
+			'</div>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		//title: '测评记录',
+			ui: 'dark',
+			items: [{
+				iconCls: 'list',
+				iconMask: true,
+				ui: 'gray',
+				text: '大小班',
+				handler: function(btn){
+					Youngshine.app.getApplication().getController('Main').menuNav()
+				} 
+			},{
+				xtype: 'spacer'	
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
+			},{
+				xtype: 'spacer'	
+			},{
+				ui : 'plain',
+				action: 'addnew',
+				iconCls: 'add',
+				//text: '新增',
+				handler: function(){
+					this.up('list').onAddnew()
+				}		
+			}]
+/*		},{
+    		xtype: 'searchfield',
+			scrollDock: 'top',
+			docked: 'top',
+			placeHolder: 'search...',
+			action: 'search' */
+    	}],	
+		
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
+    },
+	
+    onAddnew: function(btn){
+		var me = this;
+		me.fireEvent('addnew', me);
+    },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		//var store = Ext.getStore('Orders');
+		var store = this.getStore(); 
+		store.clearFilter();
+        store.filter('title', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = this.getStore(); //Ext.getStore('Orders');
+		store.clearFilter();
+	},	
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	Youngshine.app.getApplication().getController('Main').menuNav()
+        };     
+    }, 
+});
+
+// 查找选择学生
+Ext.define('Youngshine.view.classes.Student',{
+	extend:  Ext.dataview.List ,
+	xtype: 'classes-student',
+
+	config: {
+		parentRecord: null, //父表记录参数
+		
+		striped: true,
+		store: 'Student',
+		itemTpl: '{studentName}<span style="float:right;">{grade}</span>',
+        // We give it a left and top property to make it floating by default
+        right: 0,
+        top: 0,
+		width: 420,height: '100%',
+		border: 5,
+		style: 'border-color: #555; border-style: solid;',
+
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+        // Insert a title docked at the top with a title
+        items: [{
+            docked: 'top',
+            xtype: 'toolbar',
+			ui: 'light',
+            items: [{
+				xtype: 'selectfield',
+				itemId: 'grade', 
+				placeHolder: '选择年级',
+				width: 150,
+				autoSelect: false,
+				options: [
+				    {text: '九年级', value: '九年级'},
+				    {text: '八年级', value: '八年级'},
+				    {text: '七年级', value: '七年级'},
+				    {text: '六年级', value: '六年级'},
+				    {text: '五年级', value: '五年级'},
+				    {text: '四年级', value: '四年级'},
+				    {text: '三年级', value: '三年级'},
+				    {text: '二年级', value: '二年级'},
+				    {text: '一年级', value: '一年级'}
+				],	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{	
+            	xtype: 'searchfield',
+				placeHolder: 'search',
+				width: 150
+			
+            }]
+        }],
+		
+    	listeners: [{
+			delegate: 'searchfield',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onFilter' 
+		},{
+			delegate: 'searchfield',
+			event: 'clearicontap',
+			fn: 'onFilter' 
+		},{
+			delegate: 'selectfield[itemId=grade]',
+			event: 'change', // need return to work
+			fn: 'onFilter'						
+    	}]
+	},
+
+	// 搜索过滤
+    onFilter: function(){
+		var grade = this.down('selectfield[itemId=grade]').getValue(),
+			search = this.down('searchfield').getValue().trim()
+		search = new RegExp("/*" + search); // 正则表达式，模糊查询
+		var store = this.getStore(); //得到list的store: Myaroundroute
+		store.clearFilter(); //filter is additive
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+        //store.filter('studentName', field.getValue(), true); 
+		store.clearFilter(); // filter is additive
+		if(grade != null ){
+			store.filter([
+				{property: "grade", value: grade},
+				{property: "fullStudent", value: search}, // 姓名＋手机
+			]);
+		}else{
+			store.filter("fullStudent", search, true);
+		}
+		console.log(search,grade)	
+	},	
 });
 
 // 待排课
@@ -102450,7 +103986,7 @@ Ext.define('Youngshine.view.kcb.List', {
     }, 
 });
 
-// 待排课的排课
+// 选择教师及其上课时间，进行排课
 Ext.define('Youngshine.view.kcb.Teacher',{
 	extend:  Ext.form.Panel ,
 	xtype: 'kcb-teacher',
@@ -102573,7 +104109,12 @@ Ext.define('Youngshine.view.kcb.Teacher',{
 			studentstudyID: studentstudyID
 		}	
 		console.log(obj)
-		me.fireEvent('done',obj,me);	
+		//me.fireEvent('done',obj,me);	
+    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+			if(btn == 'yes'){
+				me.fireEvent('done',obj,me);
+			}
+		});	
 	},
 	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
 	onTeacher: function(weekday,timespan,selectBox){
@@ -103128,7 +104669,8 @@ Ext.define('Youngshine.view.orders.Study', {
         //emptyText: '－－－空白－－－',
         itemTpl: [
 			'<div><span>{zsdName}</span>'+
-			'<span class="kcb" style="float:right;color:green;">排课</span></div>'
+			'<span style="float:right;color:#888;">{times}课时</span></div>'
+			//'<span class="kcb" style="float:right;color:green;">排课</span></div>'
         ],
 		
     	items: [{
@@ -103198,6 +104740,160 @@ Ext.define('Youngshine.view.orders.Study', {
         };     
     }, 
 
+});
+
+// 排课
+Ext.define('Youngshine.view.orders.study.Kcb',{
+	extend:  Ext.form.Panel ,
+	xtype: 'study-kcb',
+
+	config: {
+		record: null,
+		modal: true,
+		hideOnMaskTap: true,
+		centered: true,
+		width: 420,height: 260,
+		//scrollable: true,
+
+        items: [{	
+        	xtype: 'toolbar',
+        	docked: 'top',
+        	title: '一对一排课',
+			items: [{
+				text : '完成',
+				ui: 'confirm',
+				//disabled: true,
+				action: 'done',
+			}]
+		},{
+			xtype: 'fieldset',
+			width: '95%',
+			items: [{
+				xtype: 'selectfield',
+				label: '上课日', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				name: 'teach_weekday',
+				options: [
+				    {text: '周一', value: '周一'},
+				    {text: '周二', value: '周二'},
+				    {text: '周三', value: '周三'},
+				    {text: '周四', value: '周四'},
+				    {text: '周五', value: '周五'},
+				    {text: '周六', value: '周六'},
+				    {text: '周日', value: '周日'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+				xtype: 'selectfield',
+				label: '时间段', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				name: 'teach_timespan',
+				options: [
+				    {text: '08-10', value: '08-10'},
+				    {text: '10-12', value: '10-12'},
+				    {text: '14-16', value: '14-16'},
+				    {text: '16-18', value: '16-18'},
+				    {text: '19-21', value: '19-21'},
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+				xtype: 'selectfield',
+				label: '任课教师', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				name: 'teacherID',
+				valueField: 'teacherID',
+				displayField: 'teacherName',
+				autoSelect: false,
+				listeners: {
+					focus: function(selectBox, e, eOpts ){
+						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
+							timespan = this.up('fieldset').down('selectfield[name=teach_timespan]').getValue()
+						if(weekday==null || timespan==null){
+							return false
+							//Ext.toast('先选择上课时间');return false
+						}
+						// ajax读取可用学科教师
+						this.up('panel').onTeacher(weekday,timespan,selectBox)
+					},
+					change: function(e){
+						// 激活保存提交按钮
+						//this.up('panel').down('button[action=done]').setDisabled(false);
+					}
+				}
+			},{
+				xtype: 'textfield',
+				label: '备注',
+				labelWidth: 85,
+				name: 'note',
+				clearIcon: false
+			}]	
+
+		}],	
+		
+		listeners: [{
+			delegate: 'button[action=done]',
+			event: 'tap',
+			fn: 'onDone'	
+		}] 
+	},
+	
+	onDone: function(btn){
+		var me = this;
+		var teacherID = me.down('selectfield[name=teacherID]').getValue(),
+			weekday = me.down('selectfield[name=teach_weekday]').getValue(),
+			timespan = me.down('selectfield[name=teach_timespan]').getValue(),
+			note = me.down('textfield[name=note]').getValue(),
+			studentstudyID = me.getRecord().data.studentstudyID
+
+		if(teacherID==null || teacherID==0){
+			Ext.toast('请选择任课教师',3000); return false
+		} 
+		
+		var obj = {
+			teacherID: teacherID,
+			weekday: weekday,
+			timespan: timespan,
+			note: note,
+			studentstudyID: studentstudyID
+		}	
+		console.log(obj)
+		me.fireEvent('done',obj,me);	
+	},
+	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
+	onTeacher: function(weekday,timespan,selectBox){
+		var me = this;
+		var obj = {
+			"weekday": weekday,
+			"timespan": timespan,
+			"subjectID": me.getRecord().data.subjectID,
+			"schoolID": localStorage.schoolID
+		}
+		console.log(obj)
+		
+		Ext.data.JsonP.request({ 
+            url: Youngshine.app.getApplication().dataUrl +  'readTeacherListByKcb.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				console.log(result.data)
+				selectBox.updateOptions(result.data)		
+            }
+		});
+	},
+	
+	hide: function(){
+		this.destroy()
+	}
 });
 
 // 查找选择添加 报读知识点
@@ -103413,10 +105109,13 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 			amount = this.down('numberfield[name=amount]').getValue()
 	
 		if (title == ''){
-			Ext.toast('标题不能空白',3000); return;
+			Ext.toast('套餐标题名称不能空白',3000); return;
 		}
-		if (isNaN(amount) || amount==0){
-			Ext.toast('请填写小时金额',3000); return;
+		if (hour == 0 || hour == null){
+			Ext.toast('请填写套餐课时',3000); return;
+		}
+		if (amount == 0 || amount == null){
+			Ext.toast('请填写套餐金额',3000); return;
 		}
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
@@ -103653,7 +105352,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			addr = this.down('textfield[name=addr]').getValue().trim()
 	
 		if (studentName == ''){
-			Ext.toast('姓名不能空白',3000); return;
+			Ext.toast('请选择学生',3000); return;
 		}
 		if (gender == null){
 			Ext.toast('请选择性别',3000); return;
@@ -103941,8 +105640,8 @@ Ext.define('Youngshine.view.student.List', {
 		striped: true,
         itemTpl: [
             '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
-			'<span class="followup" style="float:right;color:green;">联络</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑｜</span></div>'
+			'<span class="edit" style="float:right;color:green;">｜编辑</span>' +
+			'<span class="followup" style="float:right;color:green;">联络记录</span></div>'
         ],
 		
     	items: [{
@@ -103969,7 +105668,7 @@ Ext.define('Youngshine.view.student.List', {
 			},{
 				xtype: 'spacer'
 			},{
-				//ui : 'action',
+				ui : 'plain',
 				action: 'addnew',
 				iconCls: 'add',
 				//text : '＋新增',
@@ -104134,7 +105833,6 @@ Ext.define('Youngshine.view.teacher.Addnew', {
 			},{
 				ui: 'confirm',
 				text: '保存',
-				disabled: true,
 				action: 'save'
 			}]
 		},{
@@ -104608,7 +106306,8 @@ Ext.define('Youngshine.view.teacher.List', {
 			},{
 				xtype: 'spacer'
 			},{
-				//ui : 'action',
+				ui : 'plain',
+				disabled: true,
 				action: 'addnew',
 				iconCls: 'add',
 				//text : '＋新增',

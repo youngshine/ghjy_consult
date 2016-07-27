@@ -4,7 +4,7 @@ Ext.define('Youngshine.model.Classes', {
 
     config: {
 	    fields: [
-			{name: 'classesID'}, 
+			{name: 'classID'}, 
 			{name: 'beginDate'}, // 开课日期
 			{name: 'title'}, // 名称
 			{name: 'note'}, 

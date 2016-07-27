@@ -9,8 +9,8 @@ Ext.define('Youngshine.view.assess.Zsd',{
 		itemTpl: '<div>{zsdName}</div>',
         // We give it a left and top property to make it floating by default
         right: 0,
-        top: 40,
-		width: 450,height: '80%',
+        top: 0,
+		width: 450,height: '100%',
 		border: 5,
 		style: 'border-color: black; border-style: solid;',
 
@@ -25,7 +25,7 @@ Ext.define('Youngshine.view.assess.Zsd',{
         items: [{
             docked: 'top',
             xtype: 'toolbar',
-			ui: 'gray',
+			ui: 'light',
   		    title: '选择知识点',
 			items: [{
 				text: '确定',

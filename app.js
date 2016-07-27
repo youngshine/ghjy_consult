@@ -31,7 +31,8 @@ Ext.application({
     ],
     stores: [
     	'Student','Teacher','Course','Orders','Study',
-		'Zsd','Topic','Pricelist','Assess','Zsdhist','Followup','Classes'
+		'Zsd','Topic','Pricelist','Assess','Zsdhist','Followup',
+		'Classes','Attendee'
     ],
 
     icon: {
