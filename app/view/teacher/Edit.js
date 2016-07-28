@@ -112,7 +112,7 @@ Ext.define('Youngshine.view.teacher.Edit', {
 		//window.scrollTo(0,0);
 		var me = this;
 		
-		var teacherID = this.down('hiddenfield[name=teacherID]').getValue()
+		var teacherID = this.down('hiddenfield[name=teacherID]').getValue(),
 			teacherName = this.down('textfield[name=teacherName]').getValue().trim(),
 			gender = this.down('selectfield[name=gender]').getValue(),
 			subjectID = this.down('selectfield[name=subjectID]').getValue(),

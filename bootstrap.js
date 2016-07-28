@@ -801,8 +801,10 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.assess.Zsd": [],
   "Youngshine.view.classes.Addnew": [],
   "Youngshine.view.classes.Attendee": [],
+  "Youngshine.view.classes.Edit": [],
   "Youngshine.view.classes.List": [],
   "Youngshine.view.classes.Student": [],
+  "Youngshine.view.classes.Teacher": [],
   "Youngshine.view.kcb.List": [],
   "Youngshine.view.kcb.Teacher": [],
   "Youngshine.view.member.Edit": [],
@@ -1852,11 +1854,17 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.classes.Attendee": [
     "widget.classes-attendee"
   ],
+  "Youngshine.view.classes.Edit": [
+    "widget.classes-edit"
+  ],
   "Youngshine.view.classes.List": [
     "widget.classes"
   ],
   "Youngshine.view.classes.Student": [
     "widget.classes-student"
+  ],
+  "Youngshine.view.classes.Teacher": [
+    "widget.classes-teacher"
   ],
   "Youngshine.view.kcb.List": [
     "widget.kcb"

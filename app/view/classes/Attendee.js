@@ -11,8 +11,8 @@ Ext.define('Youngshine.view.classes.Attendee', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div><span>{studentName} • {gender}</span>'+
-			'<span style="float:right;color:#888;">{hour}小时{amount}元</span></div>'
+			'<div><span>{studentName}</span>'+
+			'<span class="amount" style="float:right;color:green;">{amount}元</span></div>'
         ],
 		
     	items: [{
@@ -23,6 +23,12 @@ Ext.define('Youngshine.view.classes.Attendee', {
 				ui : 'back',
 				action: 'back',
 				text : '返回',
+			},{
+				xtype: 'spacer'
+			},{
+				text: '结束班级',
+				ui: 'decline',
+				action: 'finish'
 			}]
 		},{
 			xtype: 'label',
@@ -47,35 +53,16 @@ Ext.define('Youngshine.view.classes.Attendee', {
 		},{
 			delegate: 'button[action=addnew]',
 			event: 'tap',
-			fn: 'onAddnew'		
+			fn: 'onAddnew'	
 		}]
     },
 
     onAddnew: function(btn){
 		var me = this;
-		me.fireEvent('addnew',me.getRecord(), me);
+		me.fireEvent('addnew',me.getParentRecord(), me);
     },	
 	onBack: function(btn){
 		var me = this;
 		me.fireEvent('back',me);
 	},
-	
-    //use initialize method to swipe back 右滑返回
-    initialize : function() {
-        this.callParent();
-        this.element.on({
-            scope : this,
-            swipe : 'onElSwipe' //not use anonymous functions
-        });
-    },   
-    onElSwipe : function(e) {
-        console.log(e.target)
-		var me = this;
-		//if(e.target.className != "prodinfo") //滑动区域等panel才退回
-		//	return
-		if(e.direction=='right'){
-			me.onBack();
-        };     
-    }, 
-
 });

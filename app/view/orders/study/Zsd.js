@@ -11,8 +11,8 @@ Ext.define('Youngshine.view.orders.study.Zsd',{
 			'<span style="float:right;color:#888;">{times}</span></div>',
         // We give it a left and top property to make it floating by default
         right: 0,
-        top: 40,
-		width: 450,height: '80%',
+        top: 0,
+		width: 450,height: '100%',
 		border: 5,
 		style: 'border-color: black; border-style: solid;',
 

@@ -9,10 +9,13 @@ header('Access-Control-Allow-Origin: *'); // 跨域问题
 require_once('db/database_connection.php');
 
 $studentID = $_REQUEST['studentID'];
+$hour = $_REQUEST['hour']; //班级学生默认课时：班级的课时、金额
+$amount = $_REQUEST['amount'];
 $classID = $_REQUEST['classID'];
 
-$sql = "INSERT INTO `ghjy_class_student` (studentID,classID) 
-	VALUES($studentID,$classID)";
+$sql = "INSERT INTO `ghjy_class_student` 
+	(studentID,hour,amount,classID) 
+	VALUES($studentID,$hour,$amount,$classID)";
 $result = mysql_query($sql) 
 	or die("Invalid query: create class student" . mysql_error());
 	

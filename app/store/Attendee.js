@@ -15,8 +15,8 @@ Ext.define('Youngshine.store.Attendee', {
 			}
         },
 		sorters: {
-			property: 'created',
-			direction: 'DESC'
+			//property: 'created',
+			//direction: 'DESC'
 		}
     }
 });

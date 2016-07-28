@@ -30,9 +30,6 @@ Ext.define('Youngshine.view.Main', {
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
-					// menu -> onMember
-					//Ext.Viewport.remove(Ext.Viewport.getActiveItem(),true); //remove 当前界面
-			    	//Ext.Viewport.setActiveItem(Ext.create('Youngshine.view.member.Edit'));
 					btn.up('panel').onSetup()
 				} 
 			}]	
@@ -91,8 +88,33 @@ Ext.define('Youngshine.view.Main', {
 				items: [{
 					text: '保存'	,
 					ui: 'confirm',
+					action: 'save',
 					handler: function(btn){
-						btn.up('panel').onSave()
+						//btn.up('panel').onSave()
+						var modal = btn.up('panel');console.log(modal)
+						var psw1 = modal.down('passwordfield[itemId=psw1]').getValue().trim(),
+							psw2 = modal.down('passwordfield[itemId=psw2]').getValue().trim()
+						console.log(psw1)
+						if(psw1.length<6){
+							Ext.toast('密码少于6位',3000); return
+						}
+						if(psw1 != psw2){
+							Ext.toast('确认密码错误',3000); return
+						}
+						// ajax
+						Ext.Ajax.request({
+						    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
+						    params: {
+						        psw1     : psw1,
+								consultID: localStorage.consultID
+						    },
+						    success: function(response){
+						        var text = response.responseText;
+						        // process server response here
+								Ext.toast('密码修改成功',3000)
+								modal.destroy()
+						    }
+						});
 					}
 				}]
 			},{
@@ -120,34 +142,6 @@ Ext.define('Youngshine.view.Main', {
 					scope: this
 				}]	
 			}],	
-			
-			onSave: function(){
-				var me = this;
-				var psw1 = this.down('passwordfield[itemId=psw1]').getValue().trim(),
-					psw2 = this.down('passwordfield[itemId=psw2]').getValue().trim()
-				console.log(psw1)
-				if(psw1.length<6){
-					Ext.toast('密码少于6位',3000); return
-				}
-				if(psw1!= psw2){
-					Ext.toast('确认密码错误',3000); return
-				}
-				// ajax
-				Ext.Ajax.request({
-				    url: Youngshine.app.getApplication().dataUrl + 'updatePsw.php',
-				    params: {
-				        psw1     : psw1,
-						consultID: localStorage.consultID
-				    },
-				    success: function(response){
-				        var text = response.responseText;
-				        // process server response here
-						//setTimeout(function(){},3000)
-						Ext.toast('密码修改成功',3000)
-						me.destroy()
-				    }
-				});
-			}
 		})
 		this.overlay.show()
 	},	

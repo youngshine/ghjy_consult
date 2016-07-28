@@ -408,7 +408,7 @@ Ext.define('Youngshine.controller.Assess', {
 			params: obj,
 			success: function(response){ // 服务器连接成功 
 				Ext.Viewport.setMasked(false);
-				var ret = JSON.parse(response.responseText);
+				var ret = Ext.JSON.decode(response.responseText) //JSON.parse(response.responseText);
 				console.log(ret)
 				Ext.getStore('Topic').insert(0,ret); //.load()
 			},

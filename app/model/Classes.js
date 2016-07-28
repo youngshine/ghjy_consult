@@ -5,11 +5,13 @@ Ext.define('Youngshine.model.Classes', {
     config: {
 	    fields: [
 			{name: 'classID'}, 
-			{name: 'beginDate'}, // 开课日期
 			{name: 'title'}, // 名称
 			{name: 'note'}, 
 			{name: 'hour'}, // 要测评学科
 			{name: 'amount'}, // 学科名称
+			{name: 'beginDate'}, // 开课日期
+			{name: 'weekday'}, // 上课周期
+			{name: 'timespan'}, 
 			{name: 'teacherID'}, // 班级教师，待定？
 			{name: 'teacherName'},
 			

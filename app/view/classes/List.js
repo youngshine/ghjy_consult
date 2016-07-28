@@ -14,11 +14,13 @@ Ext.define('Youngshine.view.classes.List', {
 		striped: true,
 		//pinHeaders: false,
         itemTpl: [
-			'<div>{title}</div>'+
+			'<div>' + 
+			'<div><span>{title}</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑</span></div>'+
 			'<div style="color:#888;">'+
-			'<span>{beginDate}开课｜{hour}课时{amount}元</span>'+
-			'<span style="float:right;">教师：{teacherName}</span>'+
-			'</div>'
+			'<span>{beginDate}开课｜{hour}课时{amount}元｜教师：{teacherName}</span>'+
+			'<span class="remove" style="display:none;float:right;color:red;">删除</span>'+
+			'</div></div>'
         ],
 		
     	items: [{

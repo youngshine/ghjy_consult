@@ -6,8 +6,10 @@ Ext.define('Youngshine.controller.Classes', {
         refs: {
            	classes: 'classes',
 			classesaddnew: 'classes-addnew',
+			classesedit: 'classes-edit',
 			classesattendee: 'classes-attendee',
 			student: 'classes-student', //查找选择学生
+			//teacher: 'classes-teacher'
         },
         control: {
 			classes: {
@@ -19,7 +21,15 @@ Ext.define('Youngshine.controller.Classes', {
 				save: 'classesaddnewSave',
 				cancel: 'classesaddnewCancel',
 				student: 'classesaddnewStudent', //查找选择学生 
+			}, 
+			classesedit: {
+				save: 'classeseditSave', 
+				cancel: 'classeseditCancel'
 			},
+			/*
+			teacher: {
+				choose: 'teacherChoose'
+			}, */
 			student: {
 				//search: '', //itemtap
 				itemtap: 'studentItemtap'
@@ -27,6 +37,7 @@ Ext.define('Youngshine.controller.Classes', {
 			'classes-attendee': {
 				back: 'classesattendeeBack',
 				addnew: 'classesattendeeAddnew',
+				itemtap: 'classesattendeeItemtap', //更改金额
 				itemswipe: 'classesattendeeItemswipe' //delete
 			},
         }
@@ -64,14 +75,65 @@ Ext.define('Youngshine.controller.Classes', {
 	},
 
 	classesItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
+    	var me = this; console.log(record.data)
+
+		// 点击‘修改编辑’
+		if(e.target.className == 'edit'){
+			me.classesedit = Ext.create('Youngshine.view.classes.Edit');
+			me.classesedit.setRecord(record)
+			me.classesedit.down('datepickerfield[name=beginDate]')
+				.setValue(new Date(record.data.beginDate))
+			Ext.Viewport.add(me.classesedit); //否则build后无法显示
+			Ext.Viewport.setActiveItem(me.classesedit); //show()?
+
+			// 任课教师
+			var obj = {
+				"schoolID": localStorage.schoolID
+			}		
+			var store = Ext.getStore('Teacher'); 
+			store.removeAll()
+			store.clearFilter() 
+			store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+				'readTeacherList.php?data=' + JSON.stringify(obj));
+			store.load({
+				callback: function(records, operation, success){
+				    if (success){
+						//Ext.Viewport.setActiveItem(me.teacher);
+					};
+				} 
+			})
+			return
+		}		
+		// 点击指定教师
+		if(e.target.className == 'teacher'){
+			me.teacher = Ext.create('Youngshine.view.classes.Teacher')
+			me.teacher.setParentRecord(record) //参数classID
+			Ext.Viewport.add(me.teacher)
+			me.teacher.show()
+			var obj = {
+				"schoolID": localStorage.schoolID
+			}		
+			var store = Ext.getStore('Teacher'); 
+			store.removeAll()
+			store.clearFilter() 
+			store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+				'readTeacherList.php?data=' + JSON.stringify(obj));
+			store.load({
+				callback: function(records, operation, success){
+				    if (success){
+						//Ext.Viewport.setActiveItem(me.teacher);
+					};
+				} 
+			})
+			return
+		}
 
 		me.classesattendee = Ext.create('Youngshine.view.classes.Attendee');
 		me.classesattendee.setParentRecord(record)
 		me.classesattendee.down('label[itemId=title]').setHtml(record.data.title)
 		
 		// 获取当前测评记录
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
+		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生记录'});
 		var obj = {
 			"classID": record.data.classID,
 			//"subjectID": record.data.subjectID, //题目按学科分3个表
@@ -96,12 +158,14 @@ Ext.define('Youngshine.controller.Classes', {
 			} 
         }); 
 	},	
+	
 	// 向左滑动，删除
 	classesItemswipe: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(list)
 		var me = this;
+		console.log(e.target.parentNode)
 		if(e.direction != 'left') return
 		// left to delete
+		e.target.parentNode.find('.remove').show()
 			
 		list.setDisableSelection(false)	
 		list.select(index,true); // 高亮当前记录
@@ -111,7 +175,8 @@ Ext.define('Youngshine.controller.Classes', {
 				ui: 'decline',
 				handler: function(){
 					actionSheet.hide();
-					list.setDisableSelection(true)	
+					list.deselect(index);	
+					list.setDisableSelection(true)
 					Ext.Viewport.remove(actionSheet,true); //移除dom
 					del(record)
 				}
@@ -130,11 +195,11 @@ Ext.define('Youngshine.controller.Classes', {
 		actionSheet.show();	
 		
 		function del(rec){
-			// ajax instead of jsonp
+			console.log(rec)
 			Ext.Ajax.request({
 			    url: me.getApplication().dataUrl + 'deleteClasses.php',
 			    params: {
-					classesID: rec.data.classesID
+					classID: rec.data.classID
 			    },
 			    success: function(response){
 					console.log(response)
@@ -147,6 +212,22 @@ Ext.define('Youngshine.controller.Classes', {
 			});
 		}
 	},	
+	/* 选中，指定任课教师
+	teacherChoose: function( obj,parentRecord,oldView)	{
+    	var me = this; 
+		console.log(obj)
+    	Ext.Ajax.request({			
+		    url: me.getApplication().dataUrl + 'updateClasses.php',
+			params: obj,
+			success: function(response){ // 服务器连接成功 
+				var ret = Ext.JSON.decode(response.responseText);
+				console.log(ret)
+				//Ext.getStore('Classes').insert(0,ret); 
+				// 前端更新，显示教师
+				parentRecord.set('teacherName',obj.teacherName)
+			},
+		});
+	}, */
 	
 	classesAddnew: function(win){		
 		var me = this;
@@ -183,36 +264,28 @@ Ext.define('Youngshine.controller.Classes', {
 		    }
 		});
 	},
-	// 查找选择的学生
-	classesaddnewStudent: function(btn)	{
+	// 取消添加
+	classeseditCancel: function(oldView){		
+		var me = this; 
+		//oldView.destroy()
+		Ext.Viewport.remove(me.classesedit,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.classes);
+	},	
+	classeseditSave: function( obj,oldView )	{
     	var me = this; 
-		me.student = Ext.create('Youngshine.view.classes.Student');
-		Ext.Viewport.add(me.student); //否则build后无法显示
-
-		var obj = {
-			"consultID": localStorage.consultID,
-			"schoolID" : localStorage.schoolID
-		}	
-		console.log(obj)	
-		var store = Ext.getStore('Student'); 
-		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readStudentList.php?data=' + JSON.stringify(obj));
-		store.load({
-			callback: function(records, operation, success){
-		        //Ext.Viewport.setMasked(false);
-		        if (success){
-					//Ext.Viewport.setActiveItem(me.student);
-					me.student.showBy(btn); // overlay show
-				};
-			}   		
-		});	
-	},
-	studentItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
-		list.hide()
-		me.classesaddnew.down('textfield[name=studentName]')
-			.setValue(record.data.studentName+'［'+record.data.grade+'］')
-		me.classesaddnew.down('hiddenfield[name=studentID]').setValue(record.data.studentID)
+		console.log(obj)
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateClasses.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; Ext.JSON.decode JSON.parse()
+				console.log(result)
+				//Ext.Viewport.setActiveItem(me.student);
+				//rec.set(obj) //前端更新显示
+				Ext.toast('修改成功',3000)
+				Ext.Viewport.remove(me.classesedit,true); //remove 当前界面
+		    }
+		});
 	},
 	
 	// 返回
@@ -274,6 +347,56 @@ Ext.define('Youngshine.controller.Classes', {
 			});
 		}
 	},	
+	classesattendeeItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		// 点击‘更改’金额
+		if(e.target.className == 'amount'){
+			Ext.Msg.show({
+			  title   : '学生交费金额',
+			  msg     : null,
+			  buttons : [{
+			    itemId : 'cancel',
+			    text   : '取消'
+			  },{
+			    itemId : 'ok',
+			    text   : '提交',
+			    ui     : 'confirm'
+			  }],
+			  prompt  : { 
+				//maxlength : 100, 
+				//autocapitalize : false ,
+				xtype: 'numberfield',
+				value: record.data.amount.toString()
+			  },
+			  fn      : function(btn,text) {
+
+				  if(btn=='ok' && text != 0) {
+					  var obj = {
+						  classstudentID: record.data.classstudentID,
+						  amount: text
+					  }
+					  console.log(obj)
+					  updateAmount(obj)
+				  }
+				  
+			  }
+			});
+		}
+		
+		function updateAmount(obj){		
+			Ext.Ajax.request({
+	            url: me.getApplication().dataUrl + 'updateAttendee.php',
+	            params: obj,
+	            success: function(response){
+					var ret = Ext.JSON.decode(response.responseText)
+					console.log(ret)
+					record.set('amount',obj.amount) // 刷新前端	
+					Ext.toast(ret.message,3000)
+				},
+	        });
+		}
+	},
+	
 	classesattendeeAddnew: function(rec,oldView){		
     	var me = this; 
 		me.student = Ext.create('Youngshine.view.classes.Student');
@@ -306,9 +429,11 @@ Ext.define('Youngshine.controller.Classes', {
 		var obj = {
 			studentID: record.data.studentID,
 			studentName: record.data.studentName,
+			hour: me.classesattendee.getParentRecord().data.hour, //默认课时
+			amount: me.classesattendee.getParentRecord().data.amount,
 			classID: me.classesattendee.getParentRecord().data.classID
 		}
-		console.log(obj);
+		console.log(obj); 
 		Ext.Ajax.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
             url: me.getApplication().dataUrl +  'createAttendee.php',
             params: obj,
@@ -320,7 +445,7 @@ Ext.define('Youngshine.controller.Classes', {
 				obj.classstudentID = ret.id; // model数组添加项目
 				Ext.getStore('Attendee').insert(0,obj); //新增记录，排在最前面
 				//Ext.toast('班级添加学生成功',3000)	
-				Ext.getStore('Student').remove(record) //选中的溢出	
+				Ext.getStore('Student').remove(record) //选中的移除消失	
             }
 		});
 	},
