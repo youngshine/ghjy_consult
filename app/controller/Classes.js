@@ -51,6 +51,8 @@ Ext.define('Youngshine.controller.Classes', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.classes = Ext.create('Youngshine.view.classes.List');
+		Ext.Viewport.add(me.classes);
+		Ext.Viewport.setActiveItem(me.classes);
 		
 		//Ext.Viewport.setActiveItem(me.classes);
 		//view.onGenreChange(); //默认
@@ -67,8 +69,7 @@ Ext.define('Youngshine.controller.Classes', {
 			callback: function(records, operation, success){
 			    console.log(records)
 				if (success){
-					Ext.Viewport.add(me.classes);
-					Ext.Viewport.setActiveItem(me.classes);
+					
 				};
 			} 
 		})	  			 
@@ -93,12 +94,21 @@ Ext.define('Youngshine.controller.Classes', {
 			var store = Ext.getStore('Teacher'); 
 			store.removeAll()
 			store.clearFilter() 
-			store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
 				'readTeacherList.php?data=' + JSON.stringify(obj));
 			store.load({
 				callback: function(records, operation, success){
 				    if (success){
-						//Ext.Viewport.setActiveItem(me.teacher);
+						// 任课教师selectfield，不用store,这样才能显示名字
+						var selectBox = me.classesedit.down('selectfield[name=teacherID]')
+						console.log(records)
+						selectBox.updateOptions(records)
+						selectBox.setValue(record.data.teacherID); 
+						/*
+						selectBox.updateOptions([
+							{teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
+						    //{text: 'Third Option',  value: 'third'}
+						]) */
 					};
 				} 
 			})
@@ -116,7 +126,7 @@ Ext.define('Youngshine.controller.Classes', {
 			var store = Ext.getStore('Teacher'); 
 			store.removeAll()
 			store.clearFilter() 
-			store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
 				'readTeacherList.php?data=' + JSON.stringify(obj));
 			store.load({
 				callback: function(records, operation, success){
@@ -165,7 +175,7 @@ Ext.define('Youngshine.controller.Classes', {
 		console.log(e.target.parentNode)
 		if(e.direction != 'left') return
 		// left to delete
-		e.target.parentNode.find('.remove').show()
+		//e.target.parentNode.find('.remove').show()
 			
 		list.setDisableSelection(false)	
 		list.select(index,true); // 高亮当前记录

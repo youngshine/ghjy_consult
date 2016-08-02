@@ -94,6 +94,18 @@ Ext.define('Youngshine.view.student.Edit', {
 					}
 				}
 			},{
+				xtype: 'selectfield',
+				name: 'schoolsubID', 
+				label: '分校区',
+				//store: 'Schoolsub', //只能用updateOption，否则无法自动获得名称
+				valueField: 'schoolsubID',
+				displayField: 'fullname',
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
 				xtype: 'hiddenfield',
 				name: 'studentID' //修改的unique			
 			}]	
@@ -119,7 +131,8 @@ Ext.define('Youngshine.view.student.Edit', {
 			gender = this.down('selectfield[name=gender]').getValue(),
 			grade = this.down('selectfield[name=grade]').getValue(),
 			phone = this.down('textfield[name=phone]').getValue().trim(),
-			addr = this.down('textfield[name=addr]').getValue().trim()
+			addr = this.down('textfield[name=addr]').getValue().trim(),
+			schoolsubID = this.down('selectfield[name=schoolsubID]').getValue()
 	
 		if (studentName == ''){
 			Ext.toast('姓名不能空白',3000); return;
@@ -127,13 +140,17 @@ Ext.define('Youngshine.view.student.Edit', {
 		if (phone == ''){
 			Ext.toast('电话不能空白',3000); return;
 		}
+		if (schoolsubID == null){
+			Ext.toast('请选择学生报读分校区',3000); return;
+		}
 		var obj = {
 			studentName: studentName,
 			gender: gender,
 			grade: grade,
 			phone: phone,
 			addr: addr,
-			studentID: studentID //修改
+			schoolsubID: schoolsubID, //归属学校的分校区
+			studentID: studentID //修改unique
 		};
 		console.log(obj)
 		me.fireEvent('save', obj,me);

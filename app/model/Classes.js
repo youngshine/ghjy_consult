@@ -12,6 +12,8 @@ Ext.define('Youngshine.model.Classes', {
 			{name: 'beginDate'}, // 开课日期
 			{name: 'weekday'}, // 上课周期
 			{name: 'timespan'}, 
+			{name: 'classType'}, // 科目
+			
 			{name: 'teacherID'}, // 班级教师，待定？
 			{name: 'teacherName'},
 			

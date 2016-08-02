@@ -36,7 +36,7 @@ Ext.define('Youngshine.controller.Main', {
 			},
 			success: function(result){ // 服务器连接成功
 				Ext.Viewport.setMasked(false); 
-				console.log(result)
+				//console.log(result)
 				if (result.success){ // 返回值有success成功
 					localStorage.setItem('consultID',result.data.consultID);
 					localStorage.setItem('consultName',result.data.consultName);

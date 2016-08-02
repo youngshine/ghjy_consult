@@ -40,11 +40,13 @@ Ext.define('Youngshine.controller.Student', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.student = Ext.create('Youngshine.view.student.List');
-		//me.student.onGenreChange(); //默认
+		Ext.Viewport.add(me.student);
+		Ext.Viewport.setActiveItem(me.student);
 		
 		var obj = {
 			"consultID": localStorage.consultID,
-			"schoolID" : localStorage.schoolID //来自公众号的学生，没有归属咨询师怎么办？ 
+			"schoolID" : localStorage.schoolID 
+			//来自公众号的学生，没有归属咨询师怎么办？让校长归属 
 		}	
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
@@ -56,11 +58,27 @@ Ext.define('Youngshine.controller.Student', {
 			callback: function(records, operation, success){
 		        //Ext.Viewport.setMasked(false);
 		        if (success){
-					Ext.Viewport.add(me.student);
-					Ext.Viewport.setActiveItem(me.student);
+					
 				};
 			}   		
-		});	  			 
+		});	  
+		
+		// 某个学校的分校区1-n个，表先加载进来，添加修改用
+		var objSub = {
+			"schoolID": localStorage.schoolID
+		}		
+		var storeSchoolsub = Ext.getStore('Schoolsub'); 
+		storeSchoolsub.removeAll()
+		storeSchoolsub.clearFilter() 
+		storeSchoolsub.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readSchoolsubList.php?data=' + JSON.stringify(objSub));
+		storeSchoolsub.load({
+			callback: function(records, operation, success){
+			    if (success){
+					console.log(records)
+				};
+			} 
+		})			 
 	},
 	
 	// 向左滑动，删除
@@ -118,6 +136,12 @@ Ext.define('Youngshine.controller.Student', {
 			Ext.Viewport.setActiveItem(me.studentedit); //show()?
 			console.log(record.data)
 			me.studentedit.setRecord(record)
+			
+			// 任课教师selectfield，不用store,这样才能显示名字
+			var selectBox = me.studentedit.down('selectfield[name=schoolsubID]')
+			selectBox.updateOptions(Ext.getStore('Schoolsub').data.items); 
+			console.log(Ext.getStore('Schoolsub').data.items)
+			selectBox.setValue(record.data.schoolsubID); 
 			return
 		}
 		// 沟通联络记录

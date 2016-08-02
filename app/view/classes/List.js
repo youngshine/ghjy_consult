@@ -60,12 +60,37 @@ Ext.define('Youngshine.view.classes.List', {
 					this.up('list').onAddnew()
 				}		
 			}]
-/*		},{
-    		xtype: 'searchfield',
-			scrollDock: 'top',
+		},{
+			xtype: 'toolbar',
 			docked: 'top',
-			placeHolder: 'search...',
-			action: 'search' */
+			ui: 'gray',
+			items: [{
+				width: '100%',
+				padding: '0 0',
+				defaults: {flex: 1},
+				xtype: 'segmentedbutton',
+				allowDepress: false,
+				//allowMultiple: false,
+				//allowToggle: false,
+				items: [{
+        			text: '数理化',
+				},{
+					text: '史地生',
+					//pressed: true,
+				},{
+        			text: '语政英',
+				},{
+        			text: '艺术',
+				}], ///* 会同时触发2次，api示例不会啊
+				listeners:{
+			        toggle: function(container, button, pressed){
+			            console.log(pressed)
+						if(pressed){
+							button.up('list').onToggle(button)
+						} //toggle会运行两次						
+			        }
+				} //*/
+			}]	
     	}],	
 		
     	listeners: [{
@@ -97,6 +122,16 @@ Ext.define('Youngshine.view.classes.List', {
 		var store = this.getStore(); //Ext.getStore('Orders');
 		store.clearFilter();
 	},	
+	// 会运行两次,why"""""????? api中demo不会啊"
+	onToggle: function(selBtn){
+		var me = this; 
+		console.log(selBtn.getText())
+		var subject = selBtn.getText(),
+			store = me.getStore(); //得到list的store
+		store.clearFilter();
+        store.filter('classType', subject, true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},
 	
     //use initialize method to swipe back 右滑返回
     initialize : function() {

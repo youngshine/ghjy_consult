@@ -16,12 +16,13 @@
 	$beginDate = $_REQUEST['beginDate'];
 	$weekday = $_REQUEST['weekday'];
 	$timespan = $_REQUEST['timespan'];
+	$classType = $_REQUEST['classType'];
 	$teacherID = $_REQUEST['teacherID'];
 
 	$sql = "UPDATE `ghjy_class` 
 		SET title = '$title',hour = $hour, amount = $amount, 
 		beginDate = '$beginDate', weekday = '$weekday',timespan='$timespan',
-		teacherID = $teacherID  
+		classType = '$classType', teacherID = $teacherID  
 		Where classID = $classID ";
     $result = mysql_query($sql) 
         or die("Invalid query: updateClass inc teacher" . mysql_error());

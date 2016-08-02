@@ -17,11 +17,13 @@ require_once('db/database_connection.php');
 	$beginDate = $arr->beginDate;
 	$weekday = $arr->weekday;
 	$timespan = $arr->timespan;
+	$classType = $arr->classType;
 	$consultID = $arr->consultID; //所属咨询师
 
 	$query = "INSERT INTO `ghjy_class` 
-		(title,hour,amount,beginDate,weekday,timespan,consultID) 
-		VALUES('$title',$hour,$amount,'$beginDate','$weekday','$timespan',$consultID)";
+		(title,hour,amount,beginDate,weekday,timespan,classType,consultID) 
+		VALUES('$title',$hour,$amount,'$beginDate','$weekday','$timespan',
+			'$classType',$consultID)";
 	$result = mysql_query($query) 
 		or die("Invalid query: create classes" . mysql_error());
 	

@@ -34,7 +34,7 @@ Ext.define('Youngshine.controller.Orders', {
 			ordersstudy: {
 				back: 'ordersstudyBack',
 				addnew: 'ordersstudyAddnew',
-				itemtap: 'ordersstudyItemtap', // 排课
+				itemtap: 'ordersstudyItemtap', // '排课'点击按钮
 				itemswipe: 'ordersstudyItemswipe' // 删除
 			},
 			studyzsd: {
@@ -54,6 +54,8 @@ Ext.define('Youngshine.controller.Orders', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.orders = Ext.create('Youngshine.view.orders.List');
+		Ext.Viewport.add(me.orders);
+		Ext.Viewport.setActiveItem(me.orders);
 		
 		var obj = {
 			"consultID": localStorage.consultID
@@ -69,8 +71,7 @@ Ext.define('Youngshine.controller.Orders', {
 		        //Ext.Viewport.setMasked(false);
 				console.log(records)
 		        if (success){
-					Ext.Viewport.add(me.orders);
-					Ext.Viewport.setActiveItem(me.orders);
+					
 				};
 			}   		
 		});	  			 

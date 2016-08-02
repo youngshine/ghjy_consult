@@ -16,10 +16,11 @@ endlog */
 	$grade = addslashes($_REQUEST['grade']);
 	$phone = addslashes($_REQUEST['phone']);
 	$addr = addslashes($_REQUEST['addr']);
+	$schoolsubID = $_REQUEST['schoolsubID'];
 
 	$query = "UPDATE `ghjy_student` SET 
 		studentName = '$studentName',gender = '$gender',
-		phone = '$phone',addr = '$addr',grade = '$grade'   
+		phone = '$phone',addr = '$addr',grade = '$grade',schoolsubID=$schoolsubID    
 		WHERE studentID = $studentID ";
 	$result = mysql_query($query) or die("Invalid query: updateStudent " . mysql_error());
 	//$result = mysql_query($query);

@@ -19,6 +19,7 @@ require_once('db/database_connection.php');
 	//$born = ($arr->born);
 	$phone = addslashes($arr->phone);
 	$addr = addslashes($arr->addr);
+	$schoolsubID = $arr->schoolsubID;
 	//$district = 'aa'; //addslashes($arr->district);
 	//$school = addslashes($arr->school); //学生学校，不是加盟校区
 	//$level_list = addslashes($arr->level_list); //数组字符
@@ -42,9 +43,9 @@ require_once('db/database_connection.php');
 	//$birthday = date('Y-m-d H:i:s',strtotime($user->Birthday));
 	//echo $birthday;
 	$query = "INSERT INTO `ghjy_student`
-		(studentName,gender,phone,addr,grade,consultID,schoolID) 
+		(studentName,gender,phone,addr,grade,schoolsubID,consultID,schoolID) 
 	 VALUES ('$studentName', '$gender', '$phone', 
-		 '$addr','$grade', $consultID,$schoolID)";
+		 '$addr','$grade',$schoolsubID, $consultID,$schoolID)";
 
 //$result = mysql_query($query) or die("Invalid query: createStudent" . mysql_error());
 	$result = mysql_query($query);

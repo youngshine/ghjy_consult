@@ -29,7 +29,9 @@ Ext.define('Youngshine.controller.Pricelist', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.pricelist = Ext.create('Youngshine.view.pricelist.List');
-		//view.onGenreChange(); //默认
+		Ext.Viewport.add(me.pricelist);
+		Ext.Viewport.setActiveItem(me.pricelist);
+		
 		var obj = {
 			"schoolID": localStorage.schoolID
 		}		
@@ -42,8 +44,7 @@ Ext.define('Youngshine.controller.Pricelist', {
 			callback: function(records, operation, success){
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
-					Ext.Viewport.add(me.pricelist);
-					Ext.Viewport.setActiveItem(me.pricelist);
+					
 				};
 			} 
 		})	  			 

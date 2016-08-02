@@ -68,7 +68,7 @@ Ext.define('Youngshine.view.classes.Edit', {
 				},
 			},{
 				xtype: 'selectfield',
-				label: '时间段', //选择后本地缓存，方便下次直接获取
+				label: '时间', //选择后本地缓存，方便下次直接获取
 				name: 'timespan',
 				options: [
 				    {text: '上午', value: '上午'},
@@ -82,9 +82,24 @@ Ext.define('Youngshine.view.classes.Edit', {
 				},
 			},{
 				xtype: 'selectfield',
-				label: '选择教师', //选择后本地缓存，方便下次直接获取
+				label: '所属科目', //选择后本地缓存，方便下次直接获取
+				name: 'classType',
+				options: [
+					{text: '数理化', value: '数理化'},
+				    {text: '史地生', value: '史地生'},
+					{text: '语政英', value: '语政英'},
+				    {text: '艺术', value: '艺术'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+				xtype: 'selectfield',
+				label: '教师', //选择后本地缓存，方便下次直接获取
 				name: 'teacherID',
-				store: 'Teacher',
+				//store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
 				valueField: 'teacherID',
 				displayField: 'teacherName',
 				autoSelect: false, 	
@@ -92,11 +107,6 @@ Ext.define('Youngshine.view.classes.Edit', {
 					doneButton: '确定',
 					cancelButton: '取消'
 				},	
-			},{
-				xtype: 'textfield',
-				name: 'teacherName',
-				label: '－',
-				readOnly: true	
 			},{
 				xtype: 'hiddenfield',
 				name: 'classID' //修改的unique			
@@ -118,13 +128,14 @@ Ext.define('Youngshine.view.classes.Edit', {
 		//window.scrollTo(0,0);
 		var me = this;
 		
-		var classID = this.down('hiddenfield[name=classID]').getValue(),
+		var classID = this.down('hiddenfield[name=classID]').getValue(), //unique
 			title = this.down('textfield[name=title]').getValue().trim(),
 			hour = this.down('numberfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
 			weekday = this.down('selectfield[name=weekday]').getValue(),
 			timespan = this.down('selectfield[name=timespan]').getValue(),
+		    classType = this.down('selectfield[name=classType]').getValue(),
 			teacherID = this.down('selectfield[name=teacherID]').getValue()
 		
 		if(teacherID == null) teacherID=0
@@ -137,25 +148,28 @@ Ext.define('Youngshine.view.classes.Edit', {
 		if (amount == 0 || amount == null){
 			Ext.toast('请填写收费金额',3000); return;
 		}
+		
+		var obj = {
+			title: title,
+			hour: hour,
+			amount: amount,
+			beginDate: beginDate,
+			weekday: weekday,
+			timespan: timespan,
+			classType: classType,
+			teacherID: teacherID,
+			classID: classID
+		};
+		console.log(obj)
 
     	Ext.Msg.confirm('',"确认修改保存？",function(btn){	
 			if(btn == 'yes'){
-				var obj = {
-					title: title,
-					hour: hour,
-					amount: amount,
-					beginDate: beginDate,
-					weekday: weekday,
-					timespan: timespan,
-					teacherID: teacherID,
-					classID: classID
-				};
-				console.log(obj)
 				me.fireEvent('save', obj,me);
 			}
 		});	
 
 		// 前端显示更新
+		me.getRecord().set(obj)
 		//me.getRecord().set('teacherName',teacher)
 	},
 	onCancel: function(btn){

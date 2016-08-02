@@ -70,12 +70,27 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				},	
 			},{
 				xtype: 'selectfield',
-				label: '时间段', //选择后本地缓存，方便下次直接获取
+				label: '时间', //选择后本地缓存，方便下次直接获取
 				name: 'timespan',
 				options: [
 				    {text: '上午', value: '上午'},
 				    {text: '下午', value: '下午'},
 				    {text: '晚上', value: '晚上'}
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+				xtype: 'selectfield',
+				label: '所属科目', //选择后本地缓存，方便下次直接获取
+				name: 'classType',
+				options: [
+					{text: '数理化', value: '数理化'},
+				    {text: '史地生', value: '史地生'},
+					{text: '语政英', value: '语政英'},
+				    {text: '艺术', value: '艺术'}
 				],
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
@@ -105,7 +120,8 @@ Ext.define('Youngshine.view.classes.Addnew', {
 			amount = this.down('numberfield[name=amount]').getValue(),
 			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
 			weekday = this.down('selectfield[name=weekday]').getValue(),
-			timespan = this.down('selectfield[name=timespan]').getValue()
+			timespan = this.down('selectfield[name=timespan]').getValue(),
+			classType = this.down('selectfield[name=classType]').getValue()
 		console.log(beginDate,hour,amount)
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
@@ -122,6 +138,9 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		if (timespan == null){
 			Ext.toast('请选择上课时间段',3000); return;
 		}
+		if (classType == null){
+			Ext.toast('请选择科目',3000); return;
+		}
 
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
@@ -132,6 +151,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 					beginDate: beginDate,
 					weekday: weekday,
 					timespan: timespan,
+					classType: classType,
 					consultID: localStorage.consultID //班级归属哪个咨询师
 				};
 				console.log(obj)

@@ -37,11 +37,12 @@ Ext.define('Youngshine.controller.Teacher', {
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
 		if(curView.xtype == 'teacher') return
- 
 		Ext.Viewport.remove(curView,true); //remove 当前界面
+		
 		me.teacher = Ext.create('Youngshine.view.teacher.List');
 		Ext.Viewport.add(me.teacher);
-		//view.onGenreChange(); //默认
+		Ext.Viewport.setActiveItem(me.teacher);
+		
 		var obj = {
 			"schoolID": localStorage.schoolID
 		}		
@@ -54,7 +55,7 @@ Ext.define('Youngshine.controller.Teacher', {
 			callback: function(records, operation, success){
 			    //Ext.Viewport.setMasked(false);
 			    if (success){
-					Ext.Viewport.setActiveItem(me.teacher);
+					
 				};
 			} 
 		})	  			 
@@ -241,6 +242,7 @@ Ext.define('Youngshine.controller.Teacher', {
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改成功',3000)
+				Ext.Viewport.setActiveItem(me.teacher);
 				Ext.Viewport.remove(me.teacheredit,true); //remove 当前界面
 		    }
 		});

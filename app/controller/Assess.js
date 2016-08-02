@@ -49,8 +49,8 @@ Ext.define('Youngshine.controller.Assess', {
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.assess = Ext.create('Youngshine.view.assess.List');
-		
-		//Ext.Viewport.setActiveItem(me.assess);
+		Ext.Viewport.add(me.assess);
+		Ext.Viewport.setActiveItem(me.assess);
 		//view.onGenreChange(); //默认
 		var obj = {
 			"consultID": localStorage.getItem('consultID'),
@@ -64,8 +64,7 @@ Ext.define('Youngshine.controller.Assess', {
 		store.load({
 			callback: function(records, operation, success){
 			    if (success){
-					Ext.Viewport.add(me.assess);
-					Ext.Viewport.setActiveItem(me.assess);
+					
 				};
 			} 
 		})	  			 
