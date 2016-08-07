@@ -19,7 +19,8 @@ Ext.define('Youngshine.view.student.List', {
         itemTpl: [
             '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
 			'<span class="edit" style="float:right;color:green;">｜编辑</span>' +
-			'<span class="followup" style="float:right;color:green;">联络记录</span></div>'
+			'<span class="followup" style="float:right;color:green;">｜联络</span>'+
+			'<span class="accnt" style="float:right;color:green;">缴费记录</span></div>' 
         ],
 		
     	items: [{

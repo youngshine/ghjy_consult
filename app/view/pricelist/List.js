@@ -1,5 +1,5 @@
 /**
- * Displays a list of 各个校区课时套餐价格
+ * Displays a list of 各个校区一对一课时套餐价格
  */
 Ext.define('Youngshine.view.pricelist.List', {
     extend: 'Ext.Container',
@@ -15,7 +15,7 @@ Ext.define('Youngshine.view.pricelist.List', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '课时套餐价格',
+				text: '一对一课程',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -38,7 +38,7 @@ Ext.define('Youngshine.view.pricelist.List', {
 	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;">'+
 				'<div>{title}</div><hr>'+
 				'<div style="color:#888;font-size:0.8em;">课时：{hour}</div>'+
-				'<div style="color:#888;font-size:0.8em;">金额：{unitprice}元</div></div>',
+				'<div style="color:#888;font-size:0.8em;">金额：{amount}元</div></div>',
     	}],
 		
 		listeners: [{

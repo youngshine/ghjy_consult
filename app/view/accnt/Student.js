@@ -1,7 +1,7 @@
 // 查找选择学生
-Ext.define('Youngshine.view.assess.Student',{
+Ext.define('Youngshine.view.accnt.Student',{
 	extend: 'Ext.dataview.List',
-	xtype: 'assess-student',
+	xtype: 'accnt-student',
 
 	config: {
 		striped: true,
@@ -29,7 +29,7 @@ Ext.define('Youngshine.view.assess.Student',{
 			ui: 'light',
             items: [{
             	xtype: 'searchfield',
-				placeHolder: '搜索学生'
+				placeHolder: '搜索姓名、电话...'
             }]
         }],
 		
@@ -46,6 +46,7 @@ Ext.define('Youngshine.view.assess.Student',{
 		var store = Ext.getStore('Student');
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
-        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('fullStudent', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
 });

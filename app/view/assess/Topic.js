@@ -48,7 +48,7 @@ Ext.define('Youngshine.view.assess.Topic', {
 			docked: 'top',
 			html: '<span class="addnew">＋添加题目</span>'+
 				'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+
-				'<span class="hist">历年考点</span>',
+				'<span class="hist">历年考点雷达图</span>',
 			//itemId: 'zsd',
 			style: 'text-align:center;color:green;margin:10px;'
     	}],	

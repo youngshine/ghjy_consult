@@ -18,7 +18,9 @@ Ext.define('Youngshine.controller.Main', {
 				teacher: 'menuTeacher',
 				classes: 'menuClasses', // 1 to N
 				assess: 'menuAssess', // 1 to 1
+				one2one: 'menuOne2one', //一对一排课
 				orders: 'menuOrders',
+				accnt: 'menuAccnt',
 				kcb: 'menuKcb',//安排课程内容（知识点）及教师
 				pricelist: 'menuPricelist'
 			}
@@ -83,7 +85,8 @@ Ext.define('Youngshine.controller.Main', {
 		this.getApplication().getController('Teacher').teacherList()		 
 	},
 	menuClasses: function(){
-		this.getApplication().getController('Classes').classesList()		 
+		//this.getApplication().getController('Classes').classesList()	
+		this.getApplication().getController('Class').classList()	 
 	},
 	menuAssess: function(){
 		this.getApplication().getController('Assess').assessList()		 
@@ -91,13 +94,19 @@ Ext.define('Youngshine.controller.Main', {
 	menuOrders: function(){
 		this.getApplication().getController('Orders').ordersList()		 
 	},
+	menuOne2one: function(){
+		this.getApplication().getController('One2one').one2oneList()		 
+	},
 	menuKcb: function(){
 		this.getApplication().getController('Kcb').kcbList()		 
 	},
 	menuPricelist: function(){
 		this.getApplication().getController('Pricelist').pricelistList()		 
 	},
-	
+	menuAccnt: function(){
+		this.getApplication().getController('Accnt').accntList()		 
+	},
+		
 	// 用户注销退出，来自Main控制器，reset
 	logout: function(){
     	//Ext.Msg.confirm('',"确认退出？",function(btn){	

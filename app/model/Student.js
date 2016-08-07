@@ -6,6 +6,7 @@ Ext.define('Youngshine.model.Student', {
         fields: [
 			{name: 'studentID'}, 
 			{name: 'studentName'}, 
+			{name: 'wxID'}, //微信，发模版消息用
 			{name: 'gender'}, 
 			{name: 'grade'}, 
 			{name: 'born'}, 

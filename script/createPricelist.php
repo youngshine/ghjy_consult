@@ -1,6 +1,6 @@
 <?php
 /*
- * 添加课时套餐价格记录
+ * 添加一对一课时套餐价格记录
 */
 require_once 'db/response.php';
 require_once 'db/request.php';
@@ -16,7 +16,7 @@ require_once('db/database_connection.php');
 	$amount = $arr->amount;
 	$schoolID = $arr->schoolID; //所属校区
 
-	$query = "INSERT INTO `ghjy_pricelist`(title,hour,unitprice,schoolID) 
+	$query = "INSERT INTO `ghjy_pricelist`(title,hour,amount,schoolID) 
 		VALUES('$title',$hour,$amount,$schoolID)";
 	$result = mysql_query($query) 
 		or die("Invalid query: create pricelist" . mysql_error());

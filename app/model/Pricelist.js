@@ -1,4 +1,4 @@
-// 某个咨询师的订单列表：购买课时
+// 某个学校的一对一课程
 Ext.define('Youngshine.model.Pricelist', {
     extend: 'Ext.data.Model',
 
@@ -7,7 +7,9 @@ Ext.define('Youngshine.model.Pricelist', {
 			{name: 'pricelistID'}, 
 			{name: 'title'}, 
 			{name: 'unitprice'}, 
+			{name: 'amount'}, 
 			{name: 'hour'}, 
+			
 			{name: 'schoolID'}, 
 			{name: 'schoolName'},
         ]

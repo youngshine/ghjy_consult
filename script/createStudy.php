@@ -13,13 +13,14 @@ require_once('db/database_connection.php');
 	$zsdID = $arr->zsdID;
 	$subjectID = $arr->subjectID;
 	//$fee = $arr->fee;
-	//$times = $arr->times;
+	$times = $arr->times;
 	$studentID = $arr->studentID;
-	$prepaidID = $arr->prepaidID; //属于哪个课时套餐taocan
+	$accntID = $arr->accntID;
+	//$prepaidID = $arr->prepaidID; //属于哪个课时套餐taocan
 	//$consultID = $arr->consultID; //属于哪个咨询师？？还是按学生
 		
-	$query = "INSERT INTO `ghjy_student-study` (zsdID,subjectID,studentID,prepaidID) 
-	 VALUES ($zsdID,$subjectID,$studentID,$prepaidID)";
+	$query = "INSERT INTO `ghjy_student-study` (zsdID,subjectID,times,studentID,accntID) 
+	 VALUES ($zsdID,$subjectID,$times,$studentID,$accntID)";
 
 	$result = mysql_query($query) 
 		or die("Invalid query: createStudentStudy" . mysql_error());

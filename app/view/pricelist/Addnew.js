@@ -18,7 +18,7 @@ Ext.define('Youngshine.view.pricelist.Addnew', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增课时套餐记录',
+			title: '新增一对一课程',
 			items: [{
 				text: '取消',
 				ui: 'decline',

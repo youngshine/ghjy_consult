@@ -27,12 +27,13 @@ Ext.application({
         //'Main'
     ],
     controllers: [
-        'Main','Student','Teacher','Pricelist','Orders','Kcb','Assess','Classes'
+        'Main','Student','Teacher','Assess',
+		'Accnt','Class','One2one' // Orders,'Kcb','Pricelist','Classes
     ],
     stores: [
-    	'Student','Teacher','Course','Orders','Study',
-		'Zsd','Topic','Pricelist','Assess','Zsdhist','Followup',
-		'Classes','Attendee','Schoolsub'
+    	'Student','Teacher','Course','Study',
+		'Zsd','Topic','Assess','Zsdhist','Followup',
+		'Classes','Attendee','Pricelist','Schoolsub','Accnt' //Orders
     ],
 
     icon: {

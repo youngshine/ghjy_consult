@@ -6,7 +6,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增班级',
+			title: '新增班级课程',
 			items: [{
 				text: '取消',
 				ui: 'decline',

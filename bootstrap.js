@@ -756,14 +756,18 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.viewport.WindowsPhone": [
     "Ext.viewport.WP"
   ],
+  "Youngshine.controller.Accnt": [],
   "Youngshine.controller.Assess": [],
+  "Youngshine.controller.Class": [],
   "Youngshine.controller.Classes": [],
   "Youngshine.controller.Kcb": [],
   "Youngshine.controller.Main": [],
+  "Youngshine.controller.One2one": [],
   "Youngshine.controller.Orders": [],
   "Youngshine.controller.Pricelist": [],
   "Youngshine.controller.Student": [],
   "Youngshine.controller.Teacher": [],
+  "Youngshine.model.Accnt": [],
   "Youngshine.model.Assess": [],
   "Youngshine.model.Attendee": [],
   "Youngshine.model.Classes": [],
@@ -776,6 +780,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.model.Teacher": [],
   "Youngshine.model.Topic": [],
   "Youngshine.model.Zsd": [],
+  "Youngshine.store.Accnt": [],
   "Youngshine.store.Assess": [],
   "Youngshine.store.Attendee": [],
   "Youngshine.store.Classes": [],
@@ -793,6 +798,11 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.Login": [],
   "Youngshine.view.Main": [],
   "Youngshine.view.Menu": [],
+  "Youngshine.view.accnt.Addnew_1to1": [],
+  "Youngshine.view.accnt.Addnew_class": [],
+  "Youngshine.view.accnt.Classes": [],
+  "Youngshine.view.accnt.List": [],
+  "Youngshine.view.accnt.Student": [],
   "Youngshine.view.assess.Addnew": [],
   "Youngshine.view.assess.List": [],
   "Youngshine.view.assess.PolarChart": [],
@@ -801,15 +811,22 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.assess.Student": [],
   "Youngshine.view.assess.Topic": [],
   "Youngshine.view.assess.Zsd": [],
+  "Youngshine.view.class.Attendee": [],
+  "Youngshine.view.class.List": [],
   "Youngshine.view.classes.Addnew": [],
   "Youngshine.view.classes.Attendee": [],
   "Youngshine.view.classes.Edit": [],
   "Youngshine.view.classes.List": [],
+  "Youngshine.view.classes.List-old": [],
   "Youngshine.view.classes.Student": [],
   "Youngshine.view.classes.Teacher": [],
   "Youngshine.view.kcb.List": [],
   "Youngshine.view.kcb.Teacher": [],
   "Youngshine.view.member.Edit": [],
+  "Youngshine.view.one2one.List": [],
+  "Youngshine.view.one2one.Study": [],
+  "Youngshine.view.one2one.study.Kcb": [],
+  "Youngshine.view.one2one.study.Zsd": [],
   "Youngshine.view.orders.Addnew": [],
   "Youngshine.view.orders.List": [],
   "Youngshine.view.orders.Pricelist": [],
@@ -819,6 +836,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.orders.study.Zsd": [],
   "Youngshine.view.pricelist.Addnew": [],
   "Youngshine.view.pricelist.List": [],
+  "Youngshine.view.student.Accnt": [],
   "Youngshine.view.student.Addnew": [],
   "Youngshine.view.student.Edit": [],
   "Youngshine.view.student.Followup": [],
@@ -1783,14 +1801,18 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.viewport.Ios": [],
   "Ext.viewport.Viewport": [],
   "Ext.viewport.WindowsPhone": [],
+  "Youngshine.controller.Accnt": [],
   "Youngshine.controller.Assess": [],
+  "Youngshine.controller.Class": [],
   "Youngshine.controller.Classes": [],
   "Youngshine.controller.Kcb": [],
   "Youngshine.controller.Main": [],
+  "Youngshine.controller.One2one": [],
   "Youngshine.controller.Orders": [],
   "Youngshine.controller.Pricelist": [],
   "Youngshine.controller.Student": [],
   "Youngshine.controller.Teacher": [],
+  "Youngshine.model.Accnt": [],
   "Youngshine.model.Assess": [],
   "Youngshine.model.Attendee": [],
   "Youngshine.model.Classes": [],
@@ -1803,6 +1825,7 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.model.Teacher": [],
   "Youngshine.model.Topic": [],
   "Youngshine.model.Zsd": [],
+  "Youngshine.store.Accnt": [],
   "Youngshine.store.Assess": [],
   "Youngshine.store.Attendee": [],
   "Youngshine.store.Classes": [],
@@ -1828,6 +1851,21 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.Menu": [
     "widget.sidemenu"
   ],
+  "Youngshine.view.accnt.Addnew_1to1": [
+    "widget.accnt-addnew"
+  ],
+  "Youngshine.view.accnt.Addnew_class": [
+    "widget.accnt-addnew"
+  ],
+  "Youngshine.view.accnt.Classes": [
+    "widget.accnt-classes"
+  ],
+  "Youngshine.view.accnt.List": [
+    "widget.accnt"
+  ],
+  "Youngshine.view.accnt.Student": [
+    "widget.accnt-student"
+  ],
   "Youngshine.view.assess.Addnew": [
     "widget.assess-addnew"
   ],
@@ -1852,6 +1890,12 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.assess.Zsd": [
     "widget.topic-zsd"
   ],
+  "Youngshine.view.class.Attendee": [
+    "widget.class-attendee"
+  ],
+  "Youngshine.view.class.List": [
+    "widget.class"
+  ],
   "Youngshine.view.classes.Addnew": [
     "widget.classes-addnew"
   ],
@@ -1862,6 +1906,9 @@ Ext.ClassManager.addNameAliasMappings({
     "widget.classes-edit"
   ],
   "Youngshine.view.classes.List": [
+    "widget.classes"
+  ],
+  "Youngshine.view.classes.List-old": [
     "widget.classes"
   ],
   "Youngshine.view.classes.Student": [
@@ -1878,6 +1925,18 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.member.Edit": [
     "widget.member"
+  ],
+  "Youngshine.view.one2one.List": [
+    "widget.one2one"
+  ],
+  "Youngshine.view.one2one.Study": [
+    "widget.one2one-study"
+  ],
+  "Youngshine.view.one2one.study.Kcb": [
+    "widget.study-kcb"
+  ],
+  "Youngshine.view.one2one.study.Zsd": [
+    "widget.study-zsd"
   ],
   "Youngshine.view.orders.Addnew": [
     "widget.orders-addnew"
@@ -1905,6 +1964,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.pricelist.List": [
     "widget.pricelist"
+  ],
+  "Youngshine.view.student.Accnt": [
+    "widget.student-accnt"
   ],
   "Youngshine.view.student.Addnew": [
     "widget.student-addnew"

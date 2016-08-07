@@ -1,9 +1,9 @@
 /**
  * Displays a list of 各个校区班级课程 product as pricelist
  */
-Ext.define('Youngshine.view.classes.List', {
+Ext.define('Youngshine.view.class.List', {
     extend: 'Ext.Container',
-	xtype: 'classes',
+	xtype: 'class',
 
     config: {
 		layout: 'fit',
@@ -19,15 +19,7 @@ Ext.define('Youngshine.view.classes.List', {
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
-				} 
-			},{
-				xtype: 'spacer'
-			},{
-				//ui : 'action',
-				action: 'addnew',
-				iconCls: 'add',
-				//text : '＋新增',
-				action: 'addnew'	
+				} 	
 			}]
 		},{
 			xtype: 'dataview',
@@ -35,12 +27,11 @@ Ext.define('Youngshine.view.classes.List', {
 			inline: true,
 			scrollable: true,
 			style: 'text-align:center;margin:10px 0px',
-	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;">'+
+	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:160px;">'+
 				'<div>{title}</div><hr>'+
-				'<div style="color:#888;font-size:0.8em;">课时：{hour}</div>'+
-				'<div style="color:#888;font-size:0.8em;">金额：{amount}元</div>'+
-				'<br><div style="color:green;"><span class="edit">编辑</span>｜'+
-				'<span class="del">删除</span></div></div>'
+				'<div style="color:#888;font-size:0.8em;">{hour}课时、{amount}元</div>'+
+				'<div style="color:#888;font-size:0.8em;">{weekday}{timespan}</div>'+
+				'<div style="color:#888;font-size:0.8em;">教师：{teacherName}</div></div>'
     	}],
 		
 		listeners: [{
@@ -54,9 +45,6 @@ Ext.define('Youngshine.view.classes.List', {
 		}]
     },
 
-    onAddnew: function(btn){
-		this.fireEvent('addnew',this)
-    },
     onItemtap: function(dataview, index, target, record,e){
 		this.fireEvent('itemtap',dataview, index, target, record,e)
     },

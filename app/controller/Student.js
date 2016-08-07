@@ -9,6 +9,7 @@ Ext.define('Youngshine.controller.Student', {
 			studentedit: 'student-edit',
 			studentstudy: 'student-study',
 			studentshow: 'student-show',
+			studentaccnt: 'student-accnt',
 			studentfollowup: 'student-followup'
         },
         control: {
@@ -24,6 +25,9 @@ Ext.define('Youngshine.controller.Student', {
 			studentedit: {
 				save: 'studenteditSave', 
 				cancel: 'studenteditCancel'
+			},
+			studentaccnt: {
+				back: 'studentaccntBack'
 			},
 			studentfollowup: {
 				back: 'studentfollowupBack',
@@ -172,6 +176,34 @@ Ext.define('Youngshine.controller.Student', {
 			});	
 			return
 		}
+		// 沟通联络记录
+		if(e.target.className == 'accnt'){
+			me.studentaccnt = Ext.create('Youngshine.view.student.Accnt');
+			me.studentaccnt.setParentRecord(record)
+			Ext.Viewport.add(me.studentaccnt) // build?
+			Ext.Viewport.setActiveItem(me.studentaccnt);
+			
+			// 预先加载的数据
+			var obj = {
+				"studentID": record.data.studentID,
+			}
+			console.log(obj)
+			var store = Ext.getStore('Accnt'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(this.getApplication().dataUrl + 
+				'readAccntListByStudent.php?data='+JSON.stringify(obj) );
+			store.load({ //异步async
+				callback: function(records, operation, success){
+					if (success){
+						
+					}else{
+						Ext.toast(result.message,3000);
+					};
+				}   		
+			});	
+			return
+		}
 /*		
 		me.studentshow = Ext.create('Youngshine.view.student.Show');
 		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
@@ -211,6 +243,14 @@ Ext.define('Youngshine.controller.Student', {
 		});		
 	},
 
+	// 缴费记录的返回
+	studentaccntBack: function(oldView){		
+		var me = this; 
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentaccnt,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.student);
+	},
+	
 	studentAddnew: function(win){		
 		var me = this;
 		

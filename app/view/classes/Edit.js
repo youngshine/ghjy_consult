@@ -8,7 +8,7 @@ Ext.define('Youngshine.view.classes.Edit', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '修改班级',
+			title: '修改班级课程',
 			items: [{
 				text: '取消',
 				ui: 'decline',

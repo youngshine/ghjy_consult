@@ -31,21 +31,6 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onStudent()
 			}
 		},{
-			text: '教师',
-			iconCls: 'user',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onTeacher()
-			}
-		},{
-			text: '大小班上课',
-			iconCls: 'team',
-			handler: function(btn){
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onClasses()
-			}
-		},{
 			text: '水平测评',
 			iconCls: 'compose',
 			handler: function(btn){
@@ -53,6 +38,23 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onAssess()
 			}
+		 /*
+		},{
+			text: '一对一套餐课程',
+			iconCls: 'info',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onPricelist()
+			} */
+		},{
+			text: '缴费',
+			iconCls: 'organize',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAccnt()
+			} /*
 		},{
 			text: '一对一课时销售',
 			iconCls: 'organize',
@@ -68,18 +70,32 @@ Ext.define('Youngshine.view.Menu', {
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onKcb()
-			}	
-
+			}	*/
 		},{
-			text: '课时套餐价格',
-			iconCls: 'info',
+			text: '大小班课程',
+			iconCls: 'team',
+			handler: function(btn){
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onClasses()
+			}
+		},{
+			text: '一对一排课', //添加学习知识点，并分配教师
+			iconCls: 'time',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
-				this.up('menu').onPricelist()
+				this.up('menu').onOne2one()
 			}
 		},{
-			text: '退出',
+			text: '教师',
+			iconCls: 'user',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onTeacher()
+			}
+		},{
+			text: '退出登录',
 			//iconCls: 'delete',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
@@ -111,6 +127,9 @@ Ext.define('Youngshine.view.Menu', {
 	onOrders: function(){
 		this.fireEvent('orders') //购买课时套餐
 	},
+	onOne2one: function(){
+		this.fireEvent('one2one') //一对一排课：安排学习内容及教师
+	},
 	onKcb: function(){
 		this.fireEvent('kcb') //安排课程及教师
 	},
@@ -120,22 +139,8 @@ Ext.define('Youngshine.view.Menu', {
 	onPricelist: function(){
 		this.fireEvent('pricelist') //课时套餐的校区价格设置
 	},
-	onNews: function(){
-		var active = Ext.Viewport.getActiveItem();
-		if(active.xtype == 'news')
-			return
-		Ext.Viewport.remove(active,true); //remove 当前界面
-    	Ext.Viewport.setActiveItem(Ext.create('Youngshine.view.News'));
+	onAccnt: function(){
+		this.fireEvent('accnt') //报读（大小班、一对一）缴费
 	},
-	onMember: function(){
-		var active = Ext.Viewport.getActiveItem();
-		if(active.xtype == 'member') return
-			
-		//Ext.Viewport.remove(active,true); //remove 当前界面
-		var vw = Ext.create('Youngshine.view.member.Edit');
-		vw.setShowAnimation(false); // 避免多次动画
-    	Ext.Viewport.setActiveItem(vw);
-	},
-
 });	
 	
