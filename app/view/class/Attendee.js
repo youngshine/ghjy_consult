@@ -28,6 +28,7 @@ Ext.define('Youngshine.view.class.Attendee', {
 			},{
 				text: '结束班级',
 				ui: 'decline',
+				disabled: true,
 				action: 'finish'
 			}]
 		},{

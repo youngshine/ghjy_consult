@@ -44,6 +44,8 @@ Ext.define('Youngshine.controller.Main', {
 					localStorage.setItem('consultName',result.data.consultName);
 					localStorage.setItem('schoolID',result.data.schoolID); 
 					localStorage.setItem('schoolName',result.data.schoolName); 
+					// 咨询师 属于学校下面的分校区
+					localStorage.setItem('schoolsubID',result.data.schoolsubID); 
 					
 					Ext.Viewport.remove(me.getLogin(),true); 	
 					me.mainview = Ext.create('Youngshine.view.Main');

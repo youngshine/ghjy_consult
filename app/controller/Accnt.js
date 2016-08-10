@@ -138,12 +138,15 @@ Ext.define('Youngshine.controller.Accnt', {
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.Addnew_1to1');
 			// 当前学校的课时套餐价格表
 			var objOne2one = {
-				"schoolID": localStorage.schoolID
+				"schoolID": localStorage.schoolID,
+				"current": 1 //禁用的课程不显示
 			}		
-			var storeOne2one = Ext.getStore('Pricelist'); 
-			storeOne2one.getProxy().setUrl(me.getApplication().dataUrl + 
+			var store = Ext.getStore('Pricelist'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
 				'readPricelist.php?data=' + JSON.stringify(objOne2one));
-			storeOne2one.load({
+			store.load({
 				callback: function(records, operation, success){
 					console.log(records)
 				}   		
@@ -154,12 +157,15 @@ Ext.define('Youngshine.controller.Accnt', {
 			// 当前学校的大小班课程
 			var objClass = {
 				"schoolID": localStorage.schoolID,
+				"schoolsubID": localStorage.schoolsubID,
 				//"consultID": localStorage.consultID //咨询师的大小班
 			}		
-			var storeClass = Ext.getStore('Classes'); 
-			storeClass.getProxy().setUrl(me.getApplication().dataUrl + 
+			var store = Ext.getStore('Classes'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
 				'readClassesList.php?data=' + JSON.stringify(objClass));
-			storeClass.load({
+			store.load({
 				callback: function(records, operation, success){
 					console.log(records)
 				}   		

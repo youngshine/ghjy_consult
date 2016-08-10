@@ -68,17 +68,18 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 				value: 0,
 				readOnly: true
 			}]
-			
     	},{
 			xtype: 'button',
 			text : '＋报读班级',
-			ui : 'play',
+			ui : 'plain',
 			action: 'classes',
 			style: {
-				color: '#fff',
-				background: '#66cc00',
-				margin: '-10px 15px 0',
-			}	
+				color: 'SteelBlue',
+				background: 'none',//'#66cc00',
+				margin: '-10px 100px 0px',
+				border: 0
+			},
+			bageText: '0'
 		},{
 			// 缴费购买课程项目明细 1、一对一 2、大小班
 			xtype: 'list',

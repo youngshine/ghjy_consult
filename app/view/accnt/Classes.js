@@ -8,8 +8,8 @@ Ext.define('Youngshine.view.accnt.Classes',{
 		disableSelection: true,
 		store: 'Classes',
 		itemTpl: '<div>{title}</div>'+
-			'<div style="color:#888;"><span>{beginDate}</span>'+
-			'<span style="float:right;">{hour}课时{amount}元</span></div>',
+			'<div style="color:#888;"><span>{weekday}{timespan}</span>'+
+			'<span style="float:right;">教师：{teacherName}</span></div>',
         // We give it a left and top property to make it floating by default
         right: 0,
         top: 0,

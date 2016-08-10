@@ -20,7 +20,8 @@ Ext.define('Youngshine.controller.One2one', {
 				itemswipe: 'one2onestudyItemswipe' // 删除
 			},
 			studyzsd: {
-				itemtap: 'studyzsdItemtap' //添加报读记录
+				//itemtap: 'studyzsdItemtap' //添加报读记录
+				choose: 'studyzsdChoose'
 			},
 			studykcb: {
 				done: 'studykcbDone' //排课，分配教师、上课时间
@@ -66,7 +67,7 @@ Ext.define('Youngshine.controller.One2one', {
     	var me = this; 
 
 		me.one2onestudy = Ext.create('Youngshine.view.one2one.Study')
-		me.one2onestudy.setRecord(record); //带入当前知识点
+		me.one2onestudy.setRecord(record); //带入参数：一对一缴费单及其学生
 		me.one2onestudy.down('label[itemId=title]')
 			.setHtml(record.data.hour+'课时｜'+record.data.studentName)
 		Ext.Viewport.add(me.one2onestudy)
@@ -94,13 +95,14 @@ Ext.define('Youngshine.controller.One2one', {
 		Ext.Viewport.setActiveItem(me.one2one);
 		//Ext.Viewport.remove(me.one2onestudy); //remove 当前界面
 	},
-	one2onestudyAddnew: function(btn){		
+	one2onestudyAddnew: function(rec,oldView){		
     	var me = this; 
 		me.studyzsd = Ext.create('Youngshine.view.one2one.study.Zsd');
+		me.studyzsd.setParentRecord(rec); //父窗口参数：缴费单及其学生
 		Ext.Viewport.add(me.studyzsd); //否则build后无法显示
 		me.studyzsd.show(); // overlay show
 		
-		// 选择学科，才显示知识点
+		// 选择学科，才显示知识点，先清除
 		var store = Ext.getStore('Zsd');
 		store.removeAll()
 		store.clearFilter()
@@ -176,10 +178,11 @@ Ext.define('Youngshine.controller.One2one', {
 		}	
 	},
 	
-	// 选中报读知识点 zsdID+subjectID
-	studyzsdItemtap: function( list, index, target, record, e, eOpts )	{
+	// 选择并点击确定报读知识点 zsdID+subjectID // itemtap
+	//studyzsdItemtap: function( list, index, target, record, e, eOpts )	{
+	studyzsdChoose: function( obj,oldView )	{
     	var me = this; 
-		list.hide()
+		/*list.hide()
 		
 		var obj = {
 			zsdID: record.data.zsdID,
@@ -189,8 +192,7 @@ Ext.define('Youngshine.controller.One2one', {
 			studentID: me.one2onestudy.getRecord().data.studentID,
 			//prepaidID: me.ordersstudy.getRecord().data.prepaidID
 			accntID: me.one2onestudy.getRecord().data.accntID
-		}
-		console.log(obj)
+		} */
 		Ext.data.JsonP.request({ 
             url: me.getApplication().dataUrl +  'createStudy.php',
             callbackKey: 'callback',

@@ -1,4 +1,4 @@
-// 课时套餐的子表：
+// 一对一课时套餐的子表：
 // 报读知识点记录以及安排一对一教师（教师一旦安排，不能随意改动
 Ext.define('Youngshine.view.one2one.Study', {
     extend: 'Ext.dataview.List',
@@ -55,7 +55,7 @@ Ext.define('Youngshine.view.one2one.Study', {
 
     onAddnew: function(btn){
 		var me = this;
-		me.fireEvent('addnew',btn, me);
+		me.fireEvent('addnew',me.getRecord(), me);
     },	
 	onBack: function(btn){
 		var me = this;

@@ -145,7 +145,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			schoolsubID = this.down('selectfield[name=schoolsubID]').getValue()
 	
 		if (studentName == ''){
-			Ext.toast('请选择学生',3000); return;
+			Ext.toast('请填写姓名',3000); return;
 		}
 		if (gender == null){
 			Ext.toast('请选择性别',3000); return;

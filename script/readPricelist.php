@@ -14,7 +14,7 @@ require_once('db/database_connection.php');
 	$query = "SELECT a.*,b.schoolName 
 		FROM `ghjy_pricelist` a 
 		JOIN `ghjy_school` b ON a.schoolID=b.schoolID 
-		Where a.schoolID=$schoolID  ";
+		Where a.schoolID=$schoolID And a.current=1 ";
     
     $result = mysql_query($query) 
 		or die("Invalid query: readPricelist by school" . mysql_error());

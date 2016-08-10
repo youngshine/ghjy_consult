@@ -57,7 +57,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 				value: new Date()	
 			},{
 				xtype: 'selectfield',
-				label: '课时套餐', //选择后本地缓存，方便下次直接获取
+				label: '课程名称', //选择后本地缓存，方便下次直接获取
 				name: 'pricelistID',
 				store: 'Pricelist', //无法自动显示已选择的下拉项目，通过updateOpt
 				valueField: 'pricelistID',

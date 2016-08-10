@@ -10,15 +10,16 @@ require_once('db/database_connection.php');
 	$arr = $req->params;
 	//$consultID = $arr->consultID;//班级所属的咨询师
 	$schoolID = $arr->schoolID;//班级所属的学校
+	$schoolsubID = $arr->schoolsubID;//班级所属的分校区
 
 	// left join 教师，因为可能还没有制定班级教师
 	$query = " SELECT a.*,b.teacherName 
 		From `ghjy_class` a 
 		Left Join `ghjy_teacher` b On a.teacherID=b.teacherID 
-		Where a.schoolID = $schoolID ";
+		Where a.schoolsubID = $schoolsubID ";
     
     $result = mysql_query($query) 
-		or die("Invalid query: readClassList by school" . mysql_error());
+		or die("Invalid query: readClassList by schoolsub" . mysql_error());
 
 	$query_array = array();
 	$i = 0;

@@ -1,9 +1,10 @@
-// 查找选择添加 报读知识点
+// 查找选择添加 一对一报读知识点
 Ext.define('Youngshine.view.one2one.study.Zsd',{
 	extend: 'Ext.dataview.List',
 	xtype: 'study-zsd',
 
 	config: {
+		parentRecord: null, //父窗口的参数 setParentRecord()
 		//emptyText: '选择学科',
 		striped: true,
 		store: 'Zsd',
@@ -30,8 +31,12 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
             xtype: 'toolbar',
 			ui: 'light',
             items: [{
-				xtype: 'label',
-				html: '＋'
+				text: '确定',
+				action: 'choose',
+				ui: 'confirm',
+				disabled: true
+			},{	
+				xtype: 'spacer'
 			},{	
 				xtype: 'selectfield',
 				itemId: 'subject', 
@@ -52,7 +57,7 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 				itemId: 'grade', 
 				placeHolder: '选择年级',
 				width: 150,
-				hidden: true,
+				disabled: true,
 				autoSelect: false,
 				options: [
 				    {text: '九年级', value: '九年级'},
@@ -83,11 +88,36 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
     	}]
 	},
 
+	initialize: function(){
+		this.callParent(arguments)
+		//this.on('itemtap',this.onItemtap)
+		this.on('select',this.onSelect)
+	},
+	onSelect: function(list, record){
+		var me = this
+		me.down('button[action=choose]').setDisabled(false)
+		
+		me.down('button[action=choose]').on('tap',function(){
+			var obj = {
+				zsdID: record.data.zsdID,
+				zsdName: record.data.zsdName,
+				subjectID: record.data.subjectID,
+				times: record.data.times,
+				studentID: me.getParentRecord().data.studentID,
+				//prepaidID: me.ordersstudy.getRecord().data.prepaidID
+				accntID: me.getParentRecord().data.accntID
+		    }
+			console.log(obj);	
+			me.fireEvent('choose',obj,me)
+			me.destroy()
+		})
+	},
+	
 	// 搜索过滤
     onSubject: function(field,newValue,oldValue){
 		console.log(newValue)
 		var me = this;
-		me.down('selectfield[itemId=grade]').setHidden(false)
+		me.down('selectfield[itemId=grade]').setDisabled(false)
 		
 		var obj = {
 			"subjectID": newValue,
@@ -109,5 +139,6 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 		// var store = this.down('list').store; //得到list的store: Myaroundroute
 		store.clearFilter();
         store.filter('gradeName', newValue, true);
-	}
+	},
+	
 });

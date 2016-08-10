@@ -72,19 +72,19 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onKcb()
 			}	*/
 		},{
-			text: '大小班课程',
-			iconCls: 'team',
-			handler: function(btn){
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onClasses()
-			}
-		},{
 			text: '一对一排课', //添加学习知识点，并分配教师
 			iconCls: 'time',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onOne2one()
+			}
+		},{
+			text: '大小班课程',
+			iconCls: 'team',
+			handler: function(btn){
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onClasses()
 			}
 		},{
 			text: '教师',

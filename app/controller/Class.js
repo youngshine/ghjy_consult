@@ -1,4 +1,4 @@
-// 大小班级相关
+// 咨询师所属分校区schoolsub大小班级相关
 Ext.define('Youngshine.controller.Class', {
     extend: 'Ext.app.Controller',
 
@@ -32,6 +32,7 @@ Ext.define('Youngshine.controller.Class', {
 		//view.onGenreChange(); //默认
 		var obj = {
 			"schoolID": localStorage.schoolID,
+			"schoolsubID": localStorage.schoolsubID,
 			"consultID": localStorage.getItem('consultID'),
 			"teacherID": 0 //班级尚未确定教师
 		}		
