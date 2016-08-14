@@ -12,6 +12,7 @@ Ext.define('Youngshine.view.student.List', {
 		//layout: 'fit',
 		ui: 'round',
 		store: 'Student',
+		//grouped: true,
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
@@ -20,6 +21,7 @@ Ext.define('Youngshine.view.student.List', {
             '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
 			'<span class="edit" style="float:right;color:green;">｜编辑</span>' +
 			'<span class="followup" style="float:right;color:green;">｜联络</span>'+
+			'<span class="qrcode" style="float:right;color:green;">｜二维码</span>'+
 			'<span class="accnt" style="float:right;color:green;">缴费记录</span></div>' 
         ],
 		
@@ -28,7 +30,7 @@ Ext.define('Youngshine.view.student.List', {
     		docked: 'top',
     		//title: '注册学生',
 			items: [{
-				text: '学生',
+				text: '注册学生',
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',

@@ -44,8 +44,8 @@ Ext.define('Youngshine.view.Login', {
 				//value: '123456',
 			},{
 				itemId: 'school',
-    			label: '校区',
-				placeHolder: '输入加盟校区'
+    			label: '学校',
+				placeHolder: '输入联盟学校名称'
     		}]
     	},{
 			xtype: 'button',

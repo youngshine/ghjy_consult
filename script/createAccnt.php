@@ -15,6 +15,7 @@ $accntDate = $_REQUEST['accntDate'];
 $studentID = $_REQUEST['studentID'];
 $amount_ys = $_REQUEST['amount_ys'];
 $amount = $_REQUEST['amount'];
+$note = addslashes($_REQUEST['note']);
 
 $consultID = $_REQUEST['consultID']; //哪个咨询师操作缴费
 
@@ -29,10 +30,10 @@ $arrClasses = json_decode($arrClasses); //转换成数组 decode($a,true)
 
 // 1. 收费主记录（大小班，一对一）	
 $sql = "INSERT INTO `ghjy_accnt` 
-	(studentID,accntType,accntDate,amount_ys,amount,hour,unitprice,title,pricelistID,consultID) 
+	(studentID,accntType,accntDate,amount_ys,amount,hour,unitprice,title,note,pricelistID,consultID) 
 	VALUES 
 	($studentID,'$accntType','$accntDate',$amount_ys,$amount,
-		$hour,$unitprice,'$title',$pricelistID,$consultID)";
+		$hour,$unitprice,'$title','$note',$pricelistID,$consultID)";
 $result = mysql_query($sql) 
 	or die("Invalid query: createAccnt" . mysql_error());
 

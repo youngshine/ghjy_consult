@@ -203,7 +203,7 @@ Ext.define('Youngshine.controller.One2one', {
 				//更新前端store，最新插入记录ID，才能删除修改
 				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
 				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
-				Ext.toast('添加报读知识点成功',3000)		
+				Ext.toast('添加成功')		
             }
 		});
 	},

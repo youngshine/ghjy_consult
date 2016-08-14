@@ -101,7 +101,18 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 				name: 'unitprice', 
 				label: '单价',
 				readOnly: true
-			
+			},{	
+				xtype: 'textfield',
+				name: 'note', 
+				label: '备注', //为什么优惠？
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}	
+						
 			},{
 				xtype: 'hiddenfield',
 				name: 'title', // 一对一课时套餐名称，用于保存	
@@ -147,6 +158,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			hour = this.down('numberfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			pricelistID = this.down('selectfield[name=pricelistID]').getValue()
 	
 		if (studentName == ''){
@@ -167,7 +179,8 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			//taocan: taocan,
 			amount: amount,
 			amount_ys: amount_ys,
-			pricelistID: pricelistID,
+			note: note,
+			pricelistID: pricelistID, // 1to1
 			title: title,
 			unitprice: unitprice,
 			hour: hour,

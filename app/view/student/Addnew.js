@@ -134,7 +134,10 @@ Ext.define('Youngshine.view.student.Addnew', {
     }, */
 
 	onSave: function(){
-		//window.scrollTo(0,0);
+		// 页面回复正常
+		this.getScrollable().getScroller().scrollTo(0,0);
+		window.scrollTo(0,0);
+		
 		var me = this;
 		
 		var studentName = this.down('textfield[name=studentName]').getValue().trim(),

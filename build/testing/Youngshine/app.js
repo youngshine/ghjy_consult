@@ -101539,7 +101539,7 @@ Ext.define('Youngshine.controller.One2one', {
 				//更新前端store，最新插入记录ID，才能删除修改
 				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
 				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
-				Ext.toast('添加报读知识点成功',3000)		
+				Ext.toast('添加成功')		
             }
 		});
 	},
@@ -102201,10 +102201,10 @@ Ext.define('Youngshine.model.Accnt', {
 			{name: 'unitprice'}, 
 			{name: 'hour'}, 
 			
-			{name: 'note'}, 
 			{name: 'accntDate'}, 
 			{name: 'amount'}, // 实收金额
 			{name: 'amount_ys'}, // 应收
+			{name: 'note'}, 
 			
 			{name: 'studentID'}, // 咨询师创建的
 			{name: 'studentName'},
@@ -102368,8 +102368,8 @@ Ext.define('Youngshine.view.Login', {
 				//value: '123456',
 			},{
 				itemId: 'school',
-    			label: '校区',
-				placeHolder: '输入加盟校区'
+    			label: '学校',
+				placeHolder: '输入联盟学校名称'
     		}]
     	},{
 			xtype: 'button',
@@ -102746,11 +102746,11 @@ Ext.define('Youngshine.view.Main', {
 });
 
 Ext.define('Youngshine.view.accnt.Addnew_class', {
-    extend:  Ext.Panel ,
+    extend:  Ext.form.Panel ,
     xtype: 'accnt-addnew', //与一对一相同xtype
 
     config: {
-		//layout: 'fit',
+		layout: 'vbox',
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
@@ -102814,6 +102814,17 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 				//clearIcon: false, 
 				value: 0,
 				readOnly: true
+			},{	
+				xtype: 'textfield',
+				name: 'note', 
+				label: '备注', //为什么优惠？
+				listeners: {
+					focus: function(e){
+						// form滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			}]
     	},{
 			xtype: 'button',
@@ -102831,9 +102842,9 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			// 缴费购买课程项目明细 1、一对一 2、大小班
 			xtype: 'list',
 			margin: '10px',
-			height: '100%',
+			//height: '100%',
 			//ui: 'round',
-			//flex: 1,
+			flex: 1,
 			disableSelection: true,
 	        itemTpl: [
 				'<div><span>{title}</span>'+
@@ -102884,6 +102895,7 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			//hour = this.down('hiddenfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			pricelistID = 0 //大小班，不是一对一课程pricelist
 	
 		if (studentName == ''){
@@ -102917,6 +102929,7 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			accntDate: accntDate,
 			amount: amount,
 			amount_ys: amount_ys,
+			note: note,
 			pricelistID: 0, //大小班，不是一对一
 			title: '',
 			unitprice: 0,
@@ -103070,7 +103083,18 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 				name: 'unitprice', 
 				label: '单价',
 				readOnly: true
-			
+			},{	
+				xtype: 'textfield',
+				name: 'note', 
+				label: '备注', //为什么优惠？
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}	
+						
 			},{
 				xtype: 'hiddenfield',
 				name: 'title', // 一对一课时套餐名称，用于保存	
@@ -103116,6 +103140,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			hour = this.down('numberfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			pricelistID = this.down('selectfield[name=pricelistID]').getValue()
 	
 		if (studentName == ''){
@@ -103136,7 +103161,8 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			//taocan: taocan,
 			amount: amount,
 			amount_ys: amount_ys,
-			pricelistID: pricelistID,
+			note: note,
+			pricelistID: pricelistID, // 1to1
 			title: title,
 			unitprice: unitprice,
 			hour: hour,
@@ -105107,7 +105133,10 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 		    }
 			console.log(obj);	
 			me.fireEvent('choose',obj,me)
-			me.destroy()
+			//me.destroy()
+			me.deselectAll()
+			me.getStore().remove(record); // list.remove(record)???
+			this.setDisabled(true)
 		})
 	},
 	

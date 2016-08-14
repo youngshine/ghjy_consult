@@ -12,10 +12,10 @@ Ext.define('Youngshine.model.Accnt', {
 			{name: 'unitprice'}, 
 			{name: 'hour'}, 
 			
-			{name: 'note'}, 
 			{name: 'accntDate'}, 
 			{name: 'amount'}, // 实收金额
 			{name: 'amount_ys'}, // 应收
+			{name: 'note'}, 
 			
 			{name: 'studentID'}, // 咨询师创建的
 			{name: 'studentName'},

@@ -109,7 +109,10 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 		    }
 			console.log(obj);	
 			me.fireEvent('choose',obj,me)
-			me.destroy()
+			//me.destroy()
+			me.deselectAll()
+			me.getStore().remove(record); // list.remove(record)???
+			this.setDisabled(true)
 		})
 	},
 	

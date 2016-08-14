@@ -204,6 +204,44 @@ Ext.define('Youngshine.controller.Student', {
 			});	
 			return
 		}
+		// 场景二维码
+		if(e.target.className == 'qrcode'){
+			var overlay = Ext.Viewport.add({
+				xtype: 'panel',
+				modal: true,
+				hideOnMaskTap: true,
+				centered: true,
+				width: 450,height: 480,
+				scrollable: true,
+				hidden: true,
+		        items: [{	
+		        	xtype: 'toolbar',
+		        	docked: 'top',
+		        	title: '一键扫码注册',
+				},{
+					xtype: 'component',
+					html: ''
+				}],	
+			})
+			//this.overlay.show()
+			Ext.Ajax.request({
+			    url: 'script/weixinJS_gongzhonghao/wx_qrcode.php',
+			    params: {
+					studentID: record.data.studentID
+			    },
+			    success: function(response){
+					var ret = JSON.parse(response.responseText)
+					console.log(ret)
+					overlay.show()
+					
+					//overlay.down('image').setSrc(ret.img)  
+					var img = '<img src=' + ret.img + ' />'
+					overlay.setHtml(img) 
+					overlay.down('toolbar').setTitle(record.data.studentName+'｜'+record.data.phone)
+			    }
+			});	
+			return
+		}
 /*		
 		me.studentshow = Ext.create('Youngshine.view.student.Show');
 		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错

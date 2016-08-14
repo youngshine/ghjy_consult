@@ -1,9 +1,9 @@
 Ext.define('Youngshine.view.accnt.Addnew_class', {
-    extend: 'Ext.Panel',
+    extend: 'Ext.form.Panel',
     xtype: 'accnt-addnew', //与一对一相同xtype
 
     config: {
-		//layout: 'fit',
+		layout: 'vbox',
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
@@ -67,6 +67,17 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 				//clearIcon: false, 
 				value: 0,
 				readOnly: true
+			},{	
+				xtype: 'textfield',
+				name: 'note', 
+				label: '备注', //为什么优惠？
+				listeners: {
+					focus: function(e){
+						// form滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			}]
     	},{
 			xtype: 'button',
@@ -84,9 +95,9 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			// 缴费购买课程项目明细 1、一对一 2、大小班
 			xtype: 'list',
 			margin: '10px',
-			height: '100%',
+			//height: '100%',
 			//ui: 'round',
-			//flex: 1,
+			flex: 1,
 			disableSelection: true,
 	        itemTpl: [
 				'<div><span>{title}</span>'+
@@ -137,6 +148,7 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			//hour = this.down('hiddenfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			pricelistID = 0 //大小班，不是一对一课程pricelist
 	
 		if (studentName == ''){
@@ -170,6 +182,7 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			accntDate: accntDate,
 			amount: amount,
 			amount_ys: amount_ys,
+			note: note,
 			pricelistID: 0, //大小班，不是一对一
 			title: '',
 			unitprice: 0,
