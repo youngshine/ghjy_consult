@@ -12,7 +12,7 @@ Ext.define('Youngshine.view.class.Attendee', {
 		striped: true,
         itemTpl: [
 			'<div><span>{studentName}</span>'+
-			'<span class="amount" style="float:right;color:#888;">{gender}</span></div>'
+			'<span class="amount" style="float:right;color:green;">{fullCurrent}</span></div>'
         ],
 		
     	items: [{
@@ -23,13 +23,6 @@ Ext.define('Youngshine.view.class.Attendee', {
 				ui : 'back',
 				action: 'back',
 				text : '返回',
-			},{
-				xtype: 'spacer'
-			},{
-				text: '结束班级',
-				ui: 'decline',
-				disabled: true,
-				action: 'finish'
 			}]
 		},{
 			xtype: 'label',
@@ -50,4 +43,24 @@ Ext.define('Youngshine.view.class.Attendee', {
 		var me = this;
 		me.fireEvent('back',me);
 	},
+	
+    //use initialize method to swipe back 右滑返回
+    initialize : function() {
+        this.callParent();
+        this.element.on({
+            scope : this,
+            swipe : 'onElSwipe' //not use anonymous functions
+        });
+    },   
+    onElSwipe : function(e) {
+        console.log(e.target)
+		var me = this;
+		//if(e.target.className != "prodinfo") // 滑动商品名称等panel才退回
+		//	return
+		if(e.direction=='right'){
+        	//Ext.Viewport.setActiveItem( Youngshine.app.getController('Teach').getTopicteach() );
+			//this.destroy();
+			me.onBack();
+        };     
+    }, 
 });

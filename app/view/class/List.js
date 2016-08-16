@@ -29,6 +29,7 @@ Ext.define('Youngshine.view.class.List', {
 			style: 'text-align:center;margin:10px 0px',
 	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:160px;">'+
 				'<div>{title}</div><hr>'+
+				'<div style="color:#888;font-size:0.8em;">定员{persons}人</div>'+
 				'<div style="color:#888;font-size:0.8em;">{hour}课时、{amount}元</div>'+
 				'<div style="color:#888;font-size:0.8em;">{weekday}{timespan}</div>'+
 				'<div style="color:#888;font-size:0.8em;">教师：{teacherName}</div></div>'

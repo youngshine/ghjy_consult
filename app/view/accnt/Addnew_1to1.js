@@ -69,6 +69,11 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 				},
 			},{	
 				xtype: 'numberfield',
+				name: 'unitprice', 
+				label: '单价',
+				readOnly: true
+			},{	
+				xtype: 'numberfield',
 				name: 'hour', //绑定后台数据字段
 				label: '课时数',
 				listeners: {
@@ -96,11 +101,21 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 				//clearIcon: false, 
 				value: 0,
 				readOnly: true
-			},{	
-				xtype: 'numberfield',
-				name: 'unitprice', 
-				label: '单价',
-				readOnly: true
+			},{
+				xtype: 'selectfield',
+				name: 'payment', 
+				label: '付款方式',
+				options: [
+				    {text: '现金', value: '现金'},
+				    {text: '刷卡', value: '刷卡'},
+				    {text: '微信', value: '微信'},
+				    {text: '扫码', value: '扫码'}
+				],
+				autoSelect: true, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			},{	
 				xtype: 'textfield',
 				name: 'note', 
@@ -148,6 +163,10 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 
 	onSave: function(){
 		var me = this;
+		
+		// 页面回复正常
+		me.getScrollable().getScroller().scrollTo(0,0);
+		window.scrollTo(0,0);
 
 		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
 			studentID = this.down('hiddenfield[name=studentID]').getValue(),
@@ -158,6 +177,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			hour = this.down('numberfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			payment = this.down('selectfield[name=payment]').getValue(),
 			note = this.down('textfield[name=note]').getValue().trim(),
 			pricelistID = this.down('selectfield[name=pricelistID]').getValue()
 	
@@ -179,6 +199,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			//taocan: taocan,
 			amount: amount,
 			amount_ys: amount_ys,
+			payment: payment,
 			note: note,
 			pricelistID: pricelistID, // 1to1
 			title: title,
@@ -188,6 +209,7 @@ Ext.define('Youngshine.view.accnt.Addnew_1to1', {
 			//schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
+		
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);

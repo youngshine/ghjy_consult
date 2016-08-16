@@ -132,153 +132,251 @@ Ext.define('Youngshine.controller.Student', {
 		}
 	},
 	studentItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
+    	var me = this; console.log(e)
 		// 点击‘修改编辑’
-		if(e.target.className == 'edit'){
-			me.studentedit = Ext.create('Youngshine.view.student.Edit');
-			Ext.Viewport.add(me.studentedit); //否则build后无法显示
-			Ext.Viewport.setActiveItem(me.studentedit); //show()?
-			console.log(record.data)
-			me.studentedit.setRecord(record)
-			
-			// 任课教师selectfield，不用store,这样才能显示名字
-			var selectBox = me.studentedit.down('selectfield[name=schoolsubID]')
-			selectBox.updateOptions(Ext.getStore('Schoolsub').data.items); 
-			console.log(Ext.getStore('Schoolsub').data.items)
-			selectBox.setValue(record.data.schoolsubID); 
-			return
-		}
-		// 沟通联络记录
-		if(e.target.className == 'followup'){
-			me.studentfollowup = Ext.create('Youngshine.view.student.Followup');
-			me.studentfollowup.setParentRecord(record)
-			
-			Ext.Viewport.setMasked({xtype:'loadmask',message:'读取联络记录'});
-			// 预先加载的数据
-			var obj = {
-				"studentID": record.data.studentID,
-			}
-			var store = Ext.getStore('Followup'); 
-			store.removeAll()
-			store.clearFilter()
-			store.getProxy().setUrl(this.getApplication().dataUrl + 
-				'readFollowupList.php?data='+JSON.stringify(obj) );
-			store.load({ //异步async
-				callback: function(records, operation, success){
-					Ext.Viewport.setMasked(false);
-					if (success){
-						Ext.Viewport.add(me.studentfollowup) // build?
-						Ext.Viewport.setActiveItem(me.studentfollowup);
-					}else{
-						Ext.toast(result.message,3000);
-					};
-				}   		
-			});	
-			return
-		}
-		// 沟通联络记录
-		if(e.target.className == 'accnt'){
-			me.studentaccnt = Ext.create('Youngshine.view.student.Accnt');
-			me.studentaccnt.setParentRecord(record)
-			Ext.Viewport.add(me.studentaccnt) // build?
-			Ext.Viewport.setActiveItem(me.studentaccnt);
-			
-			// 预先加载的数据
-			var obj = {
-				"studentID": record.data.studentID,
-			}
-			console.log(obj)
-			var store = Ext.getStore('Accnt'); 
-			store.removeAll()
-			store.clearFilter()
-			store.getProxy().setUrl(this.getApplication().dataUrl + 
-				'readAccntListByStudent.php?data='+JSON.stringify(obj) );
-			store.load({ //异步async
-				callback: function(records, operation, success){
-					if (success){
-						
-					}else{
-						Ext.toast(result.message,3000);
-					};
-				}   		
-			});	
-			return
-		}
-		// 场景二维码
-		if(e.target.className == 'qrcode'){
-			var overlay = Ext.Viewport.add({
-				xtype: 'panel',
-				modal: true,
+		if(e.target.className == 'popmenu'){
+			var popmenu = Ext.Viewport.add({ // not list.add
+				xtype: 'sheet',
+				enter: 'right',
+				exit: 'right',
+				left: e.pageX-360,
+				top: e.pageY-40,
+				width: '390px',
+				height: '40px',
+
 				hideOnMaskTap: true,
-				centered: true,
-				width: 450,height: 480,
-				scrollable: true,
-				hidden: true,
-		        items: [{	
-		        	xtype: 'toolbar',
-		        	docked: 'top',
-		        	title: '一键扫码注册',
+				modal: true, 
+
+				style: 'background:#000;color:#fff;border-radius:5px;padding:0 5px;',
+				/*html: '<span class="accnt">缴费记录</span>&nbsp;｜&nbsp;'+
+				'<span class="followup">联络</span>&nbsp;｜&nbsp;'+
+				'<span class="qrcode">扫码</span>&nbsp;｜&nbsp;'+
+				'<span class="edit">编辑</span>', */
+				layout: 'hbox',
+				defaults: {
+					xtype: 'button',
+					//ui: 'small',
+					style: {
+						color: '#fff',
+						background: 'none',//'#66cc00',
+						border: 0
+					},
+					height: 40
+				},
+				items: [{
+					text: '大小班', action: 'class'
 				},{
-					xtype: 'component',
-					html: ''
-				}],	
+					text: '一对一', action: 'study'
+				},{
+					text: '缴费', action: 'accnt'
+				},{
+					text: '联络', action: 'followup'	
+				},{
+					text: '扫码', action: 'qrcode'
+				},{
+					text: '编辑', action: 'edit'
+				}],
+				
+				listeners: [{
+					delegate: 'button[action=edit]',
+					event: 'tap',
+					fn: function(){ doEdit();this.destroy() }
+				},{
+					delegate: 'button[action=qrcode]',
+					event: 'tap',
+					fn: function(){ doQrcode();this.destroy() }
+				},{
+					delegate: 'button[action=followup]',
+					event: 'tap',
+					fn: function(){ doFollowup();this.destroy() }
+				},{
+					delegate: 'button[action=accnt]',
+					event: 'tap',
+					fn: function(){ doAccnt();this.destroy() }
+				},{
+					delegate: 'button[action=study]',
+					event: 'tap',
+					fn: function(){ doStudy();this.destroy() }
+				},{
+					delegate: 'button[action=class]',
+					event: 'tap',
+					fn: function(){ doClass();this.destroy() }
+				}]
 			})
-			//this.overlay.show()
-			Ext.Ajax.request({
-			    url: 'script/weixinJS_gongzhonghao/wx_qrcode.php',
-			    params: {
-					studentID: record.data.studentID
-			    },
-			    success: function(response){
-					var ret = JSON.parse(response.responseText)
-					console.log(ret)
-					overlay.show()
+			
+			//Ext.Viewport.add(popmenu)
+			/*popmenu.show()
+			var listeners = [{
+				delegate: 'button[action=class]',
+				event: 'tap',
+				fn: function(){ doClass() }
+			}]
+			popmenu.setListeners(listeners)
+			*/
+			function doEdit(){
+				me.studentedit = Ext.create('Youngshine.view.student.Edit');
+				Ext.Viewport.add(me.studentedit); //否则build后无法显示
+				Ext.Viewport.setActiveItem(me.studentedit); //show()?
+				console.log(record.data)
+				me.studentedit.setRecord(record)
+			
+				// 任课教师selectfield，不用store,这样才能显示名字
+				var selectBox = me.studentedit.down('selectfield[name=schoolsubID]')
+				selectBox.updateOptions(Ext.getStore('Schoolsub').data.items); 
+				console.log(Ext.getStore('Schoolsub').data.items)
+				selectBox.setValue(record.data.schoolsubID); 
+			}
+			function doQrcode(){
+				var overlay = Ext.Viewport.add({
+					xtype: 'panel',
+					modal: true,
+					hideOnMaskTap: true,
+					centered: true,
+					width: 450,height: 480,
+					scrollable: true,
+					hidden: true,
+			        items: [{	
+			        	xtype: 'toolbar',
+			        	docked: 'top',
+			        	title: '一键扫码注册',
+					},{
+						xtype: 'component',
+						html: ''
+					}],	
+				})
+				//this.overlay.show()
+				Ext.Ajax.request({
+				    url: 'script/weixinJS_gongzhonghao/wx_qrcode.php',
+				    params: {
+						studentID: record.data.studentID
+				    },
+				    success: function(response){
+						var ret = JSON.parse(response.responseText)
+						console.log(ret)
+						overlay.show()
 					
-					//overlay.down('image').setSrc(ret.img)  
-					var img = '<img src=' + ret.img + ' />'
-					overlay.setHtml(img) 
-					overlay.down('toolbar').setTitle(record.data.studentName+'｜'+record.data.phone)
-			    }
-			});	
-			return
-		}
-/*		
-		me.studentshow = Ext.create('Youngshine.view.student.Show');
-		Ext.Viewport.add(me.studentshow); //很重要，否则build后无法菜单，出错
-		me.studentshow.down('panel[itemId=my_show]').setData(record.data)
-		me.studentshow.show(); 
-		me.studentshow.setRecord(record); // 当前记录参数
-*/
-		me.studentstudy = Ext.create('Youngshine.view.student.Study');
-		Ext.Viewport.add(me.studentstudy); //否则build后无法显示
-		//me.teacherkcb.show()
-		//Ext.Viewport.setActiveItem(me.teacherkcb); //show()?
-		console.log(record.data.studentID)
-		
-		Ext.Ajax.request({
-		    url: me.getApplication().dataUrl + 'readStudyListByStudent.php',
-		    params: {
-				studentID: record.data.studentID
-		    },
-		    success: function(response){
-				var arr = JSON.parse(response.responseText)
-				console.log(arr)
-				var content = ''
-				Ext.Array.each(arr, function(name, index) {
-					content += name.zsdName + '<br>' + 
-						'<span style="font-size:0.8em;color:#888;">' + 
-						name.times + '课时；' +
-						name.teacherName + '老师' + '</span><br>'
-				});		
-				console.log(content) 
+						//overlay.down('image').setSrc(ret.img)  
+						var img = '<img src=' + ret.img + ' />'
+						overlay.setHtml(img) 
+						overlay.down('toolbar').setTitle(record.data.studentName+'｜'+record.data.phone)
+				    }
+				});	
+			}
+			function doAccnt(){
+				me.studentaccnt = Ext.create('Youngshine.view.student.Accnt');
+				me.studentaccnt.setParentRecord(record)
+				Ext.Viewport.add(me.studentaccnt) // build?
+				Ext.Viewport.setActiveItem(me.studentaccnt);
+			
+				// 预先加载的数据
 				var obj = {
-					studentName: record.data.studentName,
-					kcb: content
-				}  
-				me.studentstudy.down('panel[itemId=my_show]').setData(obj)
-				me.studentstudy.show();      
-		    }
-		});		
+					"studentID": record.data.studentID,
+				}
+				console.log(obj)
+				var store = Ext.getStore('Accnt'); 
+				store.removeAll()
+				store.clearFilter()
+				store.getProxy().setUrl(me.getApplication().dataUrl + 
+					'readAccntListByStudent.php?data='+JSON.stringify(obj) );
+				store.load({ //异步async
+					callback: function(records, operation, success){
+						if (success){
+						
+						}else{
+							Ext.toast(result.message,3000);
+						};
+					}   		
+				});	
+			}
+			function doFollowup(){
+				me.studentfollowup = Ext.create('Youngshine.view.student.Followup');
+				me.studentfollowup.setParentRecord(record)
+				Ext.Viewport.add(me.studentfollowup) // build?
+				Ext.Viewport.setActiveItem(me.studentfollowup);
+				
+				// 预先加载的数据
+				var obj = {
+					"studentID": record.data.studentID,
+				}
+				var store = Ext.getStore('Followup'); 
+				store.removeAll()
+				store.clearFilter()
+				store.getProxy().setUrl(me.getApplication().dataUrl + 
+					'readFollowupList.php?data='+JSON.stringify(obj) );
+				store.load({ //异步async
+					callback: function(records, operation, success){
+						if (success){
+							
+						}else{
+							Ext.toast(result.message,3000);
+						};
+					}   		
+				});	
+			}
+			function doStudy(){
+				me.studentstudy = Ext.create('Youngshine.view.student.Study');
+				Ext.Viewport.add(me.studentstudy); //否则build后无法显示
+				//Ext.Viewport.setActiveItem(me.teacherkcb); //show()?
+				console.log(record.data.studentID)
+
+				Ext.Ajax.request({
+				    url: me.getApplication().dataUrl + 'readStudyListByStudent.php',
+				    params: {
+						studentID: record.data.studentID
+				    },
+				    success: function(response){
+						var arr = JSON.parse(response.responseText)
+						console.log(arr)
+						var content = ''
+						Ext.Array.each(arr, function(name, index) {
+							content += name.zsdName + '<br>' + 
+								'<span style="font-size:0.8em;color:#888;">' + 
+								name.times + '课时；' +
+								name.teacherName + '老师' + '</span><br>'
+						});		
+						console.log(content) 
+						var obj = {
+							studentName: record.data.studentName,
+							kcb: content
+						}  
+						me.studentstudy.down('panel[itemId=my_show]').setData(obj)
+						me.studentstudy.show();      
+				    }
+				});	
+			}
+			// 报读大小班记录
+			function doClass(){
+				me.studentstudy = Ext.create('Youngshine.view.student.Study');
+				Ext.Viewport.add(me.studentstudy); //否则build后无法显示
+				//Ext.Viewport.setActiveItem(me.teacherkcb); //show()?
+				console.log(record.data.studentID)
+
+				Ext.Ajax.request({
+				    url: me.getApplication().dataUrl + 'readClassesListByStudent.php',
+				    params: {
+						studentID: record.data.studentID
+				    },
+				    success: function(response){
+						var arr = JSON.parse(response.responseText)
+						console.log(arr)
+						var content = ''
+						Ext.Array.each(arr, function(name, index) {
+							content += name.title + '<br>' + 
+								'<span style="font-size:0.8em;color:#888;">' + 
+								name.beginDate + '上课；' +
+								name.teacherName + '老师' + '</span><br>'
+						});		
+						console.log(content) 
+						var obj = {
+							studentName: record.data.studentName,
+							kcb: content
+						}  
+						me.studentstudy.down('panel[itemId=my_show]').setData(obj)
+						me.studentstudy.show();      
+				    }
+				});	
+			}
+		}	
 	},
 
 	// 缴费记录的返回
