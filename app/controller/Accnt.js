@@ -1,4 +1,4 @@
-// 购买缴费的控制器，
+// 购买缴费的控制器，退费？？大小班或一对一退费，调出来
 Ext.define('Youngshine.controller.Accnt', {
     extend: 'Ext.app.Controller',
 
@@ -232,19 +232,19 @@ Ext.define('Youngshine.controller.Accnt', {
 				wxTpl(obj); 
 
 				function wxTpl(person){
-					var obj = {
+					var objWx = {
 						wxID       : person.wxID, // 发消息学生家长
 						student    : person.studentName,
 						accntID    : person.accntID,
-						accntType    : person.accntType,
+						accntType  : person.accntType,
 						accntDate  : person.accntDate,
 						amount     : person.amount,
 						amount_ys  : person.amount_ys,
 					}
-					console.log(obj)
+					console.log(objWx)
 					Ext.Ajax.request({
 					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl.php',
-					    params: obj,
+					    params: objWx,
 					    success: function(response){
 					        var text = response.responseText;
 					        // process server response here

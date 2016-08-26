@@ -100811,7 +100811,7 @@ Ext.define('Youngshine.controller.Assess', {
 	}
 });
 
-// 购买缴费的控制器，
+// 购买缴费的控制器，退费？？大小班或一对一退费，调出来
 Ext.define('Youngshine.controller.Accnt', {
     extend:  Ext.app.Controller ,
 
@@ -101045,19 +101045,19 @@ Ext.define('Youngshine.controller.Accnt', {
 				wxTpl(obj); 
 
 				function wxTpl(person){
-					var obj = {
+					var objWx = {
 						wxID       : person.wxID, // 发消息学生家长
 						student    : person.studentName,
 						accntID    : person.accntID,
-						accntType    : person.accntType,
+						accntType  : person.accntType,
 						accntDate  : person.accntDate,
 						amount     : person.amount,
 						amount_ys  : person.amount_ys,
 					}
-					console.log(obj)
+					console.log(objWx)
 					Ext.Ajax.request({
 					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl.php',
-					    params: obj,
+					    params: objWx,
 					    success: function(response){
 					        var text = response.responseText;
 					        // process server response here
@@ -105002,15 +105002,27 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 				},
 			},{
 				xtype: 'selectfield',
-				label: '时间段', //选择后本地缓存，方便下次直接获取
+				label: '时间', //选择后本地缓存，方便下次直接获取
 				labelWidth: 85,
 				name: 'teach_timespan',
 				options: [
-				    {text: '08-10', value: '08-10'},
-				    {text: '10-12', value: '10-12'},
-				    {text: '14-16', value: '14-16'},
-				    {text: '16-18', value: '16-18'},
-				    {text: '19-21', value: '19-21'},
+				    {text: '08:00', value: '08:00'},
+				    {text: '08:30', value: '08:30'},
+				    {text: '09:00', value: '09:00'},
+				    {text: '09:30', value: '09:30'},
+				    {text: '10:00', value: '10:00'},
+					{text: '10:30', value: '10:30'},
+				    {text: '11:00', value: '11:00'},
+				    {text: '14:00', value: '14:00'},
+				    {text: '14:30', value: '14:30'},
+				    {text: '15:00', value: '15:00'},
+				    {text: '15:30', value: '15:30'},
+				    {text: '16:00', value: '16:00'},
+				    {text: '16:30', value: '16:30'},
+				    {text: '17:00', value: '17:00'},
+				    {text: '19:00', value: '19:00'},
+				    {text: '19:30', value: '19:30'},
+				    {text: '20:00', value: '20:00'},
 				],
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
@@ -105024,7 +105036,13 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 				name: 'teacherID',
 				valueField: 'teacherID',
 				displayField: 'teacherName',
-				autoSelect: false,
+				store: 'Teacher',
+				autoSelect: false, 
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				
 				listeners: {
 					focus: function(selectBox, e, eOpts ){
 						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
@@ -105040,7 +105058,7 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 						// 激活保存提交按钮
 						//this.up('panel').down('button[action=done]').setDisabled(false);
 					}
-				}
+				} 
 			},{
 				xtype: 'textfield',
 				label: '备注',
@@ -105469,6 +105487,9 @@ Ext.define('Youngshine.view.student.Addnew', {
 				name: 'grade', 
 				label: '年级',
 				options: [
+				    {text: '高三年', value: '高三年'},
+				    {text: '高二年', value: '高二年'},
+				    {text: '高一年', value: '高一年'},
 				    {text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
 				    {text: '七年级', value: '七年级'},
@@ -105653,6 +105674,9 @@ Ext.define('Youngshine.view.student.Edit', {
 				name: 'grade', 
 				label: '年级',
 				options: [
+				    {text: '高三年', value: '高三年'},
+				    {text: '高二年', value: '高二年'},
+				    {text: '高一年', value: '高一年'},
 				    {text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
 				    {text: '七年级', value: '七年级'},
@@ -105876,8 +105900,9 @@ Ext.define('Youngshine.view.student.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
-			'<span class="popmenu" style="float:right;color:green;">操作</span></div>' 
+            '<div>{studentName}<span style="color:#888;"></span>'+
+			'<span class="popmenu" style="float:right;color:green;">操作</span>'+
+			'<span class="popmenu" style="float:right;color:#888;">［{phone}］</span></div>' 
         ],
 		
     	items: [{

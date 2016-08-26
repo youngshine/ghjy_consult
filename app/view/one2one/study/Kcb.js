@@ -45,15 +45,27 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 				},
 			},{
 				xtype: 'selectfield',
-				label: '时间段', //选择后本地缓存，方便下次直接获取
+				label: '时间', //选择后本地缓存，方便下次直接获取
 				labelWidth: 85,
 				name: 'teach_timespan',
 				options: [
-				    {text: '08-10', value: '08-10'},
-				    {text: '10-12', value: '10-12'},
-				    {text: '14-16', value: '14-16'},
-				    {text: '16-18', value: '16-18'},
-				    {text: '19-21', value: '19-21'},
+				    {text: '08:00', value: '08:00'},
+				    {text: '08:30', value: '08:30'},
+				    {text: '09:00', value: '09:00'},
+				    {text: '09:30', value: '09:30'},
+				    {text: '10:00', value: '10:00'},
+					{text: '10:30', value: '10:30'},
+				    {text: '11:00', value: '11:00'},
+				    {text: '14:00', value: '14:00'},
+				    {text: '14:30', value: '14:30'},
+				    {text: '15:00', value: '15:00'},
+				    {text: '15:30', value: '15:30'},
+				    {text: '16:00', value: '16:00'},
+				    {text: '16:30', value: '16:30'},
+				    {text: '17:00', value: '17:00'},
+				    {text: '19:00', value: '19:00'},
+				    {text: '19:30', value: '19:30'},
+				    {text: '20:00', value: '20:00'},
 				],
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
@@ -67,7 +79,13 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 				name: 'teacherID',
 				valueField: 'teacherID',
 				displayField: 'teacherName',
-				autoSelect: false,
+				store: 'Teacher',
+				autoSelect: false, 
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				
 				listeners: {
 					focus: function(selectBox, e, eOpts ){
 						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
@@ -83,7 +101,7 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 						// 激活保存提交按钮
 						//this.up('panel').down('button[action=done]').setDisabled(false);
 					}
-				}
+				} 
 			},{
 				xtype: 'textfield',
 				label: '备注',

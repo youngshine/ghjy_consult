@@ -50,6 +50,9 @@ Ext.define('Youngshine.view.student.Edit', {
 				name: 'grade', 
 				label: '年级',
 				options: [
+				    {text: '高三年', value: '高三年'},
+				    {text: '高二年', value: '高二年'},
+				    {text: '高一年', value: '高一年'},
 				    {text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
 				    {text: '七年级', value: '七年级'},

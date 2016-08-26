@@ -17,6 +17,8 @@ require_once('db/database_connection.php');
 	// 方便取得某个校区的学科的所有教师
 	$subjectID = $arr->subjectID;
 	$schoolID = $arr->schoolID; 
+	
+	/*
 	//1. 该时间段有课的校区学科教师，完成的课程不算pass=1
 	$hasClass = "SELECT teacherID From `ghjy_student-study` 
 		Where teach_weekday='$weekday' And teach_timespan='$timespan' And 		
@@ -24,7 +26,10 @@ require_once('db/database_connection.php');
 	//2. 该时间段没有课的学科教师列表
 	$query = "SELECT teacherID,teacherName From `ghjy_teacher` 
 		Where subjectID=$subjectID And schoolID=$schoolID And 
-		NOT EXISTS($hasClass)";	
+		NOT EXISTS($hasClass)";	  */
+	
+	$query = "SELECT teacherID,teacherName From `ghjy_teacher` 
+		Where subjectID=$subjectID And schoolID=$schoolID ";
 	$result = mysql_query($query) 
 		or die("Invalid query: readTeacherByKcb " . mysql_error());
 

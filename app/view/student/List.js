@@ -18,8 +18,9 @@ Ext.define('Youngshine.view.student.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-            '<div>{studentName}<span style="color:#888;">［{grade}{phone}］</span>'+
-			'<span class="popmenu" style="float:right;color:green;">操作</span></div>' 
+            '<div>{studentName}<span style="color:#888;"></span>'+
+			'<span class="popmenu" style="float:right;color:green;">操作</span>'+
+			'<span class="popmenu" style="float:right;color:#888;">［{phone}］</span></div>' 
         ],
 		
     	items: [{
