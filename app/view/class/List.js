@@ -15,7 +15,7 @@ Ext.define('Youngshine.view.class.List', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班级课程',
+				text: '大小班列表',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -29,8 +29,8 @@ Ext.define('Youngshine.view.class.List', {
 			style: 'text-align:center;margin:10px 0px',
 	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:160px;">'+
 				'<div>{title}</div><hr>'+
-				'<div style="color:#888;font-size:0.8em;">定员{persons}人</div>'+
-				'<div style="color:#888;font-size:0.8em;">{hour}课时、{amount}元</div>'+
+				'<div style="color:#888;font-size:0.8em;">{kclist_title}</div>'+
+				'<div style="color:#888;font-size:0.8em;">预招人数：{persons}</div>'+
 				'<div style="color:#888;font-size:0.8em;">{weekday}{timespan}</div>'+
 				'<div style="color:#888;font-size:0.8em;">教师：{teacherName}</div></div>'
     	}],

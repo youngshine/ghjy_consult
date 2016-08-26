@@ -1,4 +1,4 @@
-Ext.define('Youngshine.view.accnt.Addnew_class', {
+Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
     extend: 'Ext.form.Panel',
     xtype: 'accnt-addnew', //与一对一相同xtype
 
@@ -117,12 +117,14 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 	        itemTpl: [
 				'<div><span>{title}</span>'+
 				'<span class="removeItem" style="float:right;color:red;">&nbsp;&nbsp;删除</span>'+
-				'<span style="color:#888;float:right;">{hour}小时{amount}元</span></div>'
+				'<span style="color:#888;float:right;">{hour}课时{amount}元</span></div>'
 	        ],	
 			store: Ext.create("Ext.data.Store", {
 				fields: [
 		            {name: "title", type: "string"},
-		            {name: "classID"},
+		            //{name: "pricelistID", defaultValue: 0}, // 0,不是一对一
+					{name: "unitprice", defaultValue: 0},
+		            {name: "kclistID"},
 					{name: "hour"},
 					{name: "amount"},
 		        ],
@@ -168,8 +170,8 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
 			payment = this.down('selectfield[name=payment]').getValue(),
-			note = this.down('textfield[name=note]').getValue().trim(),
-			pricelistID = 0 //大小班，不是一对一课程pricelist
+			note = this.down('textfield[name=note]').getValue().trim()
+			//pricelistID = 0 //大小班，不是一对一课程pricelist
 	
 		if (studentName == ''){
 			Ext.toast('姓名不能空白',3000); return;
@@ -179,38 +181,39 @@ Ext.define('Youngshine.view.accnt.Addnew_class', {
 		}	
 			
 		//if list.length == 0 '至少报读一个班级'
-		var arrClasses = [],
-			jsonClasses = {};
+		var arrList = [],
+			jsonList = {};
 		var store = me.down('list').getStore()
 		store.each(function(rec,index){
-			arrClasses.push(rec.data)
-			jsonClasses[index] = rec.data.classID 
+			arrList.push(rec.data)
+			jsonList[index] = rec.data.kclistID 
 		})
 		//if (store.getCount()==0){
-		if (arrClasses.length == 0){	
-			Ext.toast('请添加报读班级',3000); return;
+		if (arrList.length == 0){	
+			Ext.toast('请添加报读课程',3000); return;
 		}
-		console.log(arrClasses);
-		console.log(JSON.stringify(jsonClasses));
-		arrClasses = JSON.stringify(jsonClasses); //传递到后台，必须字符串
-		
+		//console.log(arrList);
+		console.log(JSON.stringify(jsonList));
+		//arrList = JSON.stringify(jsonList); 
+		arrList = JSON.stringify(arrList); //传递到后台，必须字符串
+	
 		var obj = {
 			accntType: '大小班',
 			studentName: studentName,
 			studentID: studentID,
-			wxID: wxID,
+			wxID: wxID, //用于发送微信模版消息
 			accntDate: accntDate,
 			amount: amount,
 			amount_ys: amount_ys,
 			payment: payment,
 			note: note,
-			pricelistID: 0, //大小班，不是一对一
-			title: '',
-			unitprice: 0,
-			hour: 0, // 一对一课时
-			arrClasses: arrClasses, // 大小班，报读的多个班级
+			//pricelistID: 0, //大小班，不是一对一
+			//title: '',
+			//unitprice: 0,
+			//hour: 0, // 一对一课时
+			arrList: arrList, // 报读的多个大小班课程
 			consultID: localStorage.consultID,
-			//schoolID: localStorage.schoolID //归属哪个咨询师
+			schoolID: localStorage.schoolID //归属哪个咨询师
 		};
 		console.log(obj)
 		

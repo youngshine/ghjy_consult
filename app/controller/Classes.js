@@ -48,13 +48,46 @@ Ext.define('Youngshine.controller.Classes', {
     },
 
 	// sidemenu跳转这里：班级
+	// 报读班级课程kclist、尚未分配班级得学生列表
+	accntdetailList: function(){
+		var me = this;
+		var curView = Ext.Viewport.getActiveItem();
+		//if(curView.xtype == 'studentList') return
+ 
+		Ext.Viewport.remove(curView,true); //remove 当前界面
+		me.accntdetail = Ext.create('Youngshine.view.classes.AccntDetail');
+		Ext.Viewport.add(me.accntdetail);
+		Ext.Viewport.setActiveItem(me.accntdetail);
+		
+		//Ext.Viewport.setActiveItem(me.classes);
+		//view.onGenreChange(); //默认
+		var obj = {
+			//"schoolID": localStorage.schoolID,
+			"consultID": localStorage.getItem('consultID'),
+			"accntType": "大小班"
+		}		
+		var store = Ext.getStore('AccntDetail');
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readAccntDetailList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+			    console.log(records)
+				if (success){
+					
+				};
+			} 
+		})	  			 
+	},
+	// sidemenu跳转这里：班级
 	classesList: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
 		if(curView.xtype == 'classes') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
-		me.classes = Ext.create('Youngshine.view.class.List');
+		me.classes = Ext.create('Youngshine.view.classes.List');
 		Ext.Viewport.add(me.classes);
 		Ext.Viewport.setActiveItem(me.classes);
 		

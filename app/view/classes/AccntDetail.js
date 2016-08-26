@@ -1,9 +1,9 @@
 /**
  * Displays a list of 缴费购买课时套餐 accnt instead of prepaid
  */
-Ext.define('Youngshine.view.one2one.List', {
+Ext.define('Youngshine.view.classes.AccntDetail', {
     extend: 'Ext.dataview.List',
-	xtype: 'one2one',
+	xtype: 'accntDetail',
 	
     config: {
 		//ui: 'round',
@@ -24,7 +24,7 @@ Ext.define('Youngshine.view.one2one.List', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '一对一课程',
+				text: '大小班课程',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 

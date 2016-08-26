@@ -31,7 +31,7 @@ Ext.define('Youngshine.controller.One2one', {
 
 	// sidemenu跳转这里 student list of a particular consultant
 	// 读取缴费购买课程中，一对一部分，不是大小班
-	one2oneList: function(){
+	accntdetailList: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
 		if(curView.xtype == 'one2one') return
@@ -46,11 +46,11 @@ Ext.define('Youngshine.controller.One2one', {
 			"accntType": "一对一"
 		}	
 		console.log(obj)	
-		var store = Ext.getStore('Accnt'); 
+		var store = Ext.getStore('AccntDetail'); 
 		store.removeAll()
 		store.clearFilter() 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readAccntListByType.php?data=' + JSON.stringify(obj));
+			'readAccntDetailList.php?data=' + JSON.stringify(obj));
 		store.load({
 			callback: function(records, operation, success){
 		        //Ext.Viewport.setMasked(false);

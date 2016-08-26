@@ -10,8 +10,8 @@ Ext.define('Youngshine.controller.Accnt', {
 			//accntaddnew1to1: 'accnt-addnew-1to1',
 			//accntaddnewclass: 'accnt-addnew-class',
 			student: 'accnt-student',
-			//pricelist: 'accnt-pricelist', //课程：一对一，大小班
-			classes: 'accnt-classes',
+			kclist: 'accnt-kclist', //大小班课程
+			pricelist: 'accnt-pricelist', //课程：一对一
         },
         control: {
 			accnt: {
@@ -30,16 +30,18 @@ Ext.define('Youngshine.controller.Accnt', {
 				save: 'accntaddnewSave', 
 				cancel: 'accntaddnewCancel',
 				student: 'accntaddnewStudent', //查找选择学生
-				classes: 'accntaddnewClasses', //查找选择学生
+				//classes: 'accntaddnewClasses', //查找选择学生
+				kclist: 'accntaddnewKclist', //查找添加报读班级课程
+				pricelist: 'accntaddnewPricelist',
 			},
 			student: {
 				itemtap: 'studentItemtap'
-			}, /*
+			}, 
 			pricelist: {
-				itemtap: 'pricelistItemtap'
-			}, */
-			classes: {
-				itemtap: 'classesItemtap'
+				done: 'pricelistDone'
+			}, 
+			kclist: {
+				itemtap: 'kclistItemtap'
 			},
 			accntmore: {
 				back: 'accntmoreBack',
@@ -135,36 +137,41 @@ Ext.define('Youngshine.controller.Accnt', {
 		var me = this;
 		
 		if(accntType == '一对一'){
-			me.accntaddnew = Ext.create('Youngshine.view.accnt.Addnew_1to1');
+			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistOne2one');
+			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的课时套餐价格表
-			var objOne2one = {
+			var params = {
+				"kcType": '一对一',
 				"schoolID": localStorage.schoolID,
-				"current": 1 //禁用的课程不显示
-			}		
-			var store = Ext.getStore('Pricelist'); 
+				"current": 1 //禁用的一对一课程不显示
+			}	
+			console.log(params)	
+			var store = Ext.getStore('Kclist'); 
 			store.removeAll()
 			store.clearFilter()
 			store.getProxy().setUrl(me.getApplication().dataUrl + 
-				'readPricelist.php?data=' + JSON.stringify(objOne2one));
+				'readKclist.php?data=' + JSON.stringify(params));
 			store.load({
 				callback: function(records, operation, success){
 					console.log(records)
 				}   		
 			});	 
 		}else if(accntType == '大小班'){
-			me.accntaddnew = Ext.create('Youngshine.view.accnt.Addnew_class');
+			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistClass');
 			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的大小班课程
 			var objClass = {
+				"kcType": '大小班',
 				"schoolID": localStorage.schoolID,
 				"schoolsubID": localStorage.schoolsubID,
 				//"consultID": localStorage.consultID //咨询师的大小班
+				"current": 1 //禁用的大小班课程不显示
 			}		
-			var store = Ext.getStore('Classes'); 
+			var store = Ext.getStore('Kclist'); 
 			store.removeAll()
 			store.clearFilter()
 			store.getProxy().setUrl(me.getApplication().dataUrl + 
-				'readClassesList.php?data=' + JSON.stringify(objClass));
+				'readKclist.php?data=' + JSON.stringify(objClass));
 			store.load({
 				callback: function(records, operation, success){
 					console.log(records)
@@ -213,14 +220,14 @@ Ext.define('Youngshine.controller.Accnt', {
 	},	
 	accntaddnewSave: function( obj,oldView )	{
     	var me = this; console.log(obj)
-
+		// 传递参数，带有数组（子表多条记录）
 		Ext.Ajax.request({
-		    url: me.getApplication().dataUrl + 'createAccnt.php',
+		    url: me.getApplication().dataUrl + 'createAccntAndDetail.php',
 		    params: obj,
 		    success: function(response){ 
 				console.log(response.responseText)
 				var ret = Ext.JSON.decode(response.responseText)
-				console.log(ret.data.accntID)
+				console.log(ret.data.accntID);
 				obj.accntID = ret.data.accntID
 				//obj.created = '刚刚';
 				Ext.getStore('Accnt').insert(0,obj)	
@@ -300,28 +307,30 @@ Ext.define('Youngshine.controller.Accnt', {
     	var me = this; 
 		list.hide()
 		me.accntaddnew.down('textfield[name=studentName]')
-			.setValue(record.data.studentName+'［'+record.data.grade+'］')
+			.setValue(record.data.studentName)
 		me.accntaddnew.down('hiddenfield[name=studentID]').setValue(record.data.studentID)
 		// 发微信模版消息用
 		me.accntaddnew.down('hiddenfield[name=wxID]').setValue(record.data.wxID)
 	},
 	
 	// 查找选择购买大小班
-	accntaddnewClasses: function(btn)	{
+	accntaddnewKclist: function(btn)	{
     	var me = this; 
-		me.classes = Ext.create('Youngshine.view.accnt.Classes');
-		Ext.Viewport.add(me.classes); //否则build后无法显示
-		me.classes.show();	//overlay
+		me.kclist = Ext.create('Youngshine.view.accnt.Kclist');
+		Ext.Viewport.add(me.kclist); //否则build后无法显示
+		me.kclist.show();	//overlay
 		
-		me.classes.getStore().clearFilter()
+		me.kclist.getStore().clearFilter()
 	},
-	classesItemtap: function( list, index, target, record, e, eOpts )	{
+	//
+	kclistItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		
 		var obj = {
-			classID: record.data.classID,
+			kclistID: record.data.kclistID,
 			title: record.data.title,
 			hour: record.data.hour,
+			unitprice: 0, // 大小班，没有单价
 			amount: record.data.amount,
 		}
 		console.log(obj); 
@@ -332,42 +341,32 @@ Ext.define('Youngshine.controller.Accnt', {
 		store.insert(0,obj); //新增记录，排在最前面
 		//Ext.getStore('Classes').remove(record) //选中的移除消失
 		// 金额累加
-		var ys = me.accntaddnew.down('textfield[name=amount_ys]'),
-			ss = me.accntaddnew.down('textfield[name=amount]')
+		var ys = me.accntaddnew.down('numberfield[name=amount_ys]'),
+			ss = me.accntaddnew.down('numberfield[name=amount]')
 		var amt = parseInt(record.data.amount)
 		ys.setValue(ys.getValue()+amt)
 		ss.setValue(ss.getValue()+amt)
 	},
 	
-	/* 查找选择校区的课时套餐价格
+	///* 查找选择校区的课时套餐价格
 	accntaddnewPricelist: function(btn)	{
     	var me = this; 
 		me.pricelist = Ext.create('Youngshine.view.accnt.Pricelist');
 		Ext.Viewport.add(me.pricelist); //否则build后无法显示
-
-		var obj = {
-			"schoolID": localStorage.schoolID
-		}	
-		console.log(obj)	
-		var store = Ext.getStore('Pricelist'); 
-		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readPricelist.php?data=' + JSON.stringify(obj));
-		store.load({
-			callback: function(records, operation, success){
-		        //Ext.Viewport.setMasked(false);
-		        if (success){
-					//Ext.Viewport.setActiveItem(me.student);
-					me.pricelist.showBy(btn); // overlay show
-				};
-			}   		
-		});	
+		me.pricelist.show();
 	},
-	pricelistItemtap: function( list, index, target, record, e, eOpts )	{
+	pricelistDone: function(obj,oldView){
     	var me = this; 
-		list.hide()
-		me.accntaddnew.down('textfield[name=taocan]').setValue(record.data.title)
-		me.accntaddnew.down('hiddenfield[name=hour]').setValue(record.data.hour)
-		me.accntaddnew.down('hiddenfield[name=amount]').setValue(record.data.unitprice)
+
+		var store = me.accntaddnew.down('list').getStore();
+		store.insert(0,obj); //新增记录，排在最前面
+		//Ext.getStore('Classes').remove(record) //选中的移除消失
+		// 金额累加
+		var ys = me.accntaddnew.down('numberfield[name=amount_ys]'),
+			ss = me.accntaddnew.down('numberfield[name=amount]')
+		var amt = parseInt(obj.amount)
+		ys.setValue(ys.getValue()+amt)
+		ss.setValue(ss.getValue()+amt)
 	},
 	
 	// 显示课时套餐的报读课程知识点记录
@@ -542,7 +541,7 @@ Ext.define('Youngshine.controller.Accnt', {
 				Ext.toast('添加知识点成功',3000)		
             }
 		});
-	}, */
+	}, 
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */
 	launch: function(){

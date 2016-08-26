@@ -77,10 +77,17 @@ Ext.define('Youngshine.view.Menu', {
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
-				this.up('menu').onOne2one()
+				this.up('menu').onOne2onePk()
 			}
 		},{
-			text: '大小班课程',
+			text: '班级排课',
+			iconCls: 'time',
+			handler: function(btn){
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onClassesPk()
+			}
+		},{
+			text: '大小班级',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
@@ -127,8 +134,11 @@ Ext.define('Youngshine.view.Menu', {
 	onOrders: function(){
 		this.fireEvent('orders') //购买课时套餐
 	},
-	onOne2one: function(){
-		this.fireEvent('one2one') //一对一排课：安排学习内容及教师
+	onOne2onePk: function(){
+		this.fireEvent('one2onePk') //一对一排课：安排学习内容及教师
+	},
+	onClassesPk: function(){
+		this.fireEvent('classesPk') //大小班课程排班，拉入学生、任课教师、时间
 	},
 	onKcb: function(){
 		this.fireEvent('kcb') //安排课程及教师

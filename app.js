@@ -28,12 +28,12 @@ Ext.application({
     ],
     controllers: [
         'Main','Student','Teacher','Assess',
-		'Accnt','Class','One2one' // Orders,'Kcb','Pricelist','Classes
+		'Accnt','Class','One2one','Classes' //'  Orders,'Kcb','Pricelist','Classes
     ],
     stores: [
     	'Student','Teacher','Course','Study',
 		'Zsd','Topic','Assess','Zsdhist','Followup',
-		'Classes','Attendee','Pricelist','Schoolsub','Accnt' //Orders
+		'Classes','Attendee','Pricelist','Kclist','Schoolsub','Accnt','AccntDetail' //Orders
     ],
 
     icon: {
