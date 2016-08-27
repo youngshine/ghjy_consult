@@ -3,17 +3,17 @@
  */
 Ext.define('Youngshine.view.classes.AccntDetail', {
     extend: 'Ext.dataview.List',
-	xtype: 'accntDetail',
+	xtype: 'accnt-detail',
 	
     config: {
 		//ui: 'round',
 		store: 'AccntDetail',
-		disableSelection: true,
+		grouped: true,
+		//disableSelection: true,
+		//onItemDisclosure: true,
 		striped: true,
         itemTpl: [
-			'<div style="color:#888;"><span>{studentName}｜{accntDate}</span>'+
-			'<span style="float:right;">{hour}课时</span></div>'+
-			'<div>{title}</dive>'
+			'{studentName}<span style="float:right;color:#888;">{title}</span>'
         ],
 		
     	items: [{
@@ -55,7 +55,8 @@ Ext.define('Youngshine.view.classes.AccntDetail', {
     onSearchChange: function(field,newValue,oldValue){
 		var store = this.getStore();
 		store.clearFilter();
-        store.filter('studentName', field.getValue(), true); // 正则表达，才能模糊搜索?? true就可以anymatch
+        store.filter('studentName', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	
     onSearchClear: function(field){
 		var store = this.getStore();

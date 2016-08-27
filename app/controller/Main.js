@@ -87,31 +87,39 @@ Ext.define('Youngshine.controller.Main', {
 	menuTeacher: function(){
 		this.getApplication().getController('Teacher').teacherList()		 
 	},
-	menuClasses: function(){
-		//this.getApplication().getController('Classes').classesList()	
-		this.getApplication().getController('Class').classList()	 
-	},
+
+	// 学生评估，针对一对一
 	menuAssess: function(){
 		this.getApplication().getController('Assess').assessList()		 
-	},
+	}, /*
 	menuOrders: function(){
 		this.getApplication().getController('Orders').ordersList()		 
+	}, */
+
+	// 报读课程缴费
+	menuAccnt: function(){
+		this.getApplication().getController('Accnt').accntList()		 
+	},	
+	// 全校课程的所有班级：咨询师添加删除，以及 班级学生转班
+	menuClasses: function(){
+		this.getApplication().getController('Classes').classes()	
+		//this.getApplication().getController('Class').classList()	 
 	},
+	// 一对一课程排课
 	menuOne2onePk: function(){
 		this.getApplication().getController('One2one').accntdetailList()		 
 	},
+	// 大小班课程的分班
 	menuClassesPk: function(){
 		this.getApplication().getController('Classes').accntdetailList()	 
 	},
+	// 课程表
 	menuKcb: function(){
 		this.getApplication().getController('Kcb').kcbList()		 
-	},
+	}, /*
 	menuPricelist: function(){
 		this.getApplication().getController('Pricelist').pricelistList()		 
-	},
-	menuAccnt: function(){
-		this.getApplication().getController('Accnt').accntList()		 
-	},
+	}, */
 		
 	// 用户注销退出，来自Main控制器，reset
 	logout: function(){

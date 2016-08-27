@@ -1,5 +1,5 @@
 <?php
-// 某个校区的班级列表，包括已经报读人数
+// 某个分校区的班级列表，包括已经报读人数
 require_once 'db/response.php';
 require_once 'db/request.php';
 require_once('db/database_connection.php');

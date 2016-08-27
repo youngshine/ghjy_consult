@@ -1,6 +1,6 @@
 <?php
 /*
- * 7-27 班级子表：报读学生记录，移出禁用不显示current=0
+ * 8-1 某个缴费单的子表）
 */
 require_once 'db/response.php';
 require_once 'db/request.php';
@@ -11,14 +11,12 @@ require_once('db/database_connection.php');
 
 	$arr = $req->params;
 
-	$classID = $arr->classID;
+	$accntID = $arr->accntID;
 
-	$sql = " SELECT a.*,b.studentName,b.gender  
-		From `ghjy_class_student` a 
-		Join `ghjy_student` b On a.studentID=b.studentID 
-		WHERE a.classID = $classID And a.current=1 ";   
-    $result = mysql_query($sql) 
-		or die("Invalid query: readClassAttendeeList " . mysql_error());
+	$sql = " SELECT * From `ghjy_accnt_detail` 
+		Where accntID=$accntID "; 
+	$result = mysql_query($sql) 
+		or die("Invalid query: readAccntDetailListByAccnt " . mysql_error());
 
 	$query_array = array();
 	$i = 0;
@@ -30,7 +28,7 @@ require_once('db/database_connection.php');
 	}
 		
 	$res->success = true;
-	$res->message = "读取班级学生成功";
+	$res->message = "读取缴费子表成功";
 	$res->data = $query_array;
 
 	echo $_GET['callback']."(".$res->to_json().")";

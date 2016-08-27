@@ -4,46 +4,58 @@ Ext.define('Youngshine.controller.Classes', {
 
     config: {
         refs: {
-           	classes: 'classes',
-			class: 'class',
+           	accntdetail: 'accnt-detail', //待分配班级的课程学生
+			classlist: 'class-list', //隶属某个课程的班级列表
+			classes: 'classes', //全校班级
+			classstudent: 'class-student',
+			//class: 'class',
 			classesaddnew: 'classes-addnew',
 			classesedit: 'classes-edit',
-			classesattendee: 'classes-attendee',
+			//classesattendee: 'classes-attendee',
 			student: 'classes-student', //查找选择学生
 			//teacher: 'classes-teacher'
         },
         control: {
+			// 学生，按报读课程分组
+			'accnt-detail': {
+				itemtap: 'accntdetailItemtap',
+			},
 			classes: {
 				addnew: 'classesAddnew',
 				itemtap: 'classesItemtap', //包括'修改排课、删除‘’
 				itemswipe: 'classesItemswipe' //delete
-			},
+			}, /*
 			class: {
 				itemtap: 'classItemtap', 
-			},
+			}, */
 			classesaddnew: {
 				save: 'classesaddnewSave',
 				cancel: 'classesaddnewCancel',
-				student: 'classesaddnewStudent', //查找选择学生 
+				kclist: 'classesaddnewKclist', //查找选择学生 
 			}, 
 			classesedit: {
 				save: 'classeseditSave', 
 				cancel: 'classeseditCancel'
 			},
-			/*
-			teacher: {
-				choose: 'teacherChoose'
-			}, */
+			// 班级，选择对应课程
+			'class-kclist': {
+				itemtap: 'kclistItemtap'
+			}, 
+			// 学生加入班级
+			classlist: {
+				choose: 'classlistChoose'
+			}, /*
 			student: {
 				//search: '', //itemtap
 				itemtap: 'studentItemtap'
-			},
-			'classes-attendee': {
-				back: 'classesattendeeBack',
-				addnew: 'classesattendeeAddnew',
-				itemtap: 'classesattendeeItemtap', //更改金额
-				itemswipe: 'classesattendeeItemswipe' //delete
-			},
+			}, */
+			// 班级学生
+			'class-student': {
+				back: 'classstudentBack',
+				//addnew: 'classesattendeeAddnew',
+				itemtap: 'classstudentItemtap', //更改金额
+				//itemswipe: 'classesattendeeItemswipe' //delete
+			}, 
         }
     },
 
@@ -80,8 +92,52 @@ Ext.define('Youngshine.controller.Classes', {
 			} 
 		})	  			 
 	},
-	// sidemenu跳转这里：班级
-	classesList: function(){
+	// 学生分配到班级
+	accntdetailItemtap: function( list, index, target, record, e, eOpts ){
+    	var me = this; 
+		me.classlist = Ext.create('Youngshine.view.classes.ClassList');
+		Ext.Viewport.add(me.classlist); //否则build后无法显示
+		me.classlist.show(); // overlay show
+		me.classlist.setParentRecord(record); //父窗口参数：缴费单及其学生
+		
+		var obj = {
+			"kclistID": record.data.kclistID
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Classes'); 
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readClassesListByKclist.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+		        if (success){
+					
+				};
+			}   		
+		});
+	},
+	
+	// 分配班级，同时消除待排班状态
+	classlistChoose: function( obj,oldView )	{
+    	var me = this; 
+		Ext.data.JsonP.request({ 
+            url: me.getApplication().dataUrl +  'createClassStudent.php',
+            callbackKey: 'callback',
+            params:{
+                data: JSON.stringify(obj)
+            },
+            success: function(result){
+				Ext.toast('分班及清除待排班状态成功')
+				// 当前行消失
+				me.accntdetail.getStore().remove(oldView.getParentRecord())		
+            }
+		});
+	},
+	
+	// sidemenu跳转这里：班级设置
+	classes: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
 		if(curView.xtype == 'classes') return
@@ -95,7 +151,8 @@ Ext.define('Youngshine.controller.Classes', {
 		//view.onGenreChange(); //默认
 		var obj = {
 			"schoolID": localStorage.schoolID,
-			"consultID": localStorage.getItem('consultID'),
+			"schoolsubID": localStorage.schoolsubID,
+			//"consultID": localStorage.getItem('consultID'),
 			"teacherID": 0 //班级尚未确定教师
 		}		
 		var store = Ext.getStore('Classes');
@@ -218,37 +275,38 @@ Ext.define('Youngshine.controller.Classes', {
 			return
 		}
 
-		me.classesattendee = Ext.create('Youngshine.view.classes.Attendee');
-		me.classesattendee.setParentRecord(record)
-		me.classesattendee.down('label[itemId=title]').setHtml(record.data.title)
+		me.classstudent = Ext.create('Youngshine.view.classes.ClassStudent');
+		me.classstudent.setParentRecord(record)
+		me.classstudent.down('label[itemId=title]').setHtml(record.data.title)
+		Ext.Viewport.add(me.classstudent) // build?
+		Ext.Viewport.setActiveItem(me.classstudent);
 		
 		// 获取当前测评记录
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生记录'});
+		//Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生记录'});
 		var obj = {
 			"classID": record.data.classID,
 			//"subjectID": record.data.subjectID, //题目按学科分3个表
 		};
 		console.log(obj)
-		var store = Ext.getStore('Attendee'); 
+		var store = Ext.getStore('ClassStudent'); 
 		store.removeAll();
 		store.clearFilter()
         var url = this.getApplication().dataUrl + 
-			'readAttendeeList.php?data=' + JSON.stringify(obj);
+			'readClassStudentList.php?data=' + JSON.stringify(obj);
 		store.getProxy().setUrl(url);
         store.load({
 			callback: function(records, operation, success){
 				console.log(records)
-				Ext.Viewport.setMasked(false);
+				//Ext.Viewport.setMasked(false);
 				if (success){
-					Ext.Viewport.add(me.classesattendee) // build?
-					Ext.Viewport.setActiveItem(me.classesattendee);
+					
 				}else{
 					Ext.toast(result.message,3000);
 				};
 			} 
         }); 
 	},	
-	
+/*	
 	classItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this;
 
@@ -282,7 +340,7 @@ Ext.define('Youngshine.controller.Classes', {
 			} 
         }); 
 	},	
-	
+*/	
 	// 向左滑动，删除
 	classesItemswipe: function( list, index, target, record, e, eOpts ){
 		var me = this;
@@ -388,6 +446,42 @@ Ext.define('Youngshine.controller.Classes', {
 		    }
 		});
 	},
+	// 对应课程
+	classesaddnewKclist: function(btn)	{
+    	var me = this; 
+		me.kclist = Ext.create('Youngshine.view.classes.Kclist');
+		Ext.Viewport.add(me.kclist); //否则build后无法显示
+		me.kclist.show();
+
+		var obj = {
+			//"consultID": localStorage.consultID,
+			"schoolID" : localStorage.schoolID,
+			"kcType"   : '大小班' 
+			//必须带上校区，否则公众号学生没归属咨询师
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Kclist'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readKclist.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        if (success){
+					console.log(records)
+					//me.kclist.showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	
+	// 班级，需要选择对应的课程
+	kclistItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		list.hide()
+		me.classesaddnew.down('textfield[name=kclistTitle]')
+			.setValue(record.data.title)
+		me.classesaddnew.down('hiddenfield[name=kclistID]').setValue(record.data.kclistID)
+	},
+	
 	// 取消添加
 	classeseditCancel: function(oldView){		
 		var me = this; 
@@ -413,15 +507,15 @@ Ext.define('Youngshine.controller.Classes', {
 	},
 	
 	// 返回
-	classesattendeeBack: function(oldView){		
+	classstudentBack: function(oldView){		
 		var me = this;
 		//oldView.destroy()	
 		console.log(me.classes)	
-		Ext.Viewport.remove(me.classesattendee,true); //remove 当前界面
+		Ext.Viewport.remove(me.classstudent,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.classes);
 	},
 	
-	// 向左滑动，删除
+	/* 向左滑动，删除
 	classesattendeeItemswipe: function( list, index, target, record, e, eOpts ){
 		console.log(e);console.log(record)
 		if(e.direction !== 'left') return false
@@ -470,11 +564,42 @@ Ext.define('Youngshine.controller.Classes', {
 			    }
 			});
 		}
-	},	
-	classesattendeeItemtap: function( list, index, target, record, e, eOpts )	{
+	},	*/
+	
+	// 移出学生（不是真正删除，才能统计原来上课）
+	classstudentItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
-		// 点击‘更改’金额
-		if(e.target.className == 'amount'){
+		if(e.target.className == 'removeItem'){
+	    	Ext.Msg.confirm('移出学生',"确认该生移出本班级？",function(btn){	
+				if(btn == 'yes'){
+					var obj = {
+						classstudentID: record.data.classstudentID, // unique
+						studentID: record.data.studentID,
+						classID: record.data.classID,
+						accntdetailID: record.data.accntdetailID //更改排班状态
+					};
+					console.log(obj)
+					doRemove(obj)
+				}
+			});	
+			
+			// 移出学生，同时放入待排班表 accntdetail isClassed=0
+			// 禁用记录current=0，不是真正删除。才能历史记录查询
+			function doRemove(obj){
+				Ext.Ajax.request({
+		            url: me.getApplication().dataUrl + 'deleteClassStudent.php',
+		            params: obj,
+		            success: function(response){
+						var ret = Ext.JSON.decode(response.responseText)	
+						Ext.toast('学生移出成功',3000)
+						// 消除本行
+						list.getStore().remove(record)
+					},
+		        });
+			}
+		}
+		/* 点击‘更改’金额
+		if(e.target.className == 'removeItem'){
 			Ext.Msg.show({
 			  title   : '学生交费金额',
 			  msg     : null,
@@ -505,8 +630,7 @@ Ext.define('Youngshine.controller.Classes', {
 				  
 			  }
 			});
-		}
-		
+		} 		
 		function updateAmount(obj){		
 			Ext.Ajax.request({
 	            url: me.getApplication().dataUrl + 'updateAttendee.php',
@@ -518,9 +642,9 @@ Ext.define('Youngshine.controller.Classes', {
 					Ext.toast(ret.message,3000)
 				},
 	        });
-		}
+		} */
 	},
-	
+/*	
 	classesattendeeAddnew: function(rec,oldView){		
     	var me = this; 
 		me.student = Ext.create('Youngshine.view.classes.Student');
@@ -545,7 +669,7 @@ Ext.define('Youngshine.controller.Classes', {
 			}   		
 		});	
 	},
-	
+*/	
 	// itemtap添加班级的学生，如何修改报读课时费用？？
 	studentItemtap: function( list, index, target, record, e, eOpts)	{
     	var me = this; 

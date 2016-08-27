@@ -373,174 +373,37 @@ Ext.define('Youngshine.controller.Accnt', {
 	accntItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		console.log(record)
-		if(!me.accntmore){
-			me.accntmore = Ext.create('Youngshine.view.accnt.More')
-			Ext.Viewport.add(me.accntmore)
-		}		
-		me.accntmore.setRecord(record); //带入当前知识点
-		me.accntmore.down('label[itemId=taocan]').setHtml(record.data.taocan)
-		
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取报读知识点'});
+
+		me.accntdetail = Ext.create('Youngshine.view.accnt.Detail')
+		Ext.Viewport.add(me.accntdetail)
+
 		// 预先加载的数据
-		var obj = {
-			"prepaidID": record.data.prepaidID,
+		var params = {
+			"accntID": record.data.accntID,
 		}
-		var store = Ext.getStore('Study'); 
+		var store = Ext.getStore('AccntDetail'); 
 		store.getProxy().setUrl(this.getApplication().dataUrl + 
-			'readStudyList.php?data='+JSON.stringify(obj) );
+			'readAccntDetailListByAccnt.php?data='+JSON.stringify(params) );
 		store.load({ //异步async
 			callback: function(records, operation, success){
-				Ext.Viewport.setMasked(false);
 				if (success){
-					Ext.Viewport.setActiveItem(me.accntmore);
-				}else{
-					Ext.toast('出错',3000);
+					var content = ''
+					Ext.Array.each(records, function(name, index) {
+						console.log(name)
+						content += name.data.title + '<br>' + 
+							'<span style="font-size:0.8em;color:#888;">' + 
+							name.data.hour + '课时' +
+							name.data.amount + '元' + '</span><br>'
+					});		
+					console.log(content) 
+					var obj = {
+						content: content
+					}
+					me.accntdetail.down('panel[itemId=my_show]').setData(obj)
+					me.accntdetail.show()
 				};
 			}   		
 		});	
-	}, 
-	// 返回
-	accntmoreBack: function(oldView){		
-		var me = this;
-		//Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
-		Ext.Viewport.setActiveItem(me.orders);
-	},
-	ordersstudyAddnew: function(btn){		
-    	var me = this; 
-		me.studyzsd = Ext.create('Youngshine.view.orders.study.Zsd');
-		Ext.Viewport.add(me.studyzsd); //否则build后无法显示
-		me.studyzsd.show(); // overlay show
-		
-		// 选择学科，才显示知识点
-		var store = Ext.getStore('Zsd');
-		store.removeAll()
-		store.clearFilter()
-	},
-	// 向左滑动，删除
-	accntmoreItemswipe: function( list, index, target, record, e, eOpts ){
-		console.log(e);console.log(record)
-		if(e.direction !== 'left') return false
-
-		var me = this;
-		list.select(index,true); // 高亮当前记录
-		var actionSheet = Ext.create('Ext.ActionSheet', {
-			items: [{
-				text: '删除当前行',
-				ui: 'decline',
-				handler: function(){
-					actionSheet.hide();
-					Ext.Viewport.remove(actionSheet,true); //移除dom
-					del(record)
-				}
-			},{
-				text: '取消',
-				scope: this,
-				handler: function(){
-					actionSheet.hide();
-					Ext.Viewport.remove(actionSheet,true); //移除dom
-					list.deselect(index); // cancel高亮当前记录
-				}
-			}]
-		});
-		Ext.Viewport.add(actionSheet);
-		actionSheet.show();	
-		
-		function del(rec){
-			// ajax instead of jsonp
-			console.log(rec)
-			Ext.Ajax.request({
-			    url: me.getApplication().dataUrl + 'deleteStudy.php',
-			    params: {
-					studentstudyID: rec.data.studentstudyID
-			    },
-			    success: function(response){
-					var ret = JSON.parse(response.responseText)
-					Ext.toast(ret.message,3000)
-					if(ret.success){
-						Ext.getStore('Study').remove(rec);
-					}		         
-			    }
-			});
-		}
-	},	
-	// 排课：单击‘排课kcb’
-	accntmoreItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
-		console.log(e.target.className)
-		
-		if(e.target.className == 'kcb'){
-			me.studykcb = Ext.create('Youngshine.view.orders.study.Kcb');
-			Ext.Viewport.add(me.studykcb); //否则build后无法显示
-			//me.studykcb.show()
-			console.log(record.data)
-			me.studykcb.setRecord(record)
-			
-			// 任课教师selectfield，没有store,这样才能显示名字
-			var selectBox = me.studykcb.down('selectfield[name=teacherID]')
-			console.log(selectBox)
-			selectBox.setOptions([
-			    {teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
-			    //{text: 'Third Option',  value: 'third'}
-			])
-			selectBox.setValue(record.data.teacherID);
-			console.log(selectBox.getValue())
-		}	
-	},
-	
-	// 选中报读知识点
-	studyzsdItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
-		list.hide()
-		
-		var obj = {
-			zsdID: record.data.zsdID,
-			zsdName: record.data.zsdName,
-			subjectID: record.data.subjectID,
-			studentID: me.ordersstudy.getRecord().data.studentID,
-			prepaidID: me.ordersstudy.getRecord().data.prepaidID
-		}
-		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
-            url: me.getApplication().dataUrl +  'createStudy.php',
-            callbackKey: 'callback',
-            params:{
-                data: JSON.stringify(obj)
-            },
-            success: function(result){
-				//更新前端store，最新插入记录ID，才能删除修改
-				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
-				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
-				Ext.toast('添加知识点成功',3000)		
-            }
-		});
-	},
-	
-	// 排课：分配任课教师及上课时间
-	studykcbDone: function(obj,oldView)	{
-    	var me = this; 
-		Ext.Ajax.request({
-			url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
-			params: obj,
-            success: function(response){
-				Ext.toast('排课成功',3000)
-				oldView.destroy()	
-				// 要即时更新前端数据才能正确显示	record.set(obj)
-            }
-		})
-		return
-		
-		Ext.data.JsonP.request({ //不采用批量添加子表（传递数组），单个添加2014-3-20
-            url: me.getApplication().dataUrl +  'updateStudyByKcb.php',
-            callbackKey: 'callback',
-            params:{
-                data: JSON.stringify(obj)
-            },
-            success: function(result){
-				//更新前端store，最新插入记录ID，才能删除修改
-				obj.studentstudyID = result.data.studentstudyID; // model数组添加项目
-				Ext.getStore('Study').insert(0,obj); //新增记录，排在最前面
-				Ext.toast('添加知识点成功',3000)		
-            }
-		});
 	}, 
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */

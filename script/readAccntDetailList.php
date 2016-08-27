@@ -13,12 +13,12 @@ require_once('db/database_connection.php');
 
 	$consultID = $arr->consultID;
 	$accntType = $arr->accntType;
-
-	$sql = " SELECT a.*,b.accntType,b.accntDate,c.studentName  
+	// isClassed=0 为排课状态
+	$sql = " SELECT a.*,b.accntType,b.accntDate,b.studentID,c.studentName  
 		From `ghjy_accnt_detail` a 
 		Join `ghjy_accnt` b On b.accntID=a.accntID 
 		Join `ghjy_student` c On c.studentId=b.studentID 
-		WHERE b.consultID = $consultID And b.accntType='$accntType' "; 
+		WHERE b.consultID = $consultID And b.accntType='$accntType' And a.isClassed=0 "; 
 	$result = mysql_query($sql) 
 		or die("Invalid query: readAccntDetailList " . mysql_error());
 

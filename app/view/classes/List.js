@@ -1,66 +1,108 @@
 /**
- * Displays a list of 各个校区班级课程 product as pricelist
+ * Displays a list of 各种班级（2015春季书法，2016秋季奥数
+ * 8-28 隶属某个课程
  */
 Ext.define('Youngshine.view.classes.List', {
-    extend: 'Ext.Container',
+    extend: 'Ext.dataview.List',
 	xtype: 'classes',
-
+	
     config: {
-		layout: 'fit',
+		//ui: 'round',
+		store: 'Classes',
+        //itemHeight: 89,
+        //emptyText: '学生列表',
+		disableSelection: true,
+		striped: true,
+		//pinHeaders: false,
+        itemTpl: [
+			'<div>' + 
+			'<div><span>{title}</span>'+
+			'<span class="edit" style="float:right;color:green;">编辑</span></div>'+
+			'<div style="color:#888;">'+
+			'<span>{beginDate}开课｜{hour}课时{amount}元｜教师：{teacherName}</span>'+
+			'<span class="remove" style="display:none;float:right;color:red;">删除</span>'+
+			'</div></div>'
+        ],
+		
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		//title: '课时套餐价格',
+    		//title: '测评记录',
+			ui: 'dark',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班级课程',
+				text: '大小班',
 				handler: function(btn){
-					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
-				xtype: 'spacer'
+				xtype: 'spacer'	
 			},{
-				//ui : 'action',
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
+			},{
+				xtype: 'spacer'	
+			},{
+				ui : 'plain',
 				action: 'addnew',
 				iconCls: 'add',
-				//text : '＋新增',
-				action: 'addnew'	
+				//text: '新增',
+				handler: function(){
+					this.up('list').onAddnew()
+				}		
 			}]
-		},{
-			xtype: 'dataview',
-			store: 'Classes',
-			inline: true,
-			scrollable: true,
-			style: 'text-align:center;margin:10px 0px',
-	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;">'+
-				'<div>{title}</div><hr>'+
-				'<div style="color:#888;font-size:0.8em;">课时：{hour}</div>'+
-				'<div style="color:#888;font-size:0.8em;">金额：{amount}元</div>'+
-				'<br><div style="color:green;"><span class="edit">编辑</span>｜'+
-				'<span class="del">删除</span></div></div>'
-    	}],
+    	}],	
 		
-		listeners: [{
-			delegate: 'dataview',
-			event: 'itemtap',
-			fn: 'onItemtap'
+    	listeners: [{
+			delegate: 'searchfield[action=search]',
+			//event: 'change', // need return to work
+			event: 'keyup',
+			fn: 'onSearchChange'
 		},{
-			delegate: 'button[action=addnew]',
-			event: 'tap',
-			fn: 'onAddnew'	
-		}]
+			delegate: 'searchfield[action=search]',
+			event: 'clearicontap',
+			fn: 'onSearchClear'	 						
+    	}]
     },
-
+	
     onAddnew: function(btn){
-		this.fireEvent('addnew',this)
+		var me = this;
+		me.fireEvent('addnew', me);
     },
-    onItemtap: function(dataview, index, target, record,e){
-		this.fireEvent('itemtap',dataview, index, target, record,e)
-    },
-
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		//var store = Ext.getStore('Orders');
+		var store = this.getStore(); 
+		store.clearFilter();
+        store.filter('title', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},	
+    onSearchClear: function(field){
+		var store = this.getStore(); //Ext.getStore('Orders');
+		store.clearFilter();
+	},	
+	// 会运行两次,why"""""????? api中demo不会啊"
+	onToggle: function(selBtn){
+		var me = this; 
+		console.log(selBtn.getText())
+		var subject = selBtn.getText(),
+			store = me.getStore(); //得到list的store
+		store.clearFilter();
+        store.filter('classType', subject, true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},
+	
     //use initialize method to swipe back 右滑返回
     initialize : function() {
         this.callParent();
@@ -75,7 +117,6 @@ Ext.define('Youngshine.view.classes.List', {
 		//	return
 		if(e.direction=='right'){
         	Youngshine.app.getApplication().getController('Main').menuNav()
-			//this.destroy();
         };     
     }, 
 });

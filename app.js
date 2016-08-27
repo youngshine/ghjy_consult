@@ -26,14 +26,15 @@ Ext.application({
     views: [
         //'Main'
     ],
-    controllers: [
-        'Main','Student','Teacher','Assess',
-		'Accnt','Class','One2one','Classes' //'  Orders,'Kcb','Pricelist','Classes
-    ],
     stores: [
     	'Student','Teacher','Course','Study',
 		'Zsd','Topic','Assess','Zsdhist','Followup',
-		'Classes','Attendee','Pricelist','Kclist','Schoolsub','Accnt','AccntDetail' //Orders
+		'Classes','ClassStudent','Kclist','Schoolsub','Accnt','AccntDetail' 
+		//Orders,'Attendee','Pricelist'
+    ],
+    controllers: [
+        'Main','Student','Teacher','Assess',
+		'Accnt','Class','One2one','Classes' //'  Orders,'Kcb','Pricelist','Classes
     ],
 
     icon: {

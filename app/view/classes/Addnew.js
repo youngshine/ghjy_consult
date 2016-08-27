@@ -6,7 +6,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '新增班级课程',
+			title: '新增班级',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -29,22 +29,31 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				xtype: 'textfield',
 				name: 'title', //绑定后台数据字段
 				label: '名称',
-				placeHolder: '格式：2016年秋季奥数班',
+				//placeHolder: '格式：2016年秋季奥数班',
 				clearIcon: false
 			},{
-				//xtype: 'spinnerfield',
-				xtype: 'numberfield',
-				name: 'hour', //绑定后台数据字段
-				label: '所需课时'
-			},{	
-				xtype: 'numberfield',
-				name: 'amount', //绑定后台数据字段
-				label: '收费金额',
-				clearIcon: false, /*
-				component: { // 显示数字键
-					xtype: 'input',
-					type: 'tel'
-				},	*/	
+				layout: 'hbox',
+				xtype: 'container',
+				items: [{
+					xtype: 'textfield',
+					name: 'kclistTitle', 
+					label: '所属课程',
+					labelWidth: 85,
+					placeHolder: '选择课程',
+					readOnly: true, //to focus
+					flex: 1
+				},{
+					xtype: 'button',
+					action: 'kclist',
+					text: '...',
+					//iconCls: 'search',
+					ui: 'plain',
+					width: 60,
+					zIndex: 999
+				},{	
+					xtype: 'hiddenfield',
+					name: 'kclistID', //绑定后台数据字段
+				}]
 			},{
 				xtype: 'datepickerfield',
 				name: 'beginDate', //绑定后台数据字段
@@ -54,6 +63,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				xtype: 'selectfield',
 				label: '上课周期', //选择后本地缓存，方便下次直接获取
 				name: 'weekday',
+				placeHolder: '数组［］',
 				options: [
 				    {text: '周一', value: '周一'},
 				    {text: '周二', value: '周二'},
@@ -82,21 +92,6 @@ Ext.define('Youngshine.view.classes.Addnew', {
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
-			},{
-				xtype: 'selectfield',
-				label: '所属科目', //选择后本地缓存，方便下次直接获取
-				name: 'classType',
-				options: [
-					{text: '数理化', value: '数理化'},
-				    {text: '史地生', value: '史地生'},
-					{text: '语政英', value: '语政英'},
-				    {text: '艺术', value: '艺术'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
 			}]	
 		}],		
 	
@@ -107,7 +102,11 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		},{
 			delegate: 'button[action=cancel]',
 			event: 'tap',
-			fn: 'onCancel'		
+			fn: 'onCancel'
+		},{
+			delegate: 'button[action=kclist]',
+			event: 'tap',
+			fn: 'onKclist'		
 		}]
 	},
 
@@ -162,6 +161,12 @@ Ext.define('Youngshine.view.classes.Addnew', {
 	onCancel: function(btn){
 		this.fireEvent('cancel',this);
 		//this.destroy()
-	}
+	},
+	
+	// 查找选择对应课程
+	onKclist: function(btn){
+		var me = this; 
+		me.fireEvent('kclist',btn,me);
+	},
 	
 });

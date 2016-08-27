@@ -1,13 +1,13 @@
 // 班级的子表：报读的学生，可能上的课时各不相同
-Ext.define('Youngshine.view.classes.Attendee', {
+Ext.define('Youngshine.view.classes.ClassStudent', {
     extend: 'Ext.dataview.List',
-	xtype: 'classes-attendee',
+	xtype: 'class-student',
 
     config: {
         layout: 'fit',
 		parentRecord: null,
 		
-		store: 'Attendee',
+		store: 'ClassStudent',
 		disableSelection: true,
 		striped: true,
         itemTpl: [

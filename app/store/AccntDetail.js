@@ -14,5 +14,7 @@ Ext.define('Youngshine.store.AccntDetail', {
 				rootProperty: "data"
 			}
         },
+		groupField: 'title',
+        groupDir: 'ASC',
     }
 });
