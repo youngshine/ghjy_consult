@@ -60,26 +60,11 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				name: 'beginDate', //绑定后台数据字段
 				label: '开课日期',
 				value: new Date()
-			},{
-				layout: 'hbox',
-				xtype: 'container',
-				items: [{
-					xtype: 'textfield',
-					name: 'timely_list', 
-					label: '上课时间',
-					labelWidth: 85,
-					placeHolder: '选择时间',
-					readOnly: true, //to focus
-					flex: 1
-				},{
-					xtype: 'button',
-					action: 'timely',
-					text: '...',
-					//iconCls: 'search',
-					ui: 'plain',
-					width: 60,
-					zIndex: 999
-				}]
+			},{	
+				xtype: 'numberfield',
+				name: 'persons', //绑定后台数据字段
+				label: '预招人数',
+				clearIcon: false,
 			},{
 				xtype: 'selectfield',
 				label: '教师', //选择后本地缓存，方便下次直接获取
@@ -96,7 +81,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		
     	},{
 			xtype: 'button',
-			text : '＋上课时间',
+			text : '＋上课周期',
 			ui : 'plain',
 			action: 'timely', //大小班课程，不是班级
 			style: {
@@ -154,38 +139,47 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		
 		var title = this.down('textfield[name=title]').getValue().trim(),
 			kclistID = this.down('hiddenfield[name=kclistID]').getValue(),
-			kclistTitle = this.down('textfield[name=kclistTitle]').getValue()
+			kclistTitle = this.down('textfield[name=kclistTitle]').getValue(),
+			persons = this.down('numberfield[name=persons]').getValue(),
+			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
+			teacherID = this.down('selectfield[name=teacherID]').getValue()
 
 		console.log(kclistID,kclistTitle)
+		if(teacherID == null) teacherID=0; //尚未确定教师
+			
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
 		}
-		if (hour == 0 || hour == null){
-			Ext.toast('请填写所需课时',3000); return;
-		}
-		if (amount == 0 || amount == null){
-			Ext.toast('请填写收费金额',3000); return;
-		}
-		if (weekday == null){
-			Ext.toast('请选择上课周期',3000); return;
-		}
-		if (timespan == null){
-			Ext.toast('请选择上课时间段',3000); return;
-		}
-		if (classType == null){
-			Ext.toast('请选择科目',3000); return;
+		if (kclistID == 0 || kclistID == null ){
+			Ext.toast('请选择所属课程',3000); return;
 		}
 
+		//if list.length == 0 '至少报读一个班级'
+		var arrList = [] //jsonList = {};
+		var store = me.down('list').getStore()
+		store.each(function(rec,index){
+			arrList.push(rec.data.timely)
+			//jsonList[index] = rec.data.kclistID 
+		})
+		//if (store.getCount()==0){
+		if (arrList.length == 0){	
+			Ext.toast('请添加上课时间',3000); return;
+		}
+		console.log(arrList);
+		//arrList = JSON.stringify(arrList); //传递到后台，必须字符串
+		arrList = arrList.join(',')
+		console.log(arrList)
+		
     	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
 			if(btn == 'yes'){
 				var obj = {
 					title: title,
-					hour: hour,
-					amount: amount,
+					kclistID: kclistID,
+					kclistTitle: kclistTitle,
 					beginDate: beginDate,
-					weekday: weekday,
-					timespan: timespan,
-					classType: classType,
+					persons: persons,
+					teacherID: teacherID,
+					timely_list: arrList,
 					consultID: localStorage.consultID //班级归属哪个咨询师
 				};
 				console.log(obj)
@@ -214,12 +208,6 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		console.log(e.target.className)
 		if(e.target.className == 'removeItem'){
 			list.getStore().removeAt(index)
-			var ys = me.down('textfield[name=amount_ys]'),
-				ss = me.down('textfield[name=amount]')
-			// 金额 减少
-			var amt = parseInt(record.data.amount)
-			ys.setValue(ys.getValue()-amt)
-			ss.setValue(ss.getValue()-amt)
 		}
 	},
 });

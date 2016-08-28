@@ -4,11 +4,11 @@ Ext.define('Youngshine.view.classes.Edit', {
 
     config: {
 		record: null,
-		
+		layout: 'vbox',
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '修改班级课程',
+			title: '修改大小班',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -32,69 +32,27 @@ Ext.define('Youngshine.view.classes.Edit', {
 				xtype: 'textfield',
 				name: 'title', //绑定后台数据字段
 				label: '名称',
-				placeHolder: '格式：2016年秋季奥数班',
 				clearIcon: false
 			},{
-				//xtype: 'spinnerfield',
-				xtype: 'numberfield',
-				name: 'hour', //绑定后台数据字段
-				label: '所需课时'
-			},{	
-				xtype: 'numberfield',
-				name: 'amount', //绑定后台数据字段
-				label: '收费金额',
-				clearIcon: false, 	
+				xtype: 'selectfield',
+				label: '所属课程', //选择后本地缓存，方便下次直接获取
+				name: 'kclistID',
+				//store: 'Kclist', //无法自动显示已选择的下拉项目，通过updateOpt
+				valueField: 'kclistID',
+				displayField: 'title',
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			},{
 				xtype: 'datepickerfield',
 				name: 'beginDate', //绑定后台数据字段
 				label: '开课日期',
-			},{
-				xtype: 'selectfield',
-				label: '上课周期', //选择后本地缓存，方便下次直接获取
-				name: 'weekday',
-				options: [
-				    {text: '周一', value: '周一'},
-				    {text: '周二', value: '周二'},
-				    {text: '周三', value: '周三'},
-				    {text: '周四', value: '周四'},
-				    {text: '周五', value: '周五'},
-				    {text: '周六', value: '周六'},
-				    {text: '周日', value: '周日'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
-				label: '时间', //选择后本地缓存，方便下次直接获取
-				name: 'timespan',
-				options: [
-				    {text: '上午', value: '上午'},
-				    {text: '下午', value: '下午'},
-				    {text: '晚上', value: '晚上'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
-				label: '所属科目', //选择后本地缓存，方便下次直接获取
-				name: 'classType',
-				options: [
-					{text: '数理化', value: '数理化'},
-				    {text: '史地生', value: '史地生'},
-					{text: '语政英', value: '语政英'},
-				    {text: '艺术', value: '艺术'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
+			},{	
+				xtype: 'numberfield',
+				name: 'persons',
+				label: '预招人数',	
 			},{
 				xtype: 'selectfield',
 				label: '教师', //选择后本地缓存，方便下次直接获取
@@ -111,6 +69,36 @@ Ext.define('Youngshine.view.classes.Edit', {
 				xtype: 'hiddenfield',
 				name: 'classID' //修改的unique			
 			}]	
+		
+    	},{
+			xtype: 'button',
+			text : '＋上课周期',
+			ui : 'plain',
+			action: 'timely', //大小班课程，不是班级
+			style: {
+				color: 'SteelBlue',
+				background: 'none',//'#66cc00',
+				margin: '-10px 100px 0px',
+				border: 0
+			},
+			bageText: '0'
+		},{
+			// 缴费购买课程项目明细 1、一对一 2、大小班
+			xtype: 'list',
+			margin: '10px',
+			//height: '100%',
+			//ui: 'round',
+			flex: 1,
+			disableSelection: true,
+	        itemTpl: [
+				'<div><span>{timely}</span>'+
+				'<span class="removeItem" style="float:right;color:red;">&nbsp;&nbsp;删除</span>'
+	        ],	
+			store: Ext.create("Ext.data.Store", {
+				fields: [
+		            {name: "timely", type: "string"},
+		        ],
+			}),		
 		}],		
 	
 		listeners: [{
@@ -120,7 +108,15 @@ Ext.define('Youngshine.view.classes.Edit', {
 		},{
 			delegate: 'button[action=cancel]',
 			event: 'tap',
-			fn: 'onCancel'		
+			fn: 'onCancel'	
+		},{
+			delegate: 'button[action=timely]',
+			event: 'tap',
+			fn: 'onTimely'	
+		},{
+			delegate: 'list',
+			event: 'itemtap',
+			fn: 'onItemtap'	
 		}]
 	},
 
@@ -130,35 +126,45 @@ Ext.define('Youngshine.view.classes.Edit', {
 		
 		var classID = this.down('hiddenfield[name=classID]').getValue(), //unique
 			title = this.down('textfield[name=title]').getValue().trim(),
-			hour = this.down('numberfield[name=hour]').getValue(),
-			amount = this.down('numberfield[name=amount]').getValue(),
+			//kclistID = this.down('hiddenfield[name=kclistID]').getValue(),
+			//kclistTitle = this.down('textfield[name=kclistTitle]').getValue(),
+			kclistID = this.down('selectfield[name=kclistID]').getValue(),
+			persons = this.down('numberfield[name=persons]').getValue(),
 			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
-			weekday = this.down('selectfield[name=weekday]').getValue(),
-			timespan = this.down('selectfield[name=timespan]').getValue(),
-		    classType = this.down('selectfield[name=classType]').getValue(),
 			teacherID = this.down('selectfield[name=teacherID]').getValue()
 		
-		if(teacherID == null) teacherID=0
+		//if(teacherID == null) teacherID=0
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
 		}
-		if (hour == 0 || hour == null){
-			Ext.toast('请填写所需课时',3000); return;
+		if (kclistID == 0 || kclistID == null ){
+			Ext.toast('请选择所属课程',3000); return;
 		}
-		if (amount == 0 || amount == null){
-			Ext.toast('请填写收费金额',3000); return;
+		
+		var arrList = [] //jsonList = {};
+		var store = me.down('list').getStore()
+		store.each(function(rec,index){
+			arrList.push(rec.data.timely)
+			//jsonList[index] = rec.data.kclistID 
+		})
+		//if (store.getCount()==0){
+		if (arrList.length == 0){	
+			Ext.toast('请添加上课周期时间',3000); return;
 		}
+		console.log(arrList);
+		//arrList = JSON.stringify(arrList); //传递到后台，必须字符串
+		arrList = arrList.join(',')
+		console.log(arrList)
 		
 		var obj = {
 			title: title,
-			hour: hour,
-			amount: amount,
+			kclistID: kclistID,
+			//kclistTitle: kclistTitle,
 			beginDate: beginDate,
-			weekday: weekday,
-			timespan: timespan,
-			classType: classType,
+			persons: persons,
 			teacherID: teacherID,
-			classID: classID
+			timely_list: arrList,
+			classID: classID // unique
 		};
 		console.log(obj)
 
@@ -175,6 +181,19 @@ Ext.define('Youngshine.view.classes.Edit', {
 	onCancel: function(btn){
 		var me = this; 
 		me.fireEvent('cancel',me);
-	}
+	},
 	
+	// 每周可能不止上课一次
+	onTimely: function(btn){
+		this.fireEvent('timely',btn,this);
+	},
+	
+	// 移除报读的班级
+	onItemtap: function(list, index, target, record, e, eOpts){
+		var me = this;
+		console.log(e.target.className)
+		if(e.target.className == 'removeItem'){
+			list.getStore().removeAt(index)
+		}
+	},
 });

@@ -19,7 +19,8 @@ Ext.define('Youngshine.view.classes.List', {
 			'<div><span>{title}</span>'+
 			'<span class="edit" style="float:right;color:green;">编辑</span></div>'+
 			'<div style="color:#888;">'+
-			'<span>{beginDate}开课｜{hour}课时{amount}元｜教师：{teacherName}</span>'+
+			'<span>上课周期：{timely_list}</span>'+
+			'<span style="float:right;">开课：{beginDate}</span>'+
 			'<span class="remove" style="display:none;float:right;color:red;">删除</span>'+
 			'</div></div>'
         ],

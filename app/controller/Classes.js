@@ -37,7 +37,8 @@ Ext.define('Youngshine.controller.Classes', {
 			}, 
 			classesedit: {
 				save: 'classeseditSave', 
-				cancel: 'classeseditCancel'
+				cancel: 'classeseditCancel',
+				timely: 'classesTimely', //同addnew
 			},
 			// 班级，选择对应课程
 			'class-kclist': {
@@ -182,10 +183,21 @@ Ext.define('Youngshine.controller.Classes', {
 		if(e.target.className == 'edit'){
 			me.classesedit = Ext.create('Youngshine.view.classes.Edit');
 			me.classesedit.setRecord(record)
+			// 日期无法自动绑定
 			me.classesedit.down('datepickerfield[name=beginDate]')
 				.setValue(new Date(record.data.beginDate))
 			Ext.Viewport.add(me.classesedit); //否则build后无法显示
 			Ext.Viewport.setActiveItem(me.classesedit); //show()?
+			
+			// 上课周期列表数组，list.store
+			var timely_list = record.data.timely_list.split(',')
+			console.log(timely_list)
+			var timely = [];
+			for (var i = 0; i < timely_list.length; i++) {
+				timely.push( {"timely":timely_list[i]}  )
+			}
+			console.log(timely);
+			me.classesedit.down('list').getStore().setData(timely)
 
 			// 任课教师
 			var obj = {
@@ -212,6 +224,29 @@ Ext.define('Youngshine.controller.Classes', {
 					};
 				} 
 			})
+			
+			var obj = {
+				//"consultID": localStorage.consultID,
+				"schoolID" : localStorage.schoolID,
+				"kcType"   : '大小班' 
+				//必须带上校区，否则公众号学生没归属咨询师
+			}	
+			console.log(obj)	
+			var store = Ext.getStore('Kclist'); 
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
+				'readKclist.php?data=' + JSON.stringify(obj));
+			store.load({
+				callback: function(records, operation, success){
+			        if (success){
+						console.log(records)
+						// 绑定是ID，直接用store，无法显示名称title，所以如下处理
+						var selectBox = me.classesedit.down('selectfield[name=kclistID]')
+						selectBox.updateOptions(records)
+						selectBox.setValue(record.data.kclistID); 
+					};
+				}   		
+			});	
+
 			return
 		}	
 		// itemtap删除
@@ -419,6 +454,7 @@ Ext.define('Youngshine.controller.Classes', {
 	classesAddnew: function(win){		
 		var me = this;
 		me.classesaddnew = Ext.create('Youngshine.view.classes.Addnew');
+		me.classesaddnew.down('list').getStore().removeAll(); //清除上课周期列表
 		Ext.Viewport.add(me.classesaddnew)
 		Ext.Viewport.setActiveItem(me.classesaddnew)
 		
@@ -445,21 +481,25 @@ Ext.define('Youngshine.controller.Classes', {
 	classesaddnewSave: function( obj,oldView )	{
     	var me = this; 
 		// ajax or jsonp(data:obj)
-		Ext.data.JsonP.request({
-		    url: me.getApplication().dataUrl + 'createClasses.php',
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'createClass.php',
+			params: obj,
+			/*
+			callbackKey: 'callback',
 		    params: {
 				data: JSON.stringify(obj)
-			},
-		    success: function(result){
-		        console.log(result)
-		        //record.set('fullEndtime','')
+			}, */
+		    success: function(response){
+				console.log(response.responseText)
+				var ret = Ext.JSON.decode(response.responseText)
+				console.log(ret.data.classID);
+				obj.classID = ret.data.classID
+				obj.created = '刚刚';
+				Ext.getStore('Classes').insert(0,obj)
 				//oldView.destroy()
 				Ext.Viewport.remove(me.classesaddnew,true); //remove 当前界面
 				Ext.Viewport.setActiveItem(me.classes);
-				obj.classesID = result.data.classesID
-				obj.created = '刚刚';
-				Ext.getStore('Classes').insert(0,obj)
-				Ext.toast(result.message,3000)
+				Ext.toast('创建班级成功',3000)
 		    }
 		});
 	},
@@ -510,29 +550,31 @@ Ext.define('Youngshine.controller.Classes', {
     	var me = this; 
 		console.log(obj)
 		Ext.Ajax.request({
-		    url: me.getApplication().dataUrl + 'updateClasses.php',
+		    url: me.getApplication().dataUrl + 'updateClass.php',
 		    params: obj,
 		    success: function(result){
 		        //var text = response.responseText; Ext.JSON.decode JSON.parse()
 				console.log(result)
 				//Ext.Viewport.setActiveItem(me.student);
 				//rec.set(obj) //前端更新显示
-				Ext.toast('修改成功',3000)
+				Ext.toast('修改班级成功',3000)
 				Ext.Viewport.remove(me.classesedit,true); //remove 当前界面
 		    }
 		});
 	},
 	
 	// 上课时间（多个，数组存储转换），新增／修改通用
-	classesTimely: function(btn)	{
+	classesTimely: function(btn,oldView)	{
     	var me = this; 
 		me.timely = Ext.create('Youngshine.view.classes.Timely');
+		me.timely.setParentView(oldView); //调用的父表单
 		Ext.Viewport.add(me.timely); //否则build后无法显示
 		me.timely.show();
 	},
-	timelyDone: function(obj,oldView){
+	timelyDone: function(obj,parentView){
     	var me = this; 
-		var store = me.classesaddnew.down('list').getStore();
+		//var store = me.classesaddnew.down('list').getStore();
+		var store = parentView.down('list').getStore();
 		console.log(store)
 		store.insert(0,obj); //新增记录，排在最前面
 	},

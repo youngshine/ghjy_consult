@@ -57,7 +57,7 @@ foreach($arrList as $rec){
 //}
 
 echo json_encode(array(
-    "success" => false,
+    "success" => true,
     "message" => "缴费成功",
 	"data"    =>  array("accntID" => $id)
 ));

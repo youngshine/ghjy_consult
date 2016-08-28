@@ -4,6 +4,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 	xtype: 'classes-timely',
 
 	config: {
+		parentView: null, //谁调用我？
 		modal: true,
 		hideOnMaskTap: true,
 		//centered: true,
@@ -14,7 +15,7 @@ Ext.define('Youngshine.view.classes.Timely',{
         items: [{	
         	xtype: 'toolbar',
         	docked: 'top',
-        	title: '上课周期时间',
+        	title: '上课周期',
 			items: [{
 				text : '完成',
 				ui: 'confirm',
@@ -99,7 +100,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 			"timely": weekday+begintime
 		}
 		console.log(obj)
-		me.fireEvent('done',obj,me);
+		me.fireEvent('done',obj,me.getParentView(),me);
 		me.destroy()
 	},
 });
