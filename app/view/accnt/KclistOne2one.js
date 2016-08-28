@@ -1,7 +1,7 @@
 // 选择一对一课程，并输入购买课时
-Ext.define('Youngshine.view.accnt.Pricelist',{
+Ext.define('Youngshine.view.accnt.KclistOne2one',{
 	extend: 'Ext.Panel',
-	xtype: 'accnt-pricelist',
+	xtype: 'kclist-one2one',
 
 	config: {
 		modal: true,

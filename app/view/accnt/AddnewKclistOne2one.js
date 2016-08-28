@@ -99,7 +99,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			xtype: 'button',
 			text : '＋报读课程',
 			ui : 'plain',
-			action: 'pricelist', //1to1
+			action: 'kclist', //1to1
 			style: {
 				color: 'SteelBlue',
 				background: 'none',//'#66cc00',
@@ -145,9 +145,9 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			event: 'tap',
 			fn: 'onStudent'	
 		},{
-			delegate: 'button[action=pricelist]',
+			delegate: 'button[action=kclist]',
 			event: 'tap',
-			fn: 'onPricelist'
+			fn: 'onKclist'
 		},{
 			delegate: 'list',
 			event: 'itemtap',
@@ -252,7 +252,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 	},
 	
 	// 添加一对一课程和输入课时
-	onPricelist: function(btn){
-		this.fireEvent('pricelist',btn,this);
+	onKclist: function(btn){
+		this.fireEvent('kclistOne2one',btn,this);
 	},
 });

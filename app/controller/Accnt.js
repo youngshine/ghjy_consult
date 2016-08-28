@@ -10,8 +10,8 @@ Ext.define('Youngshine.controller.Accnt', {
 			//accntaddnew1to1: 'accnt-addnew-1to1',
 			//accntaddnewclass: 'accnt-addnew-class',
 			student: 'accnt-student',
-			kclist: 'accnt-kclist', //大小班课程
-			pricelist: 'accnt-pricelist', //课程：一对一
+			kclistclass: 'kclist-class', //大小班课程
+			kclistone2one: 'kclist-one2one', //课程：一对一
         },
         control: {
 			accnt: {
@@ -31,24 +31,24 @@ Ext.define('Youngshine.controller.Accnt', {
 				cancel: 'accntaddnewCancel',
 				student: 'accntaddnewStudent', //查找选择学生
 				//classes: 'accntaddnewClasses', //查找选择学生
-				kclist: 'accntaddnewKclist', //查找添加报读班级课程
-				pricelist: 'accntaddnewPricelist',
+				kclistClass: 'accntaddnewKclistClass', //大小班可能
+				kclistOne2one: 'accntaddnewKclistOne2one', //一对一课程
 			},
 			student: {
 				itemtap: 'studentItemtap'
 			}, 
-			pricelist: {
-				done: 'pricelistDone'
+			kclistone2one: {
+				done: 'kclistone2oneDone'
 			}, 
-			kclist: {
-				itemtap: 'kclistItemtap'
-			},
+			kclistclass: {
+				itemtap: 'kclistclassItemtap'
+			}, /*
 			accntmore: {
 				back: 'accntmoreBack',
 				//addnew: 'ordersstudyAddnew',
 				itemtap: 'accntmoreItemtap', // '排课'点击按钮
 				itemswipe: 'accntmoreItemswipe' // 删除
-			},
+			}, */
         }
     },
 
@@ -314,16 +314,16 @@ Ext.define('Youngshine.controller.Accnt', {
 	},
 	
 	// 查找选择购买大小班
-	accntaddnewKclist: function(btn)	{
+	accntaddnewKclistClass: function(btn)	{
     	var me = this; 
-		me.kclist = Ext.create('Youngshine.view.accnt.Kclist');
+		me.kclist = Ext.create('Youngshine.view.accnt.KclistClass');
 		Ext.Viewport.add(me.kclist); //否则build后无法显示
 		me.kclist.show();	//overlay
 		
 		me.kclist.getStore().clearFilter()
 	},
 	//
-	kclistItemtap: function( list, index, target, record, e, eOpts )	{
+	kclistclassItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
 		
 		var obj = {
@@ -349,15 +349,14 @@ Ext.define('Youngshine.controller.Accnt', {
 	},
 	
 	///* 查找选择校区的课时套餐价格
-	accntaddnewPricelist: function(btn)	{
+	accntaddnewKclistOne2one: function(btn)	{
     	var me = this; 
-		me.pricelist = Ext.create('Youngshine.view.accnt.Pricelist');
-		Ext.Viewport.add(me.pricelist); //否则build后无法显示
-		me.pricelist.show();
+		me.kclist = Ext.create('Youngshine.view.accnt.KclistOne2one');
+		Ext.Viewport.add(me.kclist); //否则build后无法显示
+		me.kclist.show();
 	},
-	pricelistDone: function(obj,oldView){
+	kclistone2oneDone: function(obj,oldView){
     	var me = this; 
-
 		var store = me.accntaddnew.down('list').getStore();
 		store.insert(0,obj); //新增记录，排在最前面
 		//Ext.getStore('Classes').remove(record) //选中的移除消失

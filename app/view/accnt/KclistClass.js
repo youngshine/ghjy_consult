@@ -1,7 +1,7 @@
 // 多选添加报读课程
-Ext.define('Youngshine.view.accnt.Kclist',{
+Ext.define('Youngshine.view.accnt.KclistClass',{
 	extend: 'Ext.dataview.List',
-	xtype: 'accnt-kclist',
+	xtype: 'kclist-class',
 
 	config: {
 		striped: true,

@@ -3,6 +3,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
     xtype: 'classes-addnew',
 
     config: {
+		layout: 'vbox',
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
@@ -60,39 +61,68 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				label: '开课日期',
 				value: new Date()
 			},{
-				xtype: 'selectfield',
-				label: '上课周期', //选择后本地缓存，方便下次直接获取
-				name: 'weekday',
-				placeHolder: '数组［］',
-				options: [
-				    {text: '周一', value: '周一'},
-				    {text: '周二', value: '周二'},
-				    {text: '周三', value: '周三'},
-				    {text: '周四', value: '周四'},
-				    {text: '周五', value: '周五'},
-				    {text: '周六', value: '周六'},
-				    {text: '周日', value: '周日'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},	
+				layout: 'hbox',
+				xtype: 'container',
+				items: [{
+					xtype: 'textfield',
+					name: 'timely_list', 
+					label: '上课时间',
+					labelWidth: 85,
+					placeHolder: '选择时间',
+					readOnly: true, //to focus
+					flex: 1
+				},{
+					xtype: 'button',
+					action: 'timely',
+					text: '...',
+					//iconCls: 'search',
+					ui: 'plain',
+					width: 60,
+					zIndex: 999
+				}]
 			},{
 				xtype: 'selectfield',
-				label: '时间', //选择后本地缓存，方便下次直接获取
-				name: 'timespan',
-				options: [
-				    {text: '上午', value: '上午'},
-				    {text: '下午', value: '下午'},
-				    {text: '晚上', value: '晚上'}
-				],
+				label: '教师', //选择后本地缓存，方便下次直接获取
+				name: 'teacherID',
+				store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
+				valueField: 'teacherID',
+				displayField: 'teacherName',
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
-				},
-			}]	
+				},		
+			}]
+		
+    	},{
+			xtype: 'button',
+			text : '＋上课时间',
+			ui : 'plain',
+			action: 'timely', //大小班课程，不是班级
+			style: {
+				color: 'SteelBlue',
+				background: 'none',//'#66cc00',
+				margin: '-10px 100px 0px',
+				border: 0
+			},
+			bageText: '0'
+		},{
+			// 缴费购买课程项目明细 1、一对一 2、大小班
+			xtype: 'list',
+			margin: '10px',
+			//height: '100%',
+			//ui: 'round',
+			flex: 1,
+			disableSelection: true,
+	        itemTpl: [
+				'<div><span>{timely}</span>'+
+				'<span class="removeItem" style="float:right;color:red;">&nbsp;&nbsp;删除</span>'
+	        ],	
+			store: Ext.create("Ext.data.Store", {
+				fields: [
+		            {name: "timely", type: "string"},
+		        ],
+			}),		
 		}],		
 	
 		listeners: [{
@@ -106,7 +136,15 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		},{
 			delegate: 'button[action=kclist]',
 			event: 'tap',
-			fn: 'onKclist'		
+			fn: 'onKclist'
+		},{
+			delegate: 'button[action=timely]',
+			event: 'tap',
+			fn: 'onTimely'	
+		},{
+			delegate: 'list',
+			event: 'itemtap',
+			fn: 'onItemtap'	
 		}]
 	},
 
@@ -115,13 +153,10 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		var me = this;
 		
 		var title = this.down('textfield[name=title]').getValue().trim(),
-			hour = this.down('numberfield[name=hour]').getValue(),
-			amount = this.down('numberfield[name=amount]').getValue(),
-			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
-			weekday = this.down('selectfield[name=weekday]').getValue(),
-			timespan = this.down('selectfield[name=timespan]').getValue(),
-			classType = this.down('selectfield[name=classType]').getValue()
-		console.log(beginDate,hour,amount)
+			kclistID = this.down('hiddenfield[name=kclistID]').getValue(),
+			kclistTitle = this.down('textfield[name=kclistTitle]').getValue()
+
+		console.log(kclistID,kclistTitle)
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
 		}
@@ -163,10 +198,28 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		//this.destroy()
 	},
 	
-	// 查找选择对应课程
+	// 查找选择对应大小班课程
 	onKclist: function(btn){
 		var me = this; 
-		me.fireEvent('kclist',btn,me);
+		me.fireEvent('kclistClass',btn,me);
+	},
+	// 每周可能不止上课一次
+	onTimely: function(btn){
+		this.fireEvent('timely',btn,this);
 	},
 	
+	// 移除报读的班级
+	onItemtap: function(list, index, target, record, e, eOpts){
+		var me = this;
+		console.log(e.target.className)
+		if(e.target.className == 'removeItem'){
+			list.getStore().removeAt(index)
+			var ys = me.down('textfield[name=amount_ys]'),
+				ss = me.down('textfield[name=amount]')
+			// 金额 减少
+			var amt = parseInt(record.data.amount)
+			ys.setValue(ys.getValue()-amt)
+			ss.setValue(ss.getValue()-amt)
+		}
+	},
 });

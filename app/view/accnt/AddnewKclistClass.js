@@ -251,7 +251,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 	},
 	// 查找选择咨询师拥有的班级
 	onKclist: function(btn){
-		this.fireEvent('kclist',btn,this);
+		this.fireEvent('kclistClass',btn,this);
 	},
 	// 滚动自己，避免toolbar滚动
 	//this.up('drive-new').getScrollable().getScroller().scrollTo(0,360);
