@@ -80,7 +80,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onOne2onePk()
 			}
 		},{
-			text: '班级排课',
+			text: '分班',
 			iconCls: 'time',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');

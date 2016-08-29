@@ -16,14 +16,14 @@ Ext.define('Youngshine.controller.Main', {
 				home: 'menuHome',
 				student: 'menuStudent',
 				teacher: 'menuTeacher',
-				classes: 'menuClasses', // 1 to N
-				assess: 'menuAssess', // 1 to 1
+				assess: 'menuAssess', // 1 to 1测评
+				classes: 'menuClasses', // 咨询设置班级（增加、修改）
+				accnt: 'menuAccnt', //缴费,报读课程（大小班、一对一），然后排课
 				one2onePk: 'menuOne2onePk', //一对一排课
-				classesPk: 'menuClassesPk', //大小班排课
-				orders: 'menuOrders',
-				accnt: 'menuAccnt',
-				kcb: 'menuKcb',//安排课程内容（知识点）及教师
-				pricelist: 'menuPricelist'
+				classesPk: 'menuClassesPk', //大小班排课：分班
+				//orders: 'menuOrders',
+				//kcb: 'menuKcb',//安排课程内容（知识点）及教师
+				//pricelist: 'menuPricelist'
 			}
         },
     },
@@ -102,7 +102,7 @@ Ext.define('Youngshine.controller.Main', {
 	},	
 	// 全校课程的所有班级：咨询师添加删除，以及 班级学生转班
 	menuClasses: function(){
-		this.getApplication().getController('Classes').classes()	
+		this.getApplication().getController('Classes').classesSetup()	
 		//this.getApplication().getController('Class').classList()	 
 	},
 	// 一对一课程排课

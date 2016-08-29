@@ -170,7 +170,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 		arrList = arrList.join(',')
 		console.log(arrList)
 		
-    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认新增保存？",function(btn){	
 			if(btn == 'yes'){
 				var obj = {
 					title: title,
@@ -180,7 +180,8 @@ Ext.define('Youngshine.view.classes.Addnew', {
 					persons: persons,
 					teacherID: teacherID,
 					timely_list: arrList,
-					consultID: localStorage.consultID //班级归属哪个咨询师
+					//consultID: localStorage.consultID //班级归属哪个咨询师
+					schoolsubID: localStorage.schoolsubID //班级具体到分校区
 				};
 				console.log(obj)
 				me.fireEvent('save', obj,me);

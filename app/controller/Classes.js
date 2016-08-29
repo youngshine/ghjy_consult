@@ -70,7 +70,7 @@ Ext.define('Youngshine.controller.Classes', {
 	accntdetailList: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
-		//if(curView.xtype == 'studentList') return
+		if(curView.xtype == 'accnt-detail') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
 		me.accntdetail = Ext.create('Youngshine.view.classes.AccntDetail');
@@ -143,7 +143,7 @@ Ext.define('Youngshine.controller.Classes', {
 	},
 	
 	// sidemenu跳转这里：班级设置
-	classes: function(){
+	classesSetup: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
 		if(curView.xtype == 'classes') return

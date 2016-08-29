@@ -168,7 +168,7 @@ Ext.define('Youngshine.view.classes.Edit', {
 		};
 		console.log(obj)
 
-    	Ext.Msg.confirm('',"确认修改保存？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认修改保存？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);
 			}

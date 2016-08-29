@@ -15,10 +15,11 @@ require_once('db/database_connection.php');
 	$schoolID = $arr->schoolID; //加盟校区
 	
 	$sql = " SELECT a.*,ceil((a.Y1+a.Y2+a.Y3)/3) as Yavg,b.subjectName,c.zsdName   
-		From `ghjy_hist` a 
+		From `ghjy_assess_hist` a 
 		Join `ghjy_subject` b On a.subjectID=b.subjectID 
 		Join `ghjy_zsd` c On (a.zsdID=c.zsdID And a.subjectID=c.subjectID) 
-		where a.subjectID=$subjectID And a.gradeID = $gradeID And a.semester='$semester' And schoolID=$schoolID ";
+		where a.subjectID=$subjectID And a.gradeID = $gradeID And a.semester='$semester' "; 
+		// And schoolID=$schoolID "; // 先不管学校，全部用泉州
     
     $result = mysql_query($sql) 
 		or die("Invalid query: readZsdhistList" . mysql_error());
