@@ -19,7 +19,13 @@ Ext.define('Youngshine.model.Classes', {
 			{name: 'teacherID'}, // 班级教师，待定？
 			{name: 'teacherName'},
 			
+			{name: 'consultID'}, // 班级教师，待定？
+			{name: 'consultName'},
+			
 			{name: 'created'},		
+			
+			{name: 'schoolsubID'}, // 班级属于某个分校区
+			{name: 'fullname'},
 			{name: 'consultID'},//所属的咨询师
 		
 			{ name: 'fullDate', convert: function(value, record){

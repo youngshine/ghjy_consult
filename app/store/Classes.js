@@ -17,6 +17,7 @@ Ext.define('Youngshine.store.Classes', {
 		sorters: {
 			property: 'created',
 			direction: 'DESC'
-		}
+		},
+		groupField: 'fullname',
     }
 });

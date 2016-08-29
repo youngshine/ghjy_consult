@@ -1,6 +1,6 @@
 <?php
 
-// 加盟学校
+// 加盟学校的分校区
 require_once 'db/response.php';
 require_once 'db/request.php';
 require_once('db/database_connection.php');

@@ -17,7 +17,7 @@ Ext.define('Youngshine.controller.Classes', {
 			timely: 'classes-timely'
         },
         control: {
-			// 学生，按报读课程分组
+			// 待分班的学生，按报读课程分组
 			'accnt-detail': {
 				itemtap: 'accntdetailItemtap',
 			},
@@ -181,6 +181,9 @@ Ext.define('Youngshine.controller.Classes', {
 
 		// 点击‘修改编辑’
 		if(e.target.className == 'edit'){
+			if(localStorage.consultID != record.data.consultID){
+				Ext.toast('没有编辑权限',3000);return 
+			}
 			me.classesedit = Ext.create('Youngshine.view.classes.Edit');
 			me.classesedit.setRecord(record)
 			// 日期无法自动绑定

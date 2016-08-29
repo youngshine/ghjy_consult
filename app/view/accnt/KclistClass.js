@@ -79,7 +79,6 @@ Ext.define('Youngshine.view.accnt.KclistClass',{
 		store.clearFilter(); //filter is additive
 		// 正则表达，才能模糊搜索?? true就可以anymatch
         //store.filter('studentName', field.getValue(), true); 
-		store.clearFilter(); // filter is additive
 		if(kclistType != null ){
 			store.filter([
 				{property: "kmType", value: kclistType},

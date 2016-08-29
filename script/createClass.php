@@ -13,17 +13,18 @@ $kclistID = $_REQUEST['kclistID']; //隶属某个课程（由此能得到学校�
 $beginDate = $_REQUEST['beginDate'];
 $persons = $_REQUEST['persons'];
 $teacherID = $_REQUEST['teacherID'];
-//$consultID = $_REQUEST['consultID']; //所属咨询师，分校区
 $schoolsubID = $_REQUEST['schoolsubID'];  //具体到分校区
+
+$consultID = $_REQUEST['consultID']; //所属咨询师，该咨询师才能修改、删除，其他咨询只能看
 
 // 上课周期列表，数组字符串转为json对象，前面已经转换
 $timely_list = $_REQUEST['timely_list'];
 //$timely_list = json_decode($timely_list); //转换成数组 decode($a,true)
 
 $query = "INSERT INTO `ghjy_class` 
-	(title,kclistID,beginDate,persons,timely_list,teacherID,schoolsubID) 
+	(title,kclistID,beginDate,persons,timely_list,teacherID,schoolsubID,consultID) 
 	VALUES
-	('$title',$kclistID,'$beginDate',$persons,'$timely_list',$teacherID,$schoolsubID)";
+	('$title',$kclistID,'$beginDate',$persons,'$timely_list',$teacherID,$schoolsubID,$consultID)";
 $result = mysql_query($query) 
 	or die("Invalid query: createClass" . mysql_error());
 

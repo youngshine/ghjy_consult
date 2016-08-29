@@ -180,8 +180,8 @@ Ext.define('Youngshine.view.classes.Addnew', {
 					persons: persons,
 					teacherID: teacherID,
 					timely_list: arrList,
-					//consultID: localStorage.consultID //班级归属哪个咨询师
-					schoolsubID: localStorage.schoolsubID //班级具体到分校区
+					schoolsubID: localStorage.schoolsubID, //班级具体到分校区
+					consultID: localStorage.consultID //咨询师自己创建的才能修改
 				};
 				console.log(obj)
 				me.fireEvent('save', obj,me);

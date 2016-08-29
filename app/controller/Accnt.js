@@ -293,12 +293,27 @@ Ext.define('Youngshine.controller.Accnt', {
 		console.log(obj)	
 		var store = Ext.getStore('Student'); 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readStudentList.php?data=' + JSON.stringify(obj));
+			'readStudentListByAll.php?data=' + JSON.stringify(obj));
 		store.load({
 			callback: function(records, operation, success){
 		        if (success){
 					console.log(records)
-					me.student.showBy(btn); // overlay show
+					me.student.show(); //showBy(btn); // overlay show
+				};
+			}   		
+		});	
+		
+		var obj = {
+			"schoolID" : localStorage.schoolID 
+		}	
+		console.log(obj)	
+		var store = Ext.getStore('Schoolsub'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readSchoolsubList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        if (success){
+					console.log(records)
 				};
 			}   		
 		});	

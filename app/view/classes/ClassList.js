@@ -8,8 +8,9 @@ Ext.define('Youngshine.view.classes.ClassList',{
 		//emptyText: '选择学科',
 		striped: true,
 		store: 'Classes',
-		itemTpl: '<div><span>{title}</span>'+
-			'<span style="float:right;color:#888;">{timely_list}</span></div>',
+		itemTpl: '<div>{title}</div>'+
+			'<div style="font-size:0.8em;color:#888;">上课：{timely_list}</div>'+
+			'<div style="font-size:0.8em;color:#888;">校区：{fullname}</div>',
         // We give it a left and top property to make it floating by default
         right: 0,
         top: 0,

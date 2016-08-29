@@ -11,7 +11,10 @@ $arr = $req->params;
 
 $kclistID = $arr->kclistID;
 
-$query = " SELECT * From `ghjy_class` Where kclistID = $kclistID ";
+$query = " SELECT a.*,b.fullname 
+	From `ghjy_class` a 
+	Join `ghjy_school_sub` b On a.schoolsubID=b.schoolsubID 
+	Where a.kclistID = $kclistID ";
 
 $result = mysql_query($query) 
 	or die("Invalid query: readClassList by kclist" . mysql_error());

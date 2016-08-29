@@ -1,6 +1,7 @@
 <?php
 /*
-  * 全校范围学生：用于大小班
+  * 全校范围学生：
+  * 用于大小班，以及缴费报读可以从全校学生选择，不限于咨询师
 */
 	require_once 'db/response.php';
 	require_once 'db/request.php';
@@ -12,9 +13,12 @@
 	$arr = $req->params;
 
 	$schoolID = $arr->schoolID;
-	$query = "SELECT * From `ghjy_student`  
-		Where schoolID=$schoolID 
-		Order By created Desc ";
+	
+	$query = "SELECT a.*,b.fullname  
+		From `ghjy_student` a 
+		Join `ghjy_school_sub` b On b.schoolsubID=a.schoolsubID 
+		Where a.schoolID=$schoolID 
+		Order By a.created Desc ";
     
     $result = mysql_query($query) 
 		or die("Invalid query: readStudentListByAll" . mysql_error());

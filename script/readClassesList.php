@@ -1,5 +1,6 @@
 <?php
 // 某个分校区的班级列表，包括已经报读人数
+// 全校的班级？？？
 require_once 'db/response.php';
 require_once 'db/request.php';
 require_once('db/database_connection.php');
@@ -13,13 +14,15 @@ require_once('db/database_connection.php');
 	$schoolsubID = $arr->schoolsubID;//班级所属的分校区
 
 	// left join 教师，因为可能还没有制定班级教师
-	$query = " SELECT a.*,b.teacherName 
+	$query = " SELECT a.*,b.fullname,c.consultName,d.teacherName 
 		From `ghjy_class` a 
-		Left Join `ghjy_teacher` b On a.teacherID=b.teacherID 
-		Where a.schoolsubID = $schoolsubID ";
+		Join `ghjy_school_sub` b On a.schoolsubID=b.schoolsubID 
+		Join `ghjy_consult` c On a.consultID=c.consultID 
+		Left Join `ghjy_teacher` d On a.teacherID=d.teacherID 
+		Where a.schoolID = $schoolID ";
     
     $result = mysql_query($query) 
-		or die("Invalid query: readClassList by schoolsub" . mysql_error());
+		or die("Invalid query: readClassList by school" . mysql_error());
 
 	$query_array = array();
 	$i = 0;

@@ -19,7 +19,7 @@ Ext.define('Youngshine.store.Student', {
 			direction: "DESC"
 		}],
 		
-		//groupField: 'grade',
+		groupField: 'fullname',
        // groupDir: 'DESC'
     }
 });
