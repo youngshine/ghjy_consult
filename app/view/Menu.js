@@ -87,7 +87,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onClassesPk()
 			}
 		},{
-			text: '大小班级',
+			text: '我的大小班',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');

@@ -14,7 +14,7 @@ Ext.define('Youngshine.view.one2one.Study', {
         itemTpl: [
 			'<div><span>{zsdName}</span></div>'+
 			'<div><span style="color:#888;">{times}课时</span>'+
-			'<span class="kcb" style="float:right;color:green;">排课教师：{teacherName}</span></div>'
+			'<span style="float:right;color:#888;">{timely_list}</span></div>'
         ],
 		
     	items: [{

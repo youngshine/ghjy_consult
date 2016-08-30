@@ -105,9 +105,10 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 				times: record.data.times,
 				studentID: me.getParentRecord().data.studentID,
 				//prepaidID: me.ordersstudy.getRecord().data.prepaidID
-				accntID: me.getParentRecord().data.accntID
+				//accntID: me.getParentRecord().data.accntID,
+				accntdetailID: me.getParentRecord().data.accntdetailID //才能得到课程信息
 		    }
-			console.log(obj);	
+			console.log(obj);
 			me.fireEvent('choose',obj,me)
 			//me.destroy()
 			me.deselectAll()

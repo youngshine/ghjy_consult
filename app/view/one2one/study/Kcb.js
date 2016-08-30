@@ -3,173 +3,156 @@ Ext.define('Youngshine.view.one2one.study.Kcb',{
 	extend: 'Ext.form.Panel',
 	xtype: 'study-kcb',
 
-	config: {
+    config: {
 		record: null,
-		modal: true,
-		hideOnMaskTap: true,
-		centered: true,
-		width: 420,height: 260,
-		//scrollable: true,
-
-        items: [{	
-        	xtype: 'toolbar',
-        	docked: 'top',
-        	title: '一对一排课',
+		layout: 'vbox',
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '一对一排课',
 			items: [{
-				text : '完成',
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
 				ui: 'confirm',
-				//disabled: true,
-				action: 'done',
+				text: '保存',
+				//disabled: true,// 微信企业号才能新增，修改 by 执行校长
+				action: 'save'
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '95%',
+			defaults: {
+				labelWidth: 85,
+				xtype: 'textfield'
+			},
+			//title: '个人资料',
 			items: [{
 				xtype: 'selectfield',
-				label: '上课日', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				name: 'teach_weekday',
-				options: [
-				    {text: '周一', value: '周一'},
-				    {text: '周二', value: '周二'},
-				    {text: '周三', value: '周三'},
-				    {text: '周四', value: '周四'},
-				    {text: '周五', value: '周五'},
-				    {text: '周六', value: '周六'},
-				    {text: '周日', value: '周日'}
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
-				label: '时间', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				name: 'teach_timespan',
-				options: [
-				    {text: '08:00', value: '08:00'},
-				    {text: '08:30', value: '08:30'},
-				    {text: '09:00', value: '09:00'},
-				    {text: '09:30', value: '09:30'},
-				    {text: '10:00', value: '10:00'},
-					{text: '10:30', value: '10:30'},
-				    {text: '11:00', value: '11:00'},
-				    {text: '14:00', value: '14:00'},
-				    {text: '14:30', value: '14:30'},
-				    {text: '15:00', value: '15:00'},
-				    {text: '15:30', value: '15:30'},
-				    {text: '16:00', value: '16:00'},
-				    {text: '16:30', value: '16:30'},
-				    {text: '17:00', value: '17:00'},
-				    {text: '19:00', value: '19:00'},
-				    {text: '19:30', value: '19:30'},
-				    {text: '20:00', value: '20:00'},
-				],
-				autoSelect: false, 	
-				defaultPhonePickerConfig: {
-					doneButton: '确定',
-					cancelButton: '取消'
-				},
-			},{
-				xtype: 'selectfield',
 				label: '任课教师', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
 				name: 'teacherID',
+				//store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
 				valueField: 'teacherID',
 				displayField: 'teacherName',
-				store: 'Teacher',
-				autoSelect: false, 
+				autoSelect: false, 	
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
-				},
-				
-				listeners: {
-					focus: function(selectBox, e, eOpts ){
-						var weekday = this.up('fieldset').down('selectfield[name=teach_weekday]').getValue(),
-							timespan = this.up('fieldset').down('selectfield[name=teach_timespan]').getValue()
-						if(weekday==null || timespan==null){
-							return false
-							//Ext.toast('先选择上课时间');return false
-						}
-						// ajax读取可用学科教师
-						this.up('panel').onTeacher(weekday,timespan,selectBox)
-					},
-					change: function(e){
-						// 激活保存提交按钮
-						//this.up('panel').down('button[action=done]').setDisabled(false);
-					}
-				} 
+				},	
 			},{
-				xtype: 'textfield',
-				label: '备注',
-				labelWidth: 85,
-				name: 'note',
-				clearIcon: false
+				xtype: 'hiddenfield',
+				name: 'studentstudyID' //修改的unique			
 			}]	
-
-		}],	
 		
-		listeners: [{
-			delegate: 'button[action=done]',
-			event: 'tap',
-			fn: 'onDone'	
-		}] 
-	},
+    	},{
+			xtype: 'button',
+			text : '＋上课周期',
+			ui : 'plain',
+			action: 'timely', //大小班课程，不是班级
+			style: {
+				color: 'SteelBlue',
+				background: 'none',//'#66cc00',
+				margin: '-10px 100px 0px',
+				border: 0
+			},
+			bageText: '0'
+		},{
+			// 缴费购买课程项目明细 1、一对一 2、大小班
+			xtype: 'list',
+			margin: '10px',
+			//height: '100%',
+			//ui: 'round',
+			flex: 1,
+			disableSelection: true,
+	        itemTpl: [
+				'<div><span>{timely}</span>'+
+				'<span class="removeItem" style="float:right;color:red;">&nbsp;&nbsp;删除</span>'
+	        ],	
+			store: Ext.create("Ext.data.Store", {
+				fields: [
+		            {name: "timely", type: "string"},
+		        ],
+			}),		
+		}],		
 	
-	onDone: function(btn){
-		var me = this;
-		var teacherID = me.down('selectfield[name=teacherID]').getValue(),
-			weekday = me.down('selectfield[name=teach_weekday]').getValue(),
-			timespan = me.down('selectfield[name=teach_timespan]').getValue(),
-			note = me.down('textfield[name=note]').getValue(),
-			studentstudyID = me.getRecord().data.studentstudyID
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'	
+		},{
+			delegate: 'button[action=timely]',
+			event: 'tap',
+			fn: 'onTimely'	
+		},{
+			delegate: 'list',
+			event: 'itemtap',
+			fn: 'onItemtap'	
+		}]
+	},
 
-		if(teacherID==null || teacherID==0){
-			Ext.toast('请选择任课教师',3000); return false
-		} 
+	onSave: function(){
+		//window.scrollTo(0,0);
+		var me = this;
+		
+		var studentstudyID = this.down('hiddenfield[name=studentstudyID]').getValue(), //unique
+			teacherID = this.down('selectfield[name=teacherID]').getValue()
+		
+		if(teacherID == null) teacherID=0
+
+		var arrList = [] //jsonList = {};
+		var store = me.down('list').getStore()
+		store.each(function(rec,index){
+			arrList.push(rec.data.timely)
+			//jsonList[index] = rec.data.kclistID 
+		})
+		//if (store.getCount()==0){
+		if (arrList.length == 0){	
+			Ext.toast('请添加上课周期时间',3000); return;
+		}
+		console.log(arrList);
+		//arrList = JSON.stringify(arrList); //传递到后台，必须字符串
+		arrList = arrList.join(',')
+		console.log(arrList)
 		
 		var obj = {
 			teacherID: teacherID,
-			weekday: weekday,
-			timespan: timespan,
-			note: note,
-			studentstudyID: studentstudyID
-		}	
+			timely_list: arrList,
+			studentstudyID: studentstudyID // unique
+		};
 		console.log(obj)
-    	Ext.Msg.confirm('',"确认排课时间和教师？",function(btn){	
+
+    	Ext.Msg.confirm('保存',"确认修改保存？",function(btn){	
 			if(btn == 'yes'){
-				me.fireEvent('done',obj,me);
+				me.fireEvent('save', obj,me);
 			}
-		})
+		});	
+
+		// 前端显示更新
+		me.getRecord().set(obj)
+		//me.getRecord().set('teacherName',teacher)
 	},
-	// 某个时间段可用校区学科教师，作为select数据源setOptioms(array)
-	onTeacher: function(weekday,timespan,selectBox){
-		var me = this;
-		var obj = {
-			"weekday": weekday,
-			"timespan": timespan,
-			"subjectID": me.getRecord().data.subjectID,
-			"schoolID": localStorage.schoolID
-		}
-		console.log(obj)
-		
-		Ext.data.JsonP.request({ 
-            url: Youngshine.app.getApplication().dataUrl +  'readTeacherListByKcb.php',
-            callbackKey: 'callback',
-            params:{
-                data: JSON.stringify(obj)
-            },
-            success: function(result){
-				console.log(result.data)
-				selectBox.updateOptions(result.data)		
-            }
-		});
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
 	},
 	
-	hide: function(){
-		this.destroy()
-	}
+	// 每周可能不止上课一次
+	onTimely: function(btn){
+		this.fireEvent('timely',btn,this);
+	},
+	
+	// 移除报读的班级
+	onItemtap: function(list, index, target, record, e, eOpts){
+		var me = this;
+		console.log(e.target.className)
+		if(e.target.className == 'removeItem'){
+			list.getStore().removeAt(index)
+		}
+	},
 });

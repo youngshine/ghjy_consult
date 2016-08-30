@@ -1,9 +1,9 @@
 /**
  * Displays a list of 各个校区班级课程 product as pricelist
  */
-Ext.define('Youngshine.view.classes.List', {
+Ext.define('Youngshine.view.classes.ListDataview', {
     extend: 'Ext.Container',
-	xtype: 'classes',
+	xtype: 'classes-dataview',
 
     config: {
 		layout: 'fit',

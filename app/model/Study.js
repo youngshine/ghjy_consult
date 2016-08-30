@@ -24,8 +24,9 @@ Ext.define('Youngshine.model.Study', {
 		
 			{name: 'teacherID'}, 
 			{name: 'teacherName'}, 
-			{name: 'teach_weekday'}, //每周那天上课
-			{name: 'teach_timespan'}, //上课时间段
+			//{name: 'teach_weekday'}, //每周那天上课
+			//{name: 'teach_timespan'}, //上课时间段
+			{name: 'timely_list', defaultValue: '未排课'}, //上课时间段列表
 		
 			{name: 'pass'}, //教学通过flag 0,1
 			{name: 'pass_date'},

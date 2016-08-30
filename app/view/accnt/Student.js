@@ -53,8 +53,8 @@ Ext.define('Youngshine.view.accnt.Student',{
 			fn: 'onFilter'
 		},{
 			delegate: 'searchfield',
-			//event: 'change', // need return to work
-			event: 'keyup',
+			event: 'change', // need return to work
+			//event: 'keyup',
 			fn: 'onFilter' //'onSearchChange' 						
     	}]
 	},

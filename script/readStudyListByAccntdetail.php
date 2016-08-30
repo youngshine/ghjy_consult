@@ -12,7 +12,7 @@ require_once('db/database_connection.php');
 
 	$arr = $req->params;
 
-	$accntID = $arr->accntID;
+	$accntdetailID = $arr->accntdetailID;
 	//$studentID = $arr->studentID;
 	//$prepaid = $arr->prepaid; //0缴费前，1缴费后成历史记录，不能修改
 
@@ -31,9 +31,9 @@ require_once('db/database_connection.php');
 		JOIN `ghjy_subject` c on b.subjectID=c.subjectID 
 		JOIN `ghjy_grade` d on b.gradeID=d.gradeID 
 		LEFT JOIN `ghjy_teacher` e ON a.teacherID=e.teacherID 
-		WHERE a.accntID = $accntID ";   
+		WHERE a.accntdetailID = $accntdetailID ";   
     $result = mysql_query($sql) 
-		or die("Invalid query: readStudyList by accnt" . mysql_error());
+		or die("Invalid query: readStudyList by accntdetail" . mysql_error());
 
 	$query_array = array();
 	$i = 0;

@@ -142,7 +142,7 @@ Ext.define('Youngshine.controller.Classes', {
 		});
 	},
 	
-	// sidemenu跳转这里：班级设置
+	// sidemenu跳转这里：我的班级设置
 	classesSetup: function(){
 		var me = this;
 		var curView = Ext.Viewport.getActiveItem();
@@ -158,7 +158,7 @@ Ext.define('Youngshine.controller.Classes', {
 		var obj = {
 			"schoolID": localStorage.schoolID,
 			"schoolsubID": localStorage.schoolsubID,
-			//"consultID": localStorage.getItem('consultID'),
+			"consultID": localStorage.getItem('consultID'),
 			"teacherID": 0 //班级尚未确定教师
 		}		
 		var store = Ext.getStore('Classes');

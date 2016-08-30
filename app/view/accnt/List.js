@@ -16,8 +16,8 @@ Ext.define('Youngshine.view.accnt.List', {
         itemTpl: [
 			'<div><span>{accntType}课程</span>'+
 			'<span style="float:right;">{amount}元（应收{amount_ys}）</span></div>'+
-			'<div style="color:#888;"><span>{studentName}｜{accntDate}</span>'+
-			'<span style="float:right;">{title}</span></div>'
+			'<div style="color:#888;"><span>{studentName}</span>'+
+			'<span style="float:right;">{accntDate}</span></div>'
         ],
 		
     	items: [{

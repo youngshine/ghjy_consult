@@ -34,7 +34,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 					name: 'studentName', 
 					label: '姓名',
 					labelWidth: 95,
-					placeHolder: '选择学生',
+					placeHolder: '选择全校范围学生',
 					readOnly: true, //to focus
 					flex: 1
 				},{

@@ -11,15 +11,15 @@ require_once('db/database_connection.php');
 
 $studentstudyID = $_REQUEST['studentstudyID'];
 $teacherID = $_REQUEST['teacherID'];
-$weekday = addslashes($_REQUEST['weekday']);
-$timespan = addslashes($_REQUEST['timespan']);
-$note = addslashes($_REQUEST['note']);
+//$weekday = addslashes($_REQUEST['weekday']);
+//$timespan = addslashes($_REQUEST['timespan']);
+//$note = addslashes($_REQUEST['note']);
+
+// 上课周期列表，数组字符串转为json对象
+$timely_list = $_REQUEST['timely_list'];
 
 $query = "UPDATE `ghjy_student-study` SET  
-	teach_weekday = '$weekday',
-	teach_timespan = '$timespan',
-	note = '$note',
-	teacherID = $teacherID 
+	timely_list = '$timely_list',teacherID = $teacherID 
 	Where studentstudyID = $studentstudyID ";
 
 $result = mysql_query($query) 
@@ -27,7 +27,7 @@ $result = mysql_query($query)
 
 echo json_encode(array(
     "success" => true,
-    "message" => "排课成功"
+    "message" => "一对一排课成功"
 ));
 
 ?>

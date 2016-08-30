@@ -9,7 +9,7 @@ Ext.define('Youngshine.view.classes.List', {
     config: {
 		//ui: 'round',
 		store: 'Classes',
-		grouped: true,
+		//grouped: true,
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,
@@ -20,8 +20,7 @@ Ext.define('Youngshine.view.classes.List', {
 			'<div><span>{title}</span>'+
 			'<span class="edit" style="float:right;color:green;">编辑</span></div>'+
 			'<div style="color:#888;">'+
-			'<span>{beginDate}｜{timely_list}</span>'+
-			'<span style="float:right;">咨询：{consultName}｜教师：{teacherName}</span>'+
+			'<span>{timely_list}｜教师：{teacherName}</span>'+
 			'<span class="remove" style="display:none;float:right;color:red;">删除</span>'+
 			'</div></div>'
         ],

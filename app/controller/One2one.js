@@ -8,6 +8,7 @@ Ext.define('Youngshine.controller.One2one', {
 			one2onestudy: 'one2one-study', //套餐的子记录（报读知识点）
 			studyzsd: 'study-zsd', //添加报读记录 overlay
 			studykcb: 'study-kcb', //排课 overlay
+			timely: 'timely', //选择星期几、上课具体时间
         },
         control: {
 			one2one: {
@@ -24,7 +25,12 @@ Ext.define('Youngshine.controller.One2one', {
 				choose: 'studyzsdChoose'
 			},
 			studykcb: {
-				done: 'studykcbDone' //排课，分配教师、上课时间
+				save: 'studykcbSave', 
+				cancel: 'studykcbCancel',
+				timely: 'studykcbTimely', //同addnew
+			},
+			timely: {
+				done: 'timelyDone'
 			},
         }
     },
@@ -74,11 +80,11 @@ Ext.define('Youngshine.controller.One2one', {
 		Ext.Viewport.setActiveItem(me.one2onestudy);
 
 		var obj = {
-			"accntID": record.data.accntID,
+			"accntdetailID": record.data.accntdetailID,
 		}
 		var store = Ext.getStore('Study'); 
 		store.getProxy().setUrl(this.getApplication().dataUrl + 
-			'readStudyListByAccnt.php?data='+JSON.stringify(obj) );
+			'readStudyListByAccntdetail.php?data='+JSON.stringify(obj) );
 		store.load({ //异步async
 			callback: function(records, operation, success){
 				if (success){
@@ -176,6 +182,50 @@ Ext.define('Youngshine.controller.One2one', {
 			selectBox.setValue(record.data.teacherID);
 			console.log(selectBox.getValue())
 		}	
+		
+		me.studykcb = Ext.create('Youngshine.view.one2one.study.Kcb');
+		Ext.Viewport.add(me.studykcb); //否则build后无法显示
+		Ext.Viewport.setActiveItem(me.studykcb);
+		console.log(record.data)
+		me.studykcb.setRecord(record)
+		//me.studykcb.down('list').getStore().removeAll(); //清除上课周期列表
+		// 上课周期列表数组，list.store
+		if(record.data.timely_list != ''){
+			var timely_list = record.data.timely_list.split(',')
+			console.log(timely_list)
+			var timely = [];
+			for (var i = 0; i < timely_list.length; i++) {
+				timely.push( {"timely":timely_list[i]}  )
+			}
+			console.log(timely);
+			me.studykcb.down('list').getStore().setData(timely)
+		}
+		
+		// 任课教师
+		var obj = {
+			"schoolID": localStorage.schoolID
+		}		
+		var store = Ext.getStore('Teacher'); 
+		store.removeAll()
+		store.clearFilter() 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readTeacherList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+			    if (success){
+					// 任课教师selectfield，不用store,这样才能显示名字
+					var selectBox = me.studykcb.down('selectfield[name=teacherID]')
+					console.log(records)
+					selectBox.updateOptions(records)
+					selectBox.setValue(record.data.teacherID); 
+					/*
+					selectBox.updateOptions([
+						{teacherName: record.data.teacherName,  teacherID: record.data.teacherID},
+					    //{text: 'Third Option',  value: 'third'}
+					]) */
+				};
+			} 
+		})
 	},
 	
 	// 选择并点击确定报读知识点 zsdID+subjectID // itemtap
@@ -208,7 +258,47 @@ Ext.define('Youngshine.controller.One2one', {
 		});
 	},
 	
-	// 排课：分配任课教师及上课时间
+	// 取消添加
+	studykcbCancel: function(oldView){		
+		var me = this; 
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studykcb,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.one2onestudy);
+	},	
+	studykcbSave: function( obj,oldView )	{
+    	var me = this; 
+		console.log(obj)
+		Ext.Ajax.request({
+		    url: me.getApplication().dataUrl + 'updateStudyByKcb.php',
+		    params: obj,
+		    success: function(result){
+		        //var text = response.responseText; Ext.JSON.decode JSON.parse()
+				console.log(result)
+				Ext.toast('排课成功',3000)
+				Ext.Viewport.remove(me.studykcb,true); //remove 当前界面
+				Ext.Viewport.setActiveItem(me.one2onestudy);
+		    }
+		});
+	},
+
+	// 上课时间（多个，数组存储转换），新增／修改通用
+	studykcbTimely: function(btn,oldView)	{
+    	var me = this; 
+		me.timely = Ext.create('Youngshine.view.one2one.study.Timely');
+		me.timely.setParentView(oldView); //调用的父表单
+		Ext.Viewport.add(me.timely); //否则build后无法显示
+		me.timely.show();
+	},
+		
+	timelyDone: function(obj,parentView){
+    	var me = this; 
+		//var store = me.classesaddnew.down('list').getStore();
+		var store = parentView.down('list').getStore();
+		console.log(store)
+		store.insert(0,obj); //新增记录，排在最前面
+	},
+	
+	/* 排课：分配任课教师及上课时间
 	studykcbDone: function(obj,oldView)	{
     	var me = this; 
 		Ext.Ajax.request({
@@ -235,7 +325,7 @@ Ext.define('Youngshine.controller.One2one', {
 				Ext.toast('添加知识点成功',3000)		
             }
 		});
-	},
+	}, */
 			
 	/* 如果用户登录的话，控制器launch加载相关的store */
 	launch: function(){

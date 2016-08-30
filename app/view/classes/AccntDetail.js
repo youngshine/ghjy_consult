@@ -24,7 +24,7 @@ Ext.define('Youngshine.view.classes.AccntDetail', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班课程',
+				text: '待分班学生',
 				handler: function(btn){
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
