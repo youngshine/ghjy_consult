@@ -101109,7 +101109,9 @@ Ext.define('Youngshine.controller.Accnt', {
     	var me = this; 
 		me.student = Ext.create('Youngshine.view.accnt.Student');
 		Ext.Viewport.add(me.student); //否则build后无法显示
-
+		me.student.show();
+		me.student.getStore().removeAll(); //该store内容可能存在，比如打开过学生菜单
+/*
 		var obj = {
 			"consultID": localStorage.consultID,
 			"schoolID" : localStorage.schoolID 
@@ -101127,7 +101129,7 @@ Ext.define('Youngshine.controller.Accnt', {
 				};
 			}   		
 		});	
-		
+*/		
 		var obj = {
 			"schoolID" : localStorage.schoolID 
 		}	
@@ -103593,7 +103595,7 @@ Ext.define('Youngshine.view.Main', {
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
-					btn.up('panel').onSetup()
+					btn.up('panel').onSetup(btn)
 				} 
 			}]	
 		},{	
@@ -103634,19 +103636,20 @@ Ext.define('Youngshine.view.Main', {
 		Youngshine.app.getApplication().getController('Main').menuNav() 
 	},
 	// 设置密码 ，small window-overlay
-	onSetup: function(){
+	onSetup: function(btn){
 		var me = this; 
 		this.overlay = Ext.Viewport.add({
 			xtype: 'panel',
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 330,height: 220,
+			width: 420,height: 260,
 			scrollable: true,
 
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
+				ui: 'light',
 	        	title: '密码修改',
 				items: [{
 					text: '保存'	,
@@ -103682,11 +103685,16 @@ Ext.define('Youngshine.view.Main', {
 				}]
 			},{
 				xtype: 'fieldset',
-				width: 320,
+				width: 400,
 				defaults: {
 					//labelAlign: 'right'
 				},
 				items: [{
+					xtype: 'textfield',
+					readOnly: true,
+					label: '学校',
+					value: localStorage.schoolName
+				},{
 					xtype: 'textfield',
 					readOnly: true,
 					label: '咨询师',
@@ -104080,7 +104088,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋报读课程',
+			text : '＋内容明细',
 			ui : 'plain',
 			action: 'kclist', //大小班课程，不是班级
 			style: {
@@ -104158,7 +104166,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			//pricelistID = 0 //大小班，不是一对一课程pricelist
 	
 		if (studentName == ''){
-			Ext.toast('姓名不能空白',3000); return;
+			Ext.toast('请选择学生',3000); return;
 		}
 		if (amount == 0 ){
 			Ext.toast('请填写金额',3000); return;
@@ -104174,7 +104182,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 		})
 		//if (store.getCount()==0){
 		if (arrList.length == 0){	
-			Ext.toast('请添加报读课程',3000); return;
+			Ext.toast('请添加明细记录',3000); return;
 		}
 		//console.log(arrList);
 		console.log(JSON.stringify(jsonList));
@@ -104201,7 +104209,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 		};
 		console.log(obj)
 		
-    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认提交购买？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);
 				// 然后在class-student 填写班级学生
@@ -104341,7 +104349,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋报读课程',
+			text : '＋内容明细',
 			ui : 'plain',
 			action: 'kclist', //1to1
 			style: {
@@ -104419,7 +104427,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			//kclistID = 0 //一对一，不是大小班kclist
 	
 		if (studentName == ''){
-			Ext.toast('姓名不能空白',3000); return;
+			Ext.toast('请选择学生',3000); return;
 		}
 		if (amount == 0 || amount==null){
 			Ext.toast('请填写金额',3000); return;
@@ -104435,7 +104443,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 		})
 		//if (store.getCount()==0){
 		if (arrList.length == 0){	
-			Ext.toast('请添加报读课程',3000); return;
+			Ext.toast('请添加明细记录',3000); return;
 		}
 		
 		console.log(JSON.stringify(jsonList));
@@ -104462,7 +104470,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 		};
 		console.log(obj)
 		
-    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认提交购买？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);
 				// 然后在class-student 填写班级学生
@@ -104616,7 +104624,7 @@ Ext.define('Youngshine.view.accnt.Detail',{
 			scrollable: 'vertical',
 			itemId: 'my_show',
 			tpl: [
-				'<div>报读内容</div><hr>',
+				'<div>购买内容</div><hr>',
 				'<div>{content}</div>',
 			].join(''),
 			flex: 1 
@@ -104794,17 +104802,17 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 				},
 			},{
 				xtype: 'numberfield',
+				label: '购买课时', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				itemId: 'hour',
+				//value: 0,
+			},{
+				xtype: 'numberfield',
 				label: '单价',
 				labelWidth: 85,
 				itemId: 'unitprice',
 				//value: 0,
 				disabled: true
-			},{
-				xtype: 'numberfield',
-				label: '购买课时', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				itemId: 'hour',
-				//value: 0,
 			},{
 				xtype: 'hiddenfield',
 				itemId: 'title', // 课程名称，用于前端显示
@@ -104878,10 +104886,10 @@ Ext.define('Youngshine.view.accnt.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div><span>{accntType}课程</span>'+
-			'<span style="float:right;">{amount}元（应收{amount_ys}）</span></div>'+
-			'<div style="color:#888;"><span>{studentName}</span>'+
-			'<span style="float:right;">{accntDate}</span></div>'
+			'<div><span>{studentName}</span>'+
+			'<span style="float:right;">{amount}元</span></div>'+
+			'<div style="color:#888;"><span>{accntDate}</span>'+
+			'<span style="float:right;">应收{amount_ys}元</span></div>'
         ],
 		
     	items: [{
@@ -104905,7 +104913,7 @@ Ext.define('Youngshine.view.accnt.List', {
 			},{
 				xtype: 'spacer'
 			},{
-				ui : 'action',
+				ui : 'plain',
 				action: 'addnew',
 				iconCls: 'add',
 				handler: function(){
@@ -105047,7 +105055,8 @@ Ext.define('Youngshine.view.accnt.Student',{
                 placeHolder: '选择分校区',
 				width: 180,
                 store: 'Schoolsub',
-				valueField: 'schoolsubID',
+				//valueField: 'schoolsubID',
+				valueField: 'fullname',
 				displayField: 'fullname',
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
@@ -105081,10 +105090,11 @@ Ext.define('Youngshine.view.accnt.Student',{
 		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	*/
     onFilter: function(){
+		var me = this;
 		var schoolsub = this.down('selectfield').getValue(),
 			search = this.down('searchfield').getValue().trim()
-		console.log(search)
-		search = new RegExp("/*" + search); // 正则表达式，模糊查询
+		console.log(search,schoolsub)
+/*		search = new RegExp("/*" + search); // 正则表达式，模糊查询
 		var store = this.getStore(); //得到list的store: Myaroundroute
 		store.clearFilter(); //filter is additive
 		// 正则表达，才能模糊搜索?? true就可以anymatch
@@ -105097,6 +105107,23 @@ Ext.define('Youngshine.view.accnt.Student',{
 		}else{
 			store.filter("fullStudent", search, true);
 		}
+*/		
+		if(schoolsub == null) schoolsub = ''
+		var obj = {
+			"schoolsub": schoolsub,
+			"studentName": search // like % %
+		}
+		console.log(obj)
+		var store = me.getStore(); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readStudentListBySearch.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				console.log(records)
+			}   		
+		});	
 	},	
 });
 
@@ -106271,11 +106298,12 @@ Ext.define('Youngshine.view.classes.ClassList',{
 		grouped: true,
 		store: 'Classes',
 		itemTpl: '<div>{title}</div>'+
-			'<div style="font-size:0.8em;color:#888;">上课：{timely_list}</div>',
+			'<div style="font-size:0.8em;color:#888;">{timely_list}｜教师：{teacherName}</div>',
         // We give it a left and top property to make it floating by default
-        right: 0,
-        top: 0,
-		width: 450,height: '100%',
+        //right: 0,
+        //top: 0,
+		centered: true,
+		width: 450,height: '50%',
 		border: 5,
 		style: 'border-color: black; border-style: solid;',
 

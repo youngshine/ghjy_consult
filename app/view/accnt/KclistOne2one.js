@@ -38,17 +38,17 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 				},
 			},{
 				xtype: 'numberfield',
+				label: '购买课时', //选择后本地缓存，方便下次直接获取
+				labelWidth: 85,
+				itemId: 'hour',
+				//value: 0,
+			},{
+				xtype: 'numberfield',
 				label: '单价',
 				labelWidth: 85,
 				itemId: 'unitprice',
 				//value: 0,
 				disabled: true
-			},{
-				xtype: 'numberfield',
-				label: '购买课时', //选择后本地缓存，方便下次直接获取
-				labelWidth: 85,
-				itemId: 'hour',
-				//value: 0,
 			},{
 				xtype: 'hiddenfield',
 				itemId: 'title', // 课程名称，用于前端显示

@@ -14,10 +14,10 @@ Ext.define('Youngshine.view.accnt.List', {
 		disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div><span>{accntType}课程</span>'+
-			'<span style="float:right;">{amount}元（应收{amount_ys}）</span></div>'+
-			'<div style="color:#888;"><span>{studentName}</span>'+
-			'<span style="float:right;">{accntDate}</span></div>'
+			'<div><span>{studentName}</span>'+
+			'<span style="float:right;">{amount}元</span></div>'+
+			'<div style="color:#888;"><span>{accntDate}</span>'+
+			'<span style="float:right;">应收{amount_ys}元</span></div>'
         ],
 		
     	items: [{
@@ -41,7 +41,7 @@ Ext.define('Youngshine.view.accnt.List', {
 			},{
 				xtype: 'spacer'
 			},{
-				ui : 'action',
+				ui : 'plain',
 				action: 'addnew',
 				iconCls: 'add',
 				handler: function(){

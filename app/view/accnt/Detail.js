@@ -30,7 +30,7 @@ Ext.define('Youngshine.view.accnt.Detail',{
 			scrollable: 'vertical',
 			itemId: 'my_show',
 			tpl: [
-				'<div>报读内容</div><hr>',
+				'<div>购买内容</div><hr>',
 				'<div>{content}</div>',
 			].join(''),
 			flex: 1 

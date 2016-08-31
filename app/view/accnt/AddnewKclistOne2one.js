@@ -97,7 +97,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋报读课程',
+			text : '＋内容明细',
 			ui : 'plain',
 			action: 'kclist', //1to1
 			style: {
@@ -175,7 +175,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			//kclistID = 0 //一对一，不是大小班kclist
 	
 		if (studentName == ''){
-			Ext.toast('姓名不能空白',3000); return;
+			Ext.toast('请选择学生',3000); return;
 		}
 		if (amount == 0 || amount==null){
 			Ext.toast('请填写金额',3000); return;
@@ -191,7 +191,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 		})
 		//if (store.getCount()==0){
 		if (arrList.length == 0){	
-			Ext.toast('请添加报读课程',3000); return;
+			Ext.toast('请添加明细记录',3000); return;
 		}
 		
 		console.log(JSON.stringify(jsonList));
@@ -218,7 +218,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 		};
 		console.log(obj)
 		
-    	Ext.Msg.confirm('',"确认提交保存？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认提交购买？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);
 				// 然后在class-student 填写班级学生

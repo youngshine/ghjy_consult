@@ -284,7 +284,9 @@ Ext.define('Youngshine.controller.Accnt', {
     	var me = this; 
 		me.student = Ext.create('Youngshine.view.accnt.Student');
 		Ext.Viewport.add(me.student); //否则build后无法显示
-
+		me.student.show();
+		me.student.getStore().removeAll(); //该store内容可能存在，比如打开过学生菜单
+/*
 		var obj = {
 			"consultID": localStorage.consultID,
 			"schoolID" : localStorage.schoolID 
@@ -302,7 +304,7 @@ Ext.define('Youngshine.controller.Accnt', {
 				};
 			}   		
 		});	
-		
+*/		
 		var obj = {
 			"schoolID" : localStorage.schoolID 
 		}	

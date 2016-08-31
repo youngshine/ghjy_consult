@@ -30,7 +30,7 @@ Ext.define('Youngshine.view.Main', {
 				iconMask: true,
 				ui: 'plain',
 				handler: function(btn){
-					btn.up('panel').onSetup()
+					btn.up('panel').onSetup(btn)
 				} 
 			}]	
 		},{	
@@ -71,19 +71,20 @@ Ext.define('Youngshine.view.Main', {
 		Youngshine.app.getApplication().getController('Main').menuNav() 
 	},
 	// 设置密码 ，small window-overlay
-	onSetup: function(){
+	onSetup: function(btn){
 		var me = this; 
 		this.overlay = Ext.Viewport.add({
 			xtype: 'panel',
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 330,height: 220,
+			width: 420,height: 260,
 			scrollable: true,
 
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
+				ui: 'light',
 	        	title: '密码修改',
 				items: [{
 					text: '保存'	,
@@ -119,11 +120,16 @@ Ext.define('Youngshine.view.Main', {
 				}]
 			},{
 				xtype: 'fieldset',
-				width: 320,
+				width: 400,
 				defaults: {
 					//labelAlign: 'right'
 				},
 				items: [{
+					xtype: 'textfield',
+					readOnly: true,
+					label: '学校',
+					value: localStorage.schoolName
+				},{
 					xtype: 'textfield',
 					readOnly: true,
 					label: '咨询师',

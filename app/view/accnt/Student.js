@@ -34,7 +34,8 @@ Ext.define('Youngshine.view.accnt.Student',{
                 placeHolder: '选择分校区',
 				width: 180,
                 store: 'Schoolsub',
-				valueField: 'schoolsubID',
+				//valueField: 'schoolsubID',
+				valueField: 'fullname',
 				displayField: 'fullname',
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
@@ -68,10 +69,11 @@ Ext.define('Youngshine.view.accnt.Student',{
 		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},	*/
     onFilter: function(){
+		var me = this;
 		var schoolsub = this.down('selectfield').getValue(),
 			search = this.down('searchfield').getValue().trim()
-		console.log(search)
-		search = new RegExp("/*" + search); // 正则表达式，模糊查询
+		console.log(search,schoolsub)
+/*		search = new RegExp("/*" + search); // 正则表达式，模糊查询
 		var store = this.getStore(); //得到list的store: Myaroundroute
 		store.clearFilter(); //filter is additive
 		// 正则表达，才能模糊搜索?? true就可以anymatch
@@ -84,5 +86,22 @@ Ext.define('Youngshine.view.accnt.Student',{
 		}else{
 			store.filter("fullStudent", search, true);
 		}
+*/		
+		if(schoolsub == null) schoolsub = ''
+		var obj = {
+			"schoolsub": schoolsub,
+			"studentName": search // like % %
+		}
+		console.log(obj)
+		var store = me.getStore(); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(Youngshine.app.getApplication().dataUrl + 
+			'readStudentListBySearch.php?data='+JSON.stringify(obj) );
+		store.load({ //异步async
+			callback: function(records, operation, success){
+				console.log(records)
+			}   		
+		});	
 	},	
 });

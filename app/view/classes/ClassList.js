@@ -10,11 +10,12 @@ Ext.define('Youngshine.view.classes.ClassList',{
 		grouped: true,
 		store: 'Classes',
 		itemTpl: '<div>{title}</div>'+
-			'<div style="font-size:0.8em;color:#888;">上课：{timely_list}</div>',
+			'<div style="font-size:0.8em;color:#888;">{timely_list}｜教师：{teacherName}</div>',
         // We give it a left and top property to make it floating by default
-        right: 0,
-        top: 0,
-		width: 450,height: '100%',
+        //right: 0,
+        //top: 0,
+		centered: true,
+		width: 450,height: '50%',
 		border: 5,
 		style: 'border-color: black; border-style: solid;',
 
