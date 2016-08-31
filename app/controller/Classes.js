@@ -19,7 +19,7 @@ Ext.define('Youngshine.controller.Classes', {
         control: {
 			// 待分班的学生，按报读课程分组
 			'accnt-detail': {
-				itemtap: 'accntdetailItemtap',
+				itemtap: 'accntdetailItemtap',//分配班级
 			},
 			classes: {
 				addnew: 'classesAddnew',

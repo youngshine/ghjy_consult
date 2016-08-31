@@ -1,4 +1,4 @@
-// 对应某个大小班课程的班级列表（可能开多个班）
+// 分配班级，对应某个大小班课程的班级列表（可能开多个班）
 Ext.define('Youngshine.view.classes.ClassList',{
 	extend: 'Ext.dataview.List',
 	xtype: 'class-list',
@@ -10,7 +10,8 @@ Ext.define('Youngshine.view.classes.ClassList',{
 		grouped: true,
 		store: 'Classes',
 		itemTpl: '<div>{title}</div>'+
-			'<div style="font-size:0.8em;color:#888;">{timely_list}｜教师：{teacherName}</div>',
+			'<div style="font-size:0.8em;color:#888;">报读：{enroll} / {persons}｜教师：{teacherName}</div>'+
+			'<div style="font-size:0.8em;color:#888;">{timely_list}</div>',
         // We give it a left and top property to make it floating by default
         //right: 0,
         //top: 0,

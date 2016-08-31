@@ -1,5 +1,7 @@
 <?php
-// 某个课程开办的班级（可能多个，上课时间也可能不同）
+// 某个课程开办的班级（可能多个，上课时间也可能不同），分班用
+/* SELECT a.title,a.kclistID, (select count(b.studentID) from `ghjy_class_student` b where b.classID=a.classID  ) as enroll  From  `ghjy_class`  a 
+*/
 require_once 'db/response.php';
 require_once 'db/request.php';
 require_once('db/database_connection.php');
@@ -15,6 +17,16 @@ $query = " SELECT a.*,b.fullname
 	From `ghjy_class` a 
 	Join `ghjy_school_sub` b On a.schoolsubID=b.schoolsubID 
 	Where a.kclistID = $kclistID ";
+	
+// 嵌套复合查询，比group by好用
+// 可能还没有指定任课教师，所以left join
+$query = "SELECT a.*,c.fullname, d.teacherName,   
+	(SELECT count(b.studentID) From `ghjy_class_student` b 
+	WHERE b.classID=a.classID And b.current=1 ) AS enroll  
+	From `ghjy_class` a 
+	Join `ghjy_school_sub` c On a.schoolsubID=c.schoolsubID  
+	Left Join `ghjy_teacher` d On a.teacherID=d.teacherID 
+	WHERE a.kclistID = $kclistID";
 
 $result = mysql_query($query) 
 	or die("Invalid query: readClassList by kclist" . mysql_error());
