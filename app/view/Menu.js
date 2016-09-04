@@ -30,14 +30,6 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudent()
 			}
-		},{
-			text: '水平测评',
-			iconCls: 'compose',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onAssess()
-			}
 		 /*
 		},{
 			text: '一对一套餐课程',
@@ -48,7 +40,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onPricelist()
 			} */
 		},{
-			text: '缴费',
+			text: '报读缴费',
 			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -80,14 +72,14 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onOne2onePk()
 			}
 		},{
-			text: '分班',
+			text: '大小班分班排课',
 			iconCls: 'time',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onClassesPk()
 			}
 		},{
-			text: '我的大小班',
+			text: '班级设置',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
@@ -100,6 +92,14 @@ Ext.define('Youngshine.view.Menu', {
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onTeacher()
+			}
+		},{
+			text: '水平测评',
+			iconCls: 'compose',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAssess()
 			}
 		},{
 			text: '退出登录',

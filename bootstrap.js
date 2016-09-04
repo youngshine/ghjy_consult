@@ -17,8 +17,7 @@ Ext.Loader.addClassPathMappings({
   "Ext.device.sqlite.SQLResultSetRowList": "touch/src/device/sqlite/Sencha.js",
   "Ext.device.sqlite.SQLTransaction": "touch/src/device/sqlite/Sencha.js",
   "Ext.draw.engine.SvgContext.Gradient": "touch/src/draw/engine/SvgContext.js",
-  "Youngshine": "app",
-  "Youngshine.view.classes.ListDataview": "app/view/classes/List-dataview.js"
+  "Youngshine": "app"
 });
 Ext.ClassManager.addNameAlternateMappings({
   "Ext.AbstractComponent": [],
@@ -733,6 +732,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Ext.ux.ContextMenu": [],
   "Ext.ux.MenuButton": [],
   "Ext.ux.TabMenuButton": [],
+  "Ext.ux.TimePickerField": [],
   "Ext.ux.device.Analytics": [],
   "Ext.ux.device.Twitter": [],
   "Ext.ux.device.analytics.Abstract": [],
@@ -1790,6 +1790,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Ext.ux.ContextMenu": [],
   "Ext.ux.MenuButton": [],
   "Ext.ux.TabMenuButton": [],
+  "Ext.ux.TimePickerField": [
+    "widget.timepickerfield"
+  ],
   "Ext.ux.device.Analytics": [],
   "Ext.ux.device.Twitter": [],
   "Ext.ux.device.analytics.Abstract": [],

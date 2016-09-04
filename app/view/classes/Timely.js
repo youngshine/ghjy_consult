@@ -2,20 +2,25 @@
 Ext.define('Youngshine.view.classes.Timely',{
 	extend: 'Ext.Panel',
 	xtype: 'classes-timely',
+	
+	//requires: ['Ext.ux.TimePickerField'],
 
 	config: {
 		parentView: null, //谁调用我？
 		modal: true,
 		hideOnMaskTap: true,
 		//centered: true,
-		left:0,bottom:0,
-		width: '100%',
+		//left:0,bottom:0,
+		centered: true,
+		width: '50%',
 		//height: 280,
+		layout: 'vbox',
 
         items: [{	
         	xtype: 'toolbar',
+			ui: 'light',
         	docked: 'top',
-        	title: '上课周期',
+        	title: '设置上课周期',
 			items: [{
 				text : '完成',
 				ui: 'confirm',
@@ -23,7 +28,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '98%',
+			//width: '98%',
 			items: [{
 				xtype: 'selectfield',
 				name: 'weekday', 
@@ -42,6 +47,48 @@ Ext.define('Youngshine.view.classes.Timely',{
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
+			},{	
+				xtype: 'textfield',
+				name: 'begintime', 
+				label: '.',
+				value: '08:00',
+				readOnly: true
+			},{
+				xtype: 'sliderfield',
+				label: '时',
+				labelAlign: 'top',
+				name: 'hr',
+				value: 8,
+				minValue: 8,
+				maxValue: 20,
+				increment: 1,
+				listeners: {
+					change: function( field, sl, thumb, newValue ){
+						console.log(newValue)
+						field.up('panel').onTime(newValue,'min')
+					}
+				}	
+			},{
+				xtype: 'sliderfield',
+				label: '分',
+				labelAlign: 'top',
+				name: 'min',
+				value: 0,
+				minValue: 0,
+				maxValue: 55,
+				increment: 5,
+				listeners: {
+					change: function( field, sl, thumb, newValue ){
+						console.log(newValue)
+						field.up('panel').onTime('hr',newValue)
+					}
+				}
+					/*
+			},{
+				xtype: 'timepickerfield',
+				label: '开始时间',	
+				name: 'begintime', 
+				
 			},{
 				xtype: 'selectfield',
 				name: 'begintime', 
@@ -72,7 +119,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
-				},
+				}, */
 			}]	
 		}],	
 		
@@ -82,22 +129,41 @@ Ext.define('Youngshine.view.classes.Timely',{
 			fn: 'onDone' 						
     	}]
 	},
+	
+	onTime: function(hr,min){
+		var me = this;
+		var begintime = me.down('textfield[name=begintime]')
+		if(hr == 'hr'){ //传递过来是分钟
+			var hr = begintime.getValue().substr(0,2)
+			min = min.toString()
+			min = min.length==1 ? '0'+min : min
+			begintime.setValue(hr+':'+min)
+		}else{ //传递过来的是小时
+			var min = begintime.getValue().substr(3,2)
+			hr = hr.toString()
+			hr = hr.length==1 ? '0'+hr : hr
+			begintime.setValue(hr+':'+min)
+		}
+		
+	},
 
 	onDone: function(btn){
 		var me = this;
 		var weekday = me.down('selectfield[name=weekday]').getValue(),
-			begintime = me.down('selectfield[name=begintime]').getValue()
+			begintime = me.down('textfield[name=begintime]').getValue()
+			//begintime = me.down('timepickerfield[name=begintime]').getValue()
 		if (weekday == null){
 			Ext.toast('请选择星期',3000); return;
 		}
+		/*
 		if (begintime == null){
 			Ext.toast('请选择时间',3000); return;
-		}
+		} */
 		
 		var obj = {
 			//weekday: weekday,
 			//begintime: begintime,
-			"timely": weekday+begintime
+			"timely": weekday + begintime
 		}
 		console.log(obj)
 		me.fireEvent('done',obj,me.getParentView(),me);

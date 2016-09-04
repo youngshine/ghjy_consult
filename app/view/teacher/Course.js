@@ -18,7 +18,7 @@ Ext.define('Youngshine.view.teacher.Course', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '教师课时',
+    		title: '一对一上课课时记录',
 			items: [{
 				ui : 'back',
 				action: 'back',

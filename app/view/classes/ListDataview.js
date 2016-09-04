@@ -1,6 +1,7 @@
 /**
- * Displays a list of 各个校区班级课程 product as pricelist
- */
+ * Displays a list of 各个校区咨询的班级及其学生 product as pricelist
+ * 在这里转班，class_student.current=0
+*/
 Ext.define('Youngshine.view.classes.ListDataview', {
     extend: 'Ext.Container',
 	xtype: 'classes-dataview',
@@ -10,18 +11,30 @@ Ext.define('Youngshine.view.classes.ListDataview', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		//title: '课时套餐价格',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班级',
+				text: '我的大小班',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
 				xtype: 'spacer'
+			},{
+                xtype: 'searchfield',
+                placeHolder: 'Search...',
+				//width: 150,
+				//label: '测评记录',
+				action: 'search',
+                listeners: {
+                    scope: this,
+                    //clearicontap: this.onSearchClearIconTap,
+                    //keyup: this.onSearchKeyUp
+                }
+			},{
+				xtype: 'spacer'	
 			},{
 				//ui : 'action',
 				action: 'addnew',
@@ -35,10 +48,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 			inline: true,
 			scrollable: true,
 			style: 'text-align:center;margin:10px 0px',
-	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:150px;">'+
+	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:180px;">'+
 				'<div>{title}</div><hr>'+
-				'<div style="color:#888;font-size:0.8em;">课时：{hour}</div>'+
-				'<div style="color:#888;font-size:0.8em;">金额：{amount}元</div>'+
+				'<div style="color:#888;font-size:0.8em;">满员：{enroll} / {persons}</div>'+
+				'<div style="color:#888;font-size:0.8em;">上课：{timely_list}</div>'+
+				'<div style="color:#888;font-size:0.8em;">教师：{teacherName}</div>'+
 				'<br><div style="color:green;"><span class="edit">编辑</span>｜'+
 				'<span class="del">删除</span></div></div>'
     	}],
@@ -51,6 +65,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 			delegate: 'button[action=addnew]',
 			event: 'tap',
 			fn: 'onAddnew'	
+		},{
+			delegate: 'searchfield[action=search]',
+			event: 'change', // need return to work
+			//event: 'keyup',
+			fn: 'onSearchChange'	
 		}]
     },
 
@@ -60,6 +79,15 @@ Ext.define('Youngshine.view.classes.ListDataview', {
     onItemtap: function(dataview, index, target, record,e){
 		this.fireEvent('itemtap',dataview, index, target, record,e)
     },
+	
+	// 搜索过滤
+    onSearchChange: function(field,newValue,oldValue){
+		//var store = Ext.getStore('Orders');
+		var store = this.down('dataview').getStore(); 
+		store.clearFilter();
+        store.filter('title', field.getValue(), true); 
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},
 
     //use initialize method to swipe back 右滑返回
     initialize : function() {

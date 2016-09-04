@@ -14,8 +14,10 @@ Ext.define('Youngshine.view.teacher.List', {
         itemTpl: [
             '<div>{teacherName}</div>'+
 			'<div style="font-size:0.8em;"><span style="color:#888;">{subjectName}</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span>'+
-			'<span class="kcb" style="float:right;color:green;">课程表｜</span>'+
+			//'<span class="edit" style="float:right;color:green;">编辑</span>'+
+			'<span class="kcb" style="float:right;color:green;">课程表</span>'+
+			'<span class="one2one" style="float:right;color:green;">一对一课时｜</span>'+
+			'<span class="class" style="float:right;color:green;">大小班课时｜</span>'+
 			'</div>'
         ],
 		
@@ -62,6 +64,12 @@ Ext.define('Youngshine.view.teacher.List', {
         			text: '物理',
 				},{
         			text: '化学',
+				},{
+        			text: '语文',
+				},{
+        			text: '英语',
+				},{
+        			text: '其它',
 				}], ///* 会同时触发2次，api示例不会啊
 				listeners:{
 			        toggle: function(container, button, pressed){

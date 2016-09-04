@@ -6,7 +6,8 @@ Ext.define('Youngshine.controller.Classes', {
         refs: {
            	accntdetail: 'accnt-detail', //待分配班级的课程学生
 			classlist: 'class-list', //隶属某个课程的班级列表
-			classes: 'classes', //全校班级
+			//classes: 'classes', //全校班级
+			classes: 'classes-dataview', //全校班级
 			classstudent: 'class-student',
 			//class: 'class',
 			classesaddnew: 'classes-addnew',
@@ -149,7 +150,7 @@ Ext.define('Youngshine.controller.Classes', {
 		if(curView.xtype == 'classes') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
-		me.classes = Ext.create('Youngshine.view.classes.List');
+		me.classes = Ext.create('Youngshine.view.classes.ListDataview');
 		Ext.Viewport.add(me.classes);
 		Ext.Viewport.setActiveItem(me.classes);
 		
@@ -165,7 +166,7 @@ Ext.define('Youngshine.controller.Classes', {
 		store.removeAll()
 		store.clearFilter() 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readClassesList.php?data=' + JSON.stringify(obj));
+			'readClassesListByConsult.php?data=' + JSON.stringify(obj));
 		store.load({
 			callback: function(records, operation, success){
 			    console.log(records)
@@ -261,7 +262,7 @@ Ext.define('Youngshine.controller.Classes', {
 					handler: function(){
 						actionSheet.hide();
 						Ext.Viewport.remove(actionSheet,true); //移除dom
-						del(record)
+						//del(record)
 					}
 				},{
 					text: '取消',
@@ -562,6 +563,7 @@ Ext.define('Youngshine.controller.Classes', {
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改班级成功',3000)
 				Ext.Viewport.remove(me.classesedit,true); //remove 当前界面
+				Ext.Viewport.setActiveItem(me.classes);
 		    }
 		});
 	},

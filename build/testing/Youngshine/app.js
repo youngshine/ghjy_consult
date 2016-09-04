@@ -94958,6 +94958,969 @@ Ext.define('Ext.field.Search', {
 });
 
 /**
+ * @private
+ * Utility class used by Ext.slider.Slider - should never need to be used directly.
+ */
+Ext.define('Ext.slider.Thumb', {
+    extend:  Ext.Component ,
+    xtype : 'thumb',
+
+    config: {
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        baseCls: Ext.baseCSSPrefix + 'thumb',
+
+        /**
+         * @cfg {String} pressedCls
+         * The CSS class to add to the Slider when it is pressed.
+         * @accessor
+         */
+        pressedCls: Ext.baseCSSPrefix + 'thumb-pressing',
+
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        draggable: {
+            direction: 'horizontal'
+        }
+    },
+
+    // Strange issue where the thumbs translation value is not being set when it is not visible. Happens when the thumb 
+    // is contained within a modal panel.
+    platformConfig: [
+        {
+            platform: ['ie10'],
+            draggable: {
+                translatable: {
+                    translationMethod: 'csstransform'
+                }
+            }
+        }
+    ],
+
+    elementWidth: 0,
+
+    initialize: function() {
+        this.callParent();
+
+        this.getDraggable().onBefore({
+            dragstart: 'onDragStart',
+            drag: 'onDrag',
+            dragend: 'onDragEnd',
+            scope: this
+        });
+
+        this.getDraggable().on({
+            touchstart: 'onPress',
+            touchend: 'onRelease',
+            scope: this
+        });
+
+        this.element.on('resize', 'onElementResize', this);
+    },
+
+    getTemplate: function() {
+        if (Ext.theme.is.Blackberry || Ext.theme.is.Blackberry103) {
+            return [
+                {
+                    tag: 'div',
+                    className: Ext.baseCSSPrefix + 'thumb-inner',
+                    reference: 'innerElement'
+                }
+            ]
+        } else {
+            return this.template;
+        }
+    },
+
+
+    /**
+     * @private
+     */
+    updatePressedCls: function(pressedCls, oldPressedCls) {
+        var element = this.element;
+
+        if (element.hasCls(oldPressedCls)) {
+            element.replaceCls(oldPressedCls, pressedCls);
+        }
+    },
+
+    // @private
+    onPress: function() {
+        var me = this,
+            element = me.element,
+            pressedCls = me.getPressedCls();
+
+        if (!me.getDisabled()) {
+            element.addCls(pressedCls);
+        }
+    },
+
+    // @private
+    onRelease: function(e) {
+        this.fireAction('release', [this, e], 'doRelease');
+    },
+
+    // @private
+    doRelease: function(me, e) {
+        if (!me.getDisabled()) {
+            me.element.removeCls(me.getPressedCls());
+        }
+    },
+
+    onDragStart: function() {
+        if (this.isDisabled()) {
+            return false;
+        }
+
+        this.relayEvent(arguments);
+    },
+
+    onDrag: function() {
+        if (this.isDisabled()) {
+            return false;
+        }
+
+        this.relayEvent(arguments);
+    },
+
+    onDragEnd: function() {
+        if (this.isDisabled()) {
+            return false;
+        }
+
+        this.relayEvent(arguments);
+    },
+
+    onElementResize: function(element, info) {
+        this.elementWidth = info.width;
+    },
+
+    getElementWidth: function() {
+        return this.elementWidth;
+    }
+});
+
+/**
+ * Utility class used by Ext.field.Slider.
+ * @private
+ */
+Ext.define('Ext.slider.Slider', {
+    extend:  Ext.Container ,
+    xtype: 'slider',
+
+               
+                           
+                               
+      
+
+    /**
+    * @event change
+    * Fires when the value changes
+    * @param {Ext.slider.Slider} this
+    * @param {Ext.slider.Thumb} thumb The thumb being changed
+    * @param {Number} newValue The new value
+    * @param {Number} oldValue The old value
+    */
+
+    /**
+    * @event dragstart
+    * Fires when the slider thumb starts a drag
+    * @param {Ext.slider.Slider} this
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged
+    * @param {Array} value The start value
+    * @param {Ext.EventObject} e
+    */
+
+    /**
+    * @event drag
+    * Fires when the slider thumb starts a drag
+    * @param {Ext.slider.Slider} this
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged
+    * @param {Ext.EventObject} e
+    */
+
+    /**
+    * @event dragend
+    * Fires when the slider thumb starts a drag
+    * @param {Ext.slider.Slider} this
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged
+    * @param {Array} value The end value
+    * @param {Ext.EventObject} e
+    */
+    config: {
+        baseCls: 'x-slider',
+
+        /**
+         * @cfg {Object} thumbConfig The config object to factory {@link Ext.slider.Thumb} instances
+         * @accessor
+         */
+        thumbConfig: {
+            draggable: {
+                translatable: {
+                    easingX: {
+                        duration: 300,
+                        type: 'ease-out'
+                    }
+                }
+            }
+        },
+
+        /**
+         * @cfg {Number} increment The increment by which to snap each thumb when its value changes. Any thumb movement
+         * will be snapped to the nearest value that is a multiple of the increment (e.g. if increment is 10 and the user
+         * tries to move the thumb to 67, it will be snapped to 70 instead)
+         * @accessor
+         */
+        increment : 1,
+
+        /**
+         * @cfg {Number/Number[]} value The value(s) of this slider's thumbs. If you pass
+         * a number, it will assume you have just 1 thumb.
+         * @accessor
+         */
+        value: 0,
+
+        /**
+         * @cfg {Number} minValue The lowest value any thumb on this slider can be set to.
+         * @accessor
+         */
+        minValue: 0,
+
+        /**
+         * @cfg {Number} maxValue The highest value any thumb on this slider can be set to.
+         * @accessor
+         */
+        maxValue: 100,
+
+        /**
+         * @cfg {Boolean} allowThumbsOverlapping Whether or not to allow multiple thumbs to overlap each other.
+         * Setting this to true guarantees the ability to select every possible value in between {@link #minValue}
+         * and {@link #maxValue} that satisfies {@link #increment}
+         * @accessor
+         */
+        allowThumbsOverlapping: false,
+
+        /**
+         * @cfg {Boolean/Object} animation
+         * The animation to use when moving the slider. Possible properties are:
+         *
+         * - duration
+         * - easingX
+         * - easingY
+         *
+         * @accessor
+         */
+        animation: true,
+
+        /**
+         * Will make this field read only, meaning it cannot be changed with used interaction.
+         * @cfg {Boolean} readOnly
+         * @accessor
+         */
+        readOnly: false
+    },
+
+    /**
+     * @cfg {Number/Number[]} values Alias to {@link #value}
+     */
+
+    elementWidth: 0,
+
+    offsetValueRatio: 0,
+
+    activeThumb: null,
+
+    constructor: function(config) {
+        config = config || {};
+
+        if (config.hasOwnProperty('values')) {
+            config.value = config.values;
+        }
+
+        this.callParent([config]);
+    },
+
+    // @private
+    initialize: function() {
+        var element = this.element;
+
+        this.callParent();
+
+        element.on({
+            scope: this,
+            tap: 'onTap',
+            resize: 'onResize'
+        });
+
+        this.on({
+            scope: this,
+            delegate: '> thumb',
+            tap: 'onTap',
+            dragstart: 'onThumbDragStart',
+            drag: 'onThumbDrag',
+            dragend: 'onThumbDragEnd'
+        });
+
+        var thumb = this.getThumb(0);
+        if(thumb) {
+            thumb.on('resize', 'onThumbResize', this);
+        }
+    },
+
+    /**
+     * @private
+     */
+    factoryThumb: function() {
+        return Ext.factory(this.getThumbConfig(), Ext.slider.Thumb);
+    },
+
+    /**
+     * Returns the Thumb instances bound to this Slider
+     * @return {Ext.slider.Thumb[]} The thumb instances
+     */
+    getThumbs: function() {
+        return this.innerItems;
+    },
+
+    /**
+     * Returns the Thumb instance bound to this Slider
+     * @param {Number} [index=0] The index of Thumb to return.
+     * @return {Ext.slider.Thumb} The thumb instance
+     */
+    getThumb: function(index) {
+        if (typeof index != 'number') {
+            index = 0;
+        }
+
+        return this.innerItems[index];
+    },
+
+    refreshOffsetValueRatio: function() {
+        var valueRange = this.getMaxValue() - this.getMinValue(),
+            trackWidth = this.elementWidth - this.thumbWidth;
+
+        this.offsetValueRatio = trackWidth / valueRange;
+    },
+
+    onThumbResize: function(){
+        var thumb = this.getThumb(0);
+        if (thumb) {
+            this.thumbWidth = thumb.getElementWidth();
+        }
+        this.refresh();
+    },
+
+    onResize: function(element, info) {
+        this.elementWidth = info.width;
+        this.refresh();
+    },
+
+    refresh: function() {
+        this.refreshValue();
+    },
+
+    setActiveThumb: function(thumb) {
+        var oldActiveThumb = this.activeThumb;
+
+        if (oldActiveThumb && oldActiveThumb !== thumb) {
+            oldActiveThumb.setZIndex(null);
+        }
+
+        this.activeThumb = thumb;
+        thumb.setZIndex(2);
+
+        return this;
+    },
+
+    onThumbDragStart: function(thumb, e) {
+        if (e.absDeltaX <= e.absDeltaY || this.getReadOnly()) {
+            return false;
+        }
+        else {
+            e.stopPropagation();
+        }
+
+        if (this.getAllowThumbsOverlapping()) {
+            this.setActiveThumb(thumb);
+        }
+
+        this.dragStartValue = this.getValue()[this.getThumbIndex(thumb)];
+        this.fireEvent('dragstart', this, thumb, this.dragStartValue, e);
+    },
+
+    onThumbDrag: function(thumb, e, offsetX) {
+        var index = this.getThumbIndex(thumb),
+            offsetValueRatio = this.offsetValueRatio,
+            constrainedValue = this.constrainValue(this.getMinValue() + offsetX / offsetValueRatio);
+
+        e.stopPropagation();
+
+        this.setIndexValue(index, constrainedValue);
+
+        this.fireEvent('drag', this, thumb, this.getValue(), e);
+
+        return false;
+    },
+
+    setIndexValue: function(index, value, animation) {
+        var thumb = this.getThumb(index),
+            values = this.getValue(),
+            minValue = this.getMinValue(),
+            offsetValueRatio = this.offsetValueRatio,
+            increment = this.getIncrement(),
+            draggable = thumb.getDraggable();
+
+        draggable.setOffset((value - minValue) * offsetValueRatio, null, animation);
+
+        values[index] = minValue + Math.round((draggable.offset.x / offsetValueRatio) / increment) * increment;
+    },
+
+    onThumbDragEnd: function(thumb, e) {
+        this.refreshThumbConstraints(thumb);
+        var index = this.getThumbIndex(thumb),
+            newValue = this.getValue()[index],
+            oldValue = this.dragStartValue;
+
+        this.fireEvent('dragend', this, thumb, this.getValue(), e);
+        if (oldValue !== newValue) {
+            this.fireEvent('change', this, thumb, newValue, oldValue);
+        }
+    },
+
+    getThumbIndex: function(thumb) {
+        return this.getThumbs().indexOf(thumb);
+    },
+
+    refreshThumbConstraints: function(thumb) {
+        var allowThumbsOverlapping = this.getAllowThumbsOverlapping(),
+            offsetX = thumb.getDraggable().getOffset().x,
+            thumbs = this.getThumbs(),
+            index = this.getThumbIndex(thumb),
+            previousThumb = thumbs[index - 1],
+            nextThumb = thumbs[index + 1],
+            thumbWidth = this.thumbWidth;
+
+        if (previousThumb) {
+            previousThumb.getDraggable().addExtraConstraint({
+                max: {
+                    x: offsetX - ((allowThumbsOverlapping) ? 0 : thumbWidth)
+                }
+            });
+        }
+
+        if (nextThumb) {
+            nextThumb.getDraggable().addExtraConstraint({
+                min: {
+                    x: offsetX + ((allowThumbsOverlapping) ? 0 : thumbWidth)
+                }
+            });
+        }
+    },
+
+    // @private
+    onTap: function(e) {
+        if (this.isDisabled() || this.getReadOnly()) {
+            return;
+        }
+
+        var targetElement = Ext.get(e.target);
+
+        if (!targetElement || (Ext.browser.engineName == 'WebKit' && targetElement.hasCls('x-thumb'))) {
+            return;
+        }
+
+        var touchPointX = e.touch.point.x,
+            element = this.element,
+            elementX = element.getX(),
+            offset = touchPointX - elementX - (this.thumbWidth / 2),
+            value = this.constrainValue(this.getMinValue() + offset / this.offsetValueRatio),
+            values = this.getValue(),
+            minDistance = Infinity,
+            ln = values.length,
+            i, absDistance, testValue, closestIndex, oldValue, thumb;
+
+        if (ln === 1) {
+            closestIndex = 0;
+        }
+        else {
+            for (i = 0; i < ln; i++) {
+                testValue = values[i];
+                absDistance = Math.abs(testValue - value);
+
+                if (absDistance < minDistance) {
+                    minDistance = absDistance;
+                    closestIndex = i;
+                }
+            }
+        }
+
+        oldValue = values[closestIndex];
+        thumb = this.getThumb(closestIndex);
+
+        this.setIndexValue(closestIndex, value, this.getAnimation());
+        this.refreshThumbConstraints(thumb);
+
+        if (oldValue !== value) {
+            this.fireEvent('change', this, thumb, value, oldValue);
+        }
+    },
+
+    // @private
+    updateThumbs: function(newThumbs) {
+        this.add(newThumbs);
+    },
+
+    applyValue: function(value) {
+        var values = Ext.Array.from(value || 0),
+            filteredValues = [],
+            previousFilteredValue = this.getMinValue(),
+            filteredValue, i, ln;
+
+        for (i = 0,ln = values.length; i < ln; i++) {
+            filteredValue = this.constrainValue(values[i]);
+
+            if (filteredValue < previousFilteredValue) {
+                Ext.Logger.warn("Invalid values of '"+Ext.encode(values)+"', values at smaller indexes must " +
+                    "be smaller than or equal to values at greater indexes");
+                filteredValue = previousFilteredValue;
+            }
+
+            filteredValues.push(filteredValue);
+
+            previousFilteredValue = filteredValue;
+        }
+
+        return filteredValues;
+    },
+
+    /**
+     * Updates the sliders thumbs with their new value(s)
+     */
+    updateValue: function(newValue, oldValue) {
+        var thumbs = this.getThumbs(),
+            ln = newValue.length,
+            minValue = this.getMinValue(),
+            offset = this.offsetValueRatio,
+            i;
+
+        this.setThumbsCount(ln);
+
+        for (i = 0; i < ln; i++) {
+            thumbs[i].getDraggable().setExtraConstraint(null).setOffset((newValue[i] - minValue) * offset);
+        }
+
+        for (i = 0; i < ln; i++) {
+            this.refreshThumbConstraints(thumbs[i]);
+        }
+    },
+
+    /**
+     * @private
+     */
+    refreshValue: function() {
+        this.refreshOffsetValueRatio();
+
+        this.setValue(this.getValue());
+    },
+
+    /**
+     * @private
+     * Takes a desired value of a thumb and returns the nearest snap value. e.g if minValue = 0, maxValue = 100, increment = 10 and we
+     * pass a value of 67 here, the returned value will be 70. The returned number is constrained within {@link #minValue} and {@link #maxValue},
+     * so in the above example 68 would be returned if {@link #maxValue} was set to 68.
+     * @param {Number} value The value to snap
+     * @return {Number} The snapped value
+     */
+    constrainValue: function(value) {
+        var me = this,
+            minValue  = me.getMinValue(),
+            maxValue  = me.getMaxValue(),
+            increment = me.getIncrement(),
+            remainder;
+
+        value = parseFloat(value);
+
+        if (isNaN(value)) {
+            value = minValue;
+        }
+
+        remainder = (value - minValue) % increment;
+        value -= remainder;
+
+        if (Math.abs(remainder) >= (increment / 2)) {
+            value += (remainder > 0) ? increment : -increment;
+        }
+
+        value = Math.max(minValue, value);
+        value = Math.min(maxValue, value);
+
+        return value;
+    },
+
+    setThumbsCount: function(count) {
+        var thumbs = this.getThumbs(),
+            thumbsCount = thumbs.length,
+            i, ln, thumb;
+
+        if (thumbsCount > count) {
+            for (i = 0,ln = thumbsCount - count; i < ln; i++) {
+                thumb = thumbs[thumbs.length - 1];
+                thumb.destroy();
+            }
+        }
+        else if (thumbsCount < count) {
+            for (i = 0,ln = count - thumbsCount; i < ln; i++) {
+                this.add(this.factoryThumb());
+            }
+        }
+
+        return this;
+    },
+
+    /**
+     * Convenience method. Calls {@link #setValue}.
+     */
+    setValues: function(value) {
+        this.setValue(value);
+    },
+
+    /**
+     * Convenience method. Calls {@link #getValue}.
+     * @return {Object}
+     */
+    getValues: function() {
+        return this.getValue();
+    },
+
+    /**
+     * Sets the {@link #increment} configuration.
+     * @param {Number} increment
+     * @return {Number}
+     */
+    applyIncrement: function(increment) {
+        if (increment === 0) {
+            increment = 1;
+        }
+
+        return Math.abs(increment);
+    },
+
+    // @private
+    updateAllowThumbsOverlapping: function(newValue, oldValue) {
+        if (typeof oldValue != 'undefined') {
+            this.refreshValue();
+        }
+    },
+
+    // @private
+    updateMinValue: function(newValue, oldValue) {
+        if (typeof oldValue != 'undefined') {
+            this.refreshValue();
+        }
+    },
+
+    // @private
+    updateMaxValue: function(newValue, oldValue) {
+        if (typeof oldValue != 'undefined') {
+            this.refreshValue();
+        }
+    },
+
+    // @private
+    updateIncrement: function(newValue, oldValue) {
+        if (typeof oldValue != 'undefined') {
+            this.refreshValue();
+        }
+    },
+
+    doSetDisabled: function(disabled) {
+        this.callParent(arguments);
+
+        var items = this.getItems().items,
+            ln = items.length,
+            i;
+
+        for (i = 0; i < ln; i++) {
+            items[i].setDisabled(disabled);
+        }
+    }
+
+}, function() {
+});
+
+/**
+ * The slider is a way to allow the user to select a value from a given numerical range. You might use it for choosing
+ * a percentage, combine two of them to get min and max values, or use three of them to specify the hex values for a
+ * color. Each slider contains a single 'thumb' that can be dragged along the slider's length to change the value.
+ * Sliders are equally useful inside {@link Ext.form.Panel forms} and standalone. Here's how to quickly create a
+ * slider in form, in this case enabling a user to choose a percentage:
+ *
+ *     @example
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'sliderfield',
+ *                 label: 'Percentage',
+ *                 value: 50,
+ *                 minValue: 0,
+ *                 maxValue: 100
+ *             }
+ *         ]
+ *     });
+ *
+ * In this case we set a starting value of 50%, and defined the min and max values to be 0 and 100 respectively, giving
+ * us a percentage slider. Because this is such a common use case, the defaults for {@link #minValue} and
+ * {@link #maxValue} are already set to 0 and 100 so in the example above they could be removed.
+ *
+ * It's often useful to render sliders outside the context of a form panel too. In this example we create a slider that
+ * allows a user to choose the waist measurement of a pair of jeans. Let's say the online store we're making this for
+ * sells jeans with waist sizes from 24 inches to 60 inches in 2 inch increments - here's how we might achieve that:
+ *
+ *     @example
+ *     Ext.create('Ext.form.Panel', {
+ *         fullscreen: true,
+ *         items: [
+ *             {
+ *                 xtype: 'sliderfield',
+ *                 label: 'Waist Measurement',
+ *                 minValue: 24,
+ *                 maxValue: 60,
+ *                 increment: 2,
+ *                 value: 32
+ *             }
+ *         ]
+ *     });
+ *
+ * Now that we've got our slider, we can ask it what value it currently has and listen to events that it fires. For
+ * example, if we wanted our app to show different images for different sizes, we can listen to the {@link #change}
+ * event to be informed whenever the slider is moved:
+ *
+ *     slider.on('change', function(field, newValue) {
+ *         if (newValue[0] > 40) {
+ *             imgComponent.setSrc('large.png');
+ *         } else {
+ *             imgComponent.setSrc('small.png');
+ *         }
+ *     }, this);
+ *
+ * Here we listened to the {@link #change} event on the slider and updated the background image of an
+ * {@link Ext.Img image component} based on what size the user selected. Of course, you can use any logic inside your
+ * event listener.
+ *
+ * For more information regarding forms and fields, please review [Using Forms in Sencha Touch Guide](../../../components/forms.html)
+ */
+Ext.define('Ext.field.Slider', {
+    extend  :  Ext.field.Field ,
+    xtype   : 'sliderfield',
+                                    
+    alternateClassName: 'Ext.form.Slider',
+
+    /**
+     * @event change
+     * Fires when an option selection has changed.
+     * @param {Ext.field.Slider} me
+     * @param {Ext.slider.Slider} sl Slider Component.
+     * @param {Ext.slider.Thumb} thumb
+     * @param {Number} newValue The new value of this thumb.
+     * @param {Number} oldValue The old value of this thumb.
+     */
+
+    /**
+    * @event dragstart
+    * Fires when the slider thumb starts a drag operation.
+    * @param {Ext.field.Slider} this
+    * @param {Ext.slider.Slider} sl Slider Component.
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged.
+    * @param {Array} value The start value.
+    * @param {Ext.EventObject} e
+    */
+
+    /**
+    * @event drag
+    * Fires when the slider thumb starts a drag operation.
+    * @param {Ext.field.Slider} this
+    * @param {Ext.slider.Slider} sl Slider Component.
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged.
+    * @param {Ext.EventObject} e
+    */
+
+    /**
+    * @event dragend
+    * Fires when the slider thumb ends a drag operation.
+    * @param {Ext.field.Slider} this
+    * @param {Ext.slider.Slider} sl Slider Component.
+    * @param {Ext.slider.Thumb} thumb The thumb being dragged.
+    * @param {Array} value The end value.
+    * @param {Ext.EventObject} e
+    */
+
+    config: {
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        cls: Ext.baseCSSPrefix + 'slider-field',
+
+        /**
+         * @cfg
+         * @inheritdoc
+         */
+        tabIndex: -1,
+
+        /**
+         * Will make this field read only, meaning it cannot be changed with used interaction.
+         * @cfg {Boolean} readOnly
+         * @accessor
+         */
+        readOnly: false
+    },
+
+    proxyConfig: {
+
+        /**
+         * @inheritdoc Ext.slider.Slider#increment
+         * @cfg {Number} increment
+         * @accessor
+         */
+        increment : 1,
+
+        /**
+         * @inheritdoc Ext.slider.Slider#value
+         * @cfg {Number/Number[]} value
+         * @accessor
+         */
+        value: 0,
+
+        /**
+         * @inheritdoc Ext.slider.Slider#minValue
+         * @cfg {Number} minValue
+         * @accessor
+         */
+        minValue: 0,
+
+        /**
+         * @inheritdoc Ext.slider.Slider#maxValue
+         * @cfg {Number} maxValue
+         * @accessor
+         */
+        maxValue: 100
+    },
+
+    /**
+     * @inheritdoc Ext.slider.Slider#values
+     * @cfg {Number/Number[]} values
+     */
+
+    constructor: function(config) {
+        config = config || {};
+
+        if (config.hasOwnProperty('values')) {
+            config.value = config.values;
+        }
+
+        this.callParent([config]);
+        this.updateMultipleState();
+    },
+
+    // @private
+    initialize: function() {
+        this.callParent();
+
+        this.getComponent().on({
+            scope: this,
+
+            change: 'onSliderChange',
+            dragstart: 'onSliderDragStart',
+            drag: 'onSliderDrag',
+            dragend: 'onSliderDragEnd'
+        });
+    },
+
+    // @private
+    applyComponent: function(config) {
+        return Ext.factory(config, Ext.slider.Slider);
+    },
+
+    // @private
+    updateComponent: function(component) {
+        this.callSuper(arguments);
+
+        component.setMinValue(this.getMinValue());
+        component.setMaxValue(this.getMaxValue());
+    },
+
+    onSliderChange: function() {
+        this.fireEvent.apply(this, [].concat('change', this, Array.prototype.slice.call(arguments)));
+    },
+
+    onSliderDragStart: function() {
+        this.fireEvent.apply(this, [].concat('dragstart', this, Array.prototype.slice.call(arguments)));
+    },
+
+    onSliderDrag: function() {
+        this.fireEvent.apply(this, [].concat('drag', this, Array.prototype.slice.call(arguments)));
+    },
+
+    onSliderDragEnd: function() {
+        this.fireEvent.apply(this, [].concat('dragend', this, Array.prototype.slice.call(arguments)));
+    },
+
+    /**
+     * Convenience method. Calls {@link #setValue}.
+     * @param {Object} value
+     */
+    setValues: function(value) {
+        this.setValue(value);
+        this.updateMultipleState();
+    },
+
+    /**
+     * Convenience method. Calls {@link #getValue}
+     * @return {Object}
+     */
+    getValues: function() {
+        return this.getValue();
+    },
+
+    reset: function() {
+        var config = this.config,
+            initialValue = (this.config.hasOwnProperty('values')) ? config.values : config.value;
+
+        this.setValue(initialValue);
+    },
+
+    doSetDisabled: function(disabled) {
+        this.callParent(arguments);
+
+        this.getComponent().setDisabled(disabled);
+    },
+
+    updateReadOnly: function(newValue) {
+        this.getComponent().setReadOnly(newValue);
+    },
+
+    isDirty : function () {
+        if (this.getDisabled()) {
+            return false;
+        }
+
+        return this.getValue() !== this.originalValue;
+    },
+
+    updateMultipleState: function() {
+        var value = this.getValue();
+        if (value && value.length > 1) {
+            this.addCls(Ext.baseCSSPrefix + 'slider-multiple');
+        }
+    }
+});
+
+/**
  * A FieldSet is a great way to visually separate elements of a form. It's normally used when you have a form with
  * fields that can be divided into groups - for example a customer's billing details in one fieldset and their shipping
  * address in another. A fieldset can be used inside a form or on its own elsewhere in your app. Fieldsets can
@@ -100072,7 +101035,7 @@ Ext.define('Youngshine.controller.Teacher', {
 			teacher: {
 				addnew: 'teacherAddnew', //itemtap
 				itemtap: 'teacherItemtap', //包括修改、课程表按钮
-				itemswipe: 'teacherItemswipe' //delete
+				//itemswipe: 'teacherItemswipe' //delete
 			},
 			teacheraddnew: {
 				save: 'teacheraddnewSave', 
@@ -100120,6 +101083,7 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 显示教师上课课时
 	teacherItemtap: function( list, index, target, record, e, eOpts )	{
     	var me = this; 
+		
 		// 点击‘修改编辑’
 		if(e.target.className == 'edit'){
 			me.teacheredit = Ext.create('Youngshine.view.teacher.Edit');
@@ -100129,7 +101093,8 @@ Ext.define('Youngshine.controller.Teacher', {
 			me.teacheredit.setRecord(record)
 			return
 		}
-		// 点击‘教师课程表’
+		
+		// 点击‘教师课程表’: 大小班class和一对一student-study课程表
 		if(e.target.className == 'kcb'){
 			me.teacherkcb = Ext.create('Youngshine.view.teacher.Kcb');
 			Ext.Viewport.add(me.teacherkcb); //否则build后无法显示
@@ -100138,7 +101103,7 @@ Ext.define('Youngshine.controller.Teacher', {
 			console.log(record.data.teacherID)
 			
 			Ext.Ajax.request({
-			    url: me.getApplication().dataUrl + 'readKcbListByTeacher.php',
+			    url: me.getApplication().dataUrl + 'readKcbByTeacher.php',
 			    params: {
 					teacherID: record.data.teacherID
 			    },
@@ -100147,8 +101112,7 @@ Ext.define('Youngshine.controller.Teacher', {
 					console.log(arr)
 					var content = ''
 					Ext.Array.each(arr, function(name, index) {
-						content += name.teach_weekday + ' ' +
-							name.teach_timespan + '<br>' 
+						content += name.kcType + '：' + name.timely_list + '<br>' 
 					});		
 					console.log(content) 
 					var obj = {
@@ -100156,7 +101120,7 @@ Ext.define('Youngshine.controller.Teacher', {
 						kcb: content
 					}  
 					me.teacherkcb.down('panel[itemId=my_show]').setData(obj)
-					me.teacherkcb.show();      
+					me.teacherkcb.show();  //overlay.show,其他Viewport.setActiveItem    
 			    }
 			});
 			
@@ -100164,38 +101128,41 @@ Ext.define('Youngshine.controller.Teacher', {
 			return
 		}
 
-		if(!me.teachercourse){
-			me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
-		}else{
-			me.teachercourse.down('searchfield').setValue('')
-		}		
-		me.teachercourse.setRecord(record); //带入当前知识点
-		//me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
-		me.teachercourse.down('toolbar').setTitle(record.data.teacherName+'老师上课记录')
+		if(e.target.className == 'one2one'){
+			if(!me.teachercourse){
+				me.teachercourse = Ext.create('Youngshine.view.teacher.Course')
+			}else{
+				me.teachercourse.down('searchfield').setValue('')
+			}		
+			me.teachercourse.setRecord(record); //带入当前知识点
+			//me.teachercourse.down('label[itemId=teacher]').setHtml(record.data.teacherName)
+			//me.teachercourse.down('toolbar').setTitle(record.data.teacherName+'老师上课记录')
 		
-		Ext.Viewport.setMasked({xtype:'loadmask',message:'读取课时记录'});
-		// 预先加载的数据
-		var obj = {
-			"teacherID": record.data.teacherID,
+			Ext.Viewport.setMasked({xtype:'loadmask',message:'读取一对一上课记录'});
+			// 预先加载的数据
+			var obj = {
+				"teacherID": record.data.teacherID,
+			}
+			var store = Ext.getStore('Course'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(this.getApplication().dataUrl + 
+				'readCourseList.php?data='+JSON.stringify(obj) );
+			store.load({ //异步async
+				callback: function(records, operation, success){
+					Ext.Viewport.setMasked(false);
+					if (success){
+						Ext.Viewport.add(me.teachercourse) // build?
+						Ext.Viewport.setActiveItem(me.teachercourse);
+					}else{
+						Ext.toast(result.message,3000);
+					};
+				}   		
+			});	
 		}
-		var store = Ext.getStore('Course'); 
-		store.removeAll()
-		store.clearFilter()
-		store.getProxy().setUrl(this.getApplication().dataUrl + 
-			'readCourseList.php?data='+JSON.stringify(obj) );
-		store.load({ //异步async
-			callback: function(records, operation, success){
-				Ext.Viewport.setMasked(false);
-				if (success){
-					Ext.Viewport.add(me.teachercourse) // build?
-					Ext.Viewport.setActiveItem(me.teachercourse);
-				}else{
-					Ext.toast(result.message,3000);
-				};
-			}   		
-		});	
 	},
-	// 向左滑动，删除
+	
+	// 向左滑动，删除， 禁用！
 	teacherItemswipe: function( list, index, target, record, e, eOpts ){
 		console.log(e);console.log(record)
 		if(e.direction !== 'left') return false
@@ -100256,7 +101223,6 @@ Ext.define('Youngshine.controller.Teacher', {
 	// 取消添加
 	teacheraddnewCancel: function(oldView){		
 		var me = this;
-		//oldView.destroy()
 		Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.teacher);
 	},	
@@ -100272,11 +101238,12 @@ Ext.define('Youngshine.controller.Teacher', {
 		        console.log(result)
 		        //record.set('fullEndtime','')
 				//oldView.destroy()
-				Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
-				Ext.Viewport.setActiveItem(me.teacher);
 				obj.teacherID = result.data.teacherID
 				//obj.created = new Date();
 				Ext.getStore('Teacher').insert(0,obj)
+				
+				Ext.Viewport.remove(me.teacheraddnew,true); //remove 当前界面
+				Ext.Viewport.setActiveItem(me.teacher);
 		    }
 		});
 	},
@@ -101707,7 +102674,8 @@ Ext.define('Youngshine.controller.Classes', {
         refs: {
            	accntdetail: 'accnt-detail', //待分配班级的课程学生
 			classlist: 'class-list', //隶属某个课程的班级列表
-			classes: 'classes', //全校班级
+			//classes: 'classes', //全校班级
+			classes: 'classes-dataview', //全校班级
 			classstudent: 'class-student',
 			//class: 'class',
 			classesaddnew: 'classes-addnew',
@@ -101720,7 +102688,7 @@ Ext.define('Youngshine.controller.Classes', {
         control: {
 			// 待分班的学生，按报读课程分组
 			'accnt-detail': {
-				itemtap: 'accntdetailItemtap',
+				itemtap: 'accntdetailItemtap',//分配班级
 			},
 			classes: {
 				addnew: 'classesAddnew',
@@ -101850,7 +102818,7 @@ Ext.define('Youngshine.controller.Classes', {
 		if(curView.xtype == 'classes') return
  
 		Ext.Viewport.remove(curView,true); //remove 当前界面
-		me.classes = Ext.create('Youngshine.view.classes.List');
+		me.classes = Ext.create('Youngshine.view.classes.ListDataview');
 		Ext.Viewport.add(me.classes);
 		Ext.Viewport.setActiveItem(me.classes);
 		
@@ -101866,7 +102834,7 @@ Ext.define('Youngshine.controller.Classes', {
 		store.removeAll()
 		store.clearFilter() 
 		store.getProxy().setUrl(me.getApplication().dataUrl + 
-			'readClassesList.php?data=' + JSON.stringify(obj));
+			'readClassesListByConsult.php?data=' + JSON.stringify(obj));
 		store.load({
 			callback: function(records, operation, success){
 			    console.log(records)
@@ -101962,7 +102930,7 @@ Ext.define('Youngshine.controller.Classes', {
 					handler: function(){
 						actionSheet.hide();
 						Ext.Viewport.remove(actionSheet,true); //移除dom
-						del(record)
+						//del(record)
 					}
 				},{
 					text: '取消',
@@ -102263,6 +103231,7 @@ Ext.define('Youngshine.controller.Classes', {
 				//rec.set(obj) //前端更新显示
 				Ext.toast('修改班级成功',3000)
 				Ext.Viewport.remove(me.classesedit,true); //remove 当前界面
+				Ext.Viewport.setActiveItem(me.classes);
 		    }
 		});
 	},
@@ -102940,25 +103909,25 @@ Ext.define('Youngshine.model.Classes', {
 			{name: 'title'}, // 名称
 			{name: 'kclistID'}, //所属课程
 			{name: 'persons'}, // 计划招满人数
-			{name: 'attendee'}, //实际报读人数
+			{name: 'enroll'}, //实际报读人数
 			{name: 'note'}, 
-			{name: 'hour'}, // 要测评学科
-			{name: 'amount'}, // 学科名称
+			//{name: 'hour'}, // 要测评学科
+			//{name: 'amount'}, // 学科名称
 			{name: 'beginDate'}, // 开课日期
 			{name: 'timely_list'}, //上课时间列表
-			{name: 'classType'}, // 科目
+			//{name: 'classType'}, // 科目
+			
+			{name: 'created'},	
 			
 			{name: 'teacherID'}, // 班级教师，待定？
-			{name: 'teacherName'},
+			{name: 'teacherName'}, //所属的咨询师
 			
 			{name: 'consultID'}, // 班级教师，待定？
-			{name: 'consultName'},
-			
-			{name: 'created'},		
+			{name: 'consultName'},	
 			
 			{name: 'schoolsubID'}, // 班级属于某个分校区
 			{name: 'fullname'},
-			{name: 'consultID'},//所属的咨询师
+
 		
 			{ name: 'fullDate', convert: function(value, record){
 					return record.get('beginDate').substr(2,8);
@@ -103228,6 +104197,11 @@ Ext.define('Youngshine.store.AccntDetail', {
     will need to resolve manually.
 */
 
+// Setup path for custom components in app.js
+Ext.Loader.setPath({
+    'Ext.ux': 'src/ux'
+});
+
 Ext.application({
     name: 'Youngshine',
 
@@ -103236,7 +104210,8 @@ Ext.application({
 		            
 		                 
 		              
-		            
+		             
+		                                        
       
 	
 	dataUrl: 'http://www.xzpt.org/app/consult/script/', //ÊúçÂä°Á´Ø,ÂÖ®Â±ÄÂèòÈáèÂ§ßÂÜô???
@@ -103438,14 +104413,6 @@ Ext.define('Youngshine.view.Menu', {
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onStudent()
 			}
-		},{
-			text: '水平测评',
-			iconCls: 'compose',
-			handler: function(btn){
-				//Ext.Viewport.hideMenu('right');
-				Ext.Viewport.removeMenu('left');
-				this.up('menu').onAssess()
-			}
 		 /*
 		},{
 			text: '一对一套餐课程',
@@ -103456,7 +104423,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onPricelist()
 			} */
 		},{
-			text: '缴费',
+			text: '报读缴费',
 			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -103488,14 +104455,14 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onOne2onePk()
 			}
 		},{
-			text: '分班',
+			text: '大小班分班排课',
 			iconCls: 'time',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onClassesPk()
 			}
 		},{
-			text: '我的大小班',
+			text: '班级设置',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
@@ -103508,6 +104475,14 @@ Ext.define('Youngshine.view.Menu', {
 				//Ext.Viewport.hideMenu('right');
 				Ext.Viewport.removeMenu('left');
 				this.up('menu').onTeacher()
+			}
+		},{
+			text: '水平测评',
+			iconCls: 'compose',
+			handler: function(btn){
+				//Ext.Viewport.hideMenu('right');
+				Ext.Viewport.removeMenu('left');
+				this.up('menu').onAssess()
 			}
 		},{
 			text: '退出登录',
@@ -106286,7 +107261,7 @@ Ext.define('Youngshine.view.classes.Addnew', {
 	},
 });
 
-// 对应某个大小班课程的班级列表（可能开多个班）
+// 分配班级，对应某个大小班课程的班级列表（可能开多个班）
 Ext.define('Youngshine.view.classes.ClassList',{
 	extend:  Ext.dataview.List ,
 	xtype: 'class-list',
@@ -106298,7 +107273,8 @@ Ext.define('Youngshine.view.classes.ClassList',{
 		grouped: true,
 		store: 'Classes',
 		itemTpl: '<div>{title}</div>'+
-			'<div style="font-size:0.8em;color:#888;">{timely_list}｜教师：{teacherName}</div>',
+			'<div style="font-size:0.8em;color:#888;">报读：{enroll} / {persons}｜教师：{teacherName}</div>'+
+			'<div style="font-size:0.8em;color:#888;">{timely_list}</div>',
         // We give it a left and top property to make it floating by default
         //right: 0,
         //top: 0,
@@ -106710,47 +107686,29 @@ Ext.define('Youngshine.view.classes.Kclist',{
 });
 
 /**
- * Displays a list of 各种班级（2015春季书法，2016秋季奥数
- * 8-28 隶属某个课程
- */
-Ext.define('Youngshine.view.classes.List', {
-    extend:  Ext.dataview.List ,
-	xtype: 'classes',
-	
+ * Displays a list of 各个校区咨询的班级及其学生 product as pricelist
+ * 在这里转班，class_student.current=0
+*/
+Ext.define('Youngshine.view.classes.ListDataview', {
+    extend:  Ext.Container ,
+	xtype: 'classes-dataview',
+
     config: {
-		//ui: 'round',
-		store: 'Classes',
-		//grouped: true,
-        //itemHeight: 89,
-        //emptyText: '学生列表',
-		disableSelection: true,
-		striped: true,
-		//pinHeaders: false,
-        itemTpl: [
-			'<div>' + 
-			'<div><span>{title}</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span></div>'+
-			'<div style="color:#888;">'+
-			'<span>{timely_list}｜教师：{teacherName}</span>'+
-			'<span class="remove" style="display:none;float:right;color:red;">删除</span>'+
-			'</div></div>'
-        ],
-		
+		layout: 'fit',
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		//title: '测评记录',
-			ui: 'dark',
 			items: [{
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班',
+				text: '我的大小班',
 				handler: function(btn){
+					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
 				} 
 			},{
-				xtype: 'spacer'	
+				xtype: 'spacer'
 			},{
                 xtype: 'searchfield',
                 placeHolder: 'Search...',
@@ -106765,56 +107723,59 @@ Ext.define('Youngshine.view.classes.List', {
 			},{
 				xtype: 'spacer'	
 			},{
-				ui : 'plain',
+				//ui : 'action',
 				action: 'addnew',
 				iconCls: 'add',
-				//text: '新增',
-				handler: function(){
-					this.up('list').onAddnew()
-				}		
+				//text : '＋新增',
+				action: 'addnew'	
 			}]
-    	}],	
+		},{
+			xtype: 'dataview',
+			store: 'Classes',
+			inline: true,
+			scrollable: true,
+			style: 'text-align:center;margin:10px 0px',
+	        itemTpl: '<div style="background:#fff;margin:5px;padding:10px;width:180px;">'+
+				'<div>{title}</div><hr>'+
+				'<div style="color:#888;font-size:0.8em;">满员：{enroll} / {persons}</div>'+
+				'<div style="color:#888;font-size:0.8em;">上课：{timely_list}</div>'+
+				'<div style="color:#888;font-size:0.8em;">教师：{teacherName}</div>'+
+				'<br><div style="color:green;"><span class="edit">编辑</span>｜'+
+				'<span class="del">删除</span></div></div>'
+    	}],
 		
-    	listeners: [{
-			delegate: 'searchfield[action=search]',
-			//event: 'change', // need return to work
-			event: 'keyup',
-			fn: 'onSearchChange'
+		listeners: [{
+			delegate: 'dataview',
+			event: 'itemtap',
+			fn: 'onItemtap'
+		},{
+			delegate: 'button[action=addnew]',
+			event: 'tap',
+			fn: 'onAddnew'	
 		},{
 			delegate: 'searchfield[action=search]',
-			event: 'clearicontap',
-			fn: 'onSearchClear'	 						
-    	}]
+			event: 'change', // need return to work
+			//event: 'keyup',
+			fn: 'onSearchChange'	
+		}]
     },
-	
+
     onAddnew: function(btn){
-		var me = this;
-		me.fireEvent('addnew', me);
+		this.fireEvent('addnew',this)
+    },
+    onItemtap: function(dataview, index, target, record,e){
+		this.fireEvent('itemtap',dataview, index, target, record,e)
     },
 	
 	// 搜索过滤
     onSearchChange: function(field,newValue,oldValue){
 		//var store = Ext.getStore('Orders');
-		var store = this.getStore(); 
+		var store = this.down('dataview').getStore(); 
 		store.clearFilter();
         store.filter('title', field.getValue(), true); 
 		// 正则表达，才能模糊搜索?? true就可以anymatch
-	},	
-    onSearchClear: function(field){
-		var store = this.getStore(); //Ext.getStore('Orders');
-		store.clearFilter();
-	},	
-	// 会运行两次,why"""""????? api中demo不会啊"
-	onToggle: function(selBtn){
-		var me = this; 
-		console.log(selBtn.getText())
-		var subject = selBtn.getText(),
-			store = me.getStore(); //得到list的store
-		store.clearFilter();
-        store.filter('classType', subject, true); 
-		// 正则表达，才能模糊搜索?? true就可以anymatch
 	},
-	
+
     //use initialize method to swipe back 右滑返回
     initialize : function() {
         this.callParent();
@@ -106829,6 +107790,7 @@ Ext.define('Youngshine.view.classes.List', {
 		//	return
 		if(e.direction=='right'){
         	Youngshine.app.getApplication().getController('Main').menuNav()
+			//this.destroy();
         };     
     }, 
 });
@@ -106916,20 +107878,25 @@ Ext.define('Youngshine.view.classes.Teacher',{
 Ext.define('Youngshine.view.classes.Timely',{
 	extend:  Ext.Panel ,
 	xtype: 'classes-timely',
+	
+	//requires: ['Ext.ux.TimePickerField'],
 
 	config: {
 		parentView: null, //谁调用我？
 		modal: true,
 		hideOnMaskTap: true,
 		//centered: true,
-		left:0,bottom:0,
-		width: '100%',
+		//left:0,bottom:0,
+		centered: true,
+		width: '50%',
 		//height: 280,
+		layout: 'vbox',
 
         items: [{	
         	xtype: 'toolbar',
+			ui: 'light',
         	docked: 'top',
-        	title: '上课周期',
+        	title: '设置上课周期',
 			items: [{
 				text : '完成',
 				ui: 'confirm',
@@ -106937,7 +107904,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '98%',
+			//width: '98%',
 			items: [{
 				xtype: 'selectfield',
 				name: 'weekday', 
@@ -106956,6 +107923,48 @@ Ext.define('Youngshine.view.classes.Timely',{
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
+			},{	
+				xtype: 'textfield',
+				name: 'begintime', 
+				label: '.',
+				value: '08:00',
+				readOnly: true
+			},{
+				xtype: 'sliderfield',
+				label: '时',
+				labelAlign: 'top',
+				name: 'hr',
+				value: 8,
+				minValue: 8,
+				maxValue: 20,
+				increment: 1,
+				listeners: {
+					change: function( field, sl, thumb, newValue ){
+						console.log(newValue)
+						field.up('panel').onTime(newValue,'min')
+					}
+				}	
+			},{
+				xtype: 'sliderfield',
+				label: '分',
+				labelAlign: 'top',
+				name: 'min',
+				value: 0,
+				minValue: 0,
+				maxValue: 55,
+				increment: 5,
+				listeners: {
+					change: function( field, sl, thumb, newValue ){
+						console.log(newValue)
+						field.up('panel').onTime('hr',newValue)
+					}
+				}
+					/*
+			},{
+				xtype: 'timepickerfield',
+				label: '开始时间',	
+				name: 'begintime', 
+				
 			},{
 				xtype: 'selectfield',
 				name: 'begintime', 
@@ -106986,7 +107995,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
-				},
+				}, */
 			}]	
 		}],	
 		
@@ -106996,22 +108005,41 @@ Ext.define('Youngshine.view.classes.Timely',{
 			fn: 'onDone' 						
     	}]
 	},
+	
+	onTime: function(hr,min){
+		var me = this;
+		var begintime = me.down('textfield[name=begintime]')
+		if(hr == 'hr'){ //传递过来是分钟
+			var hr = begintime.getValue().substr(0,2)
+			min = min.toString()
+			min = min.length==1 ? '0'+min : min
+			begintime.setValue(hr+':'+min)
+		}else{ //传递过来的是小时
+			var min = begintime.getValue().substr(3,2)
+			hr = hr.toString()
+			hr = hr.length==1 ? '0'+hr : hr
+			begintime.setValue(hr+':'+min)
+		}
+		
+	},
 
 	onDone: function(btn){
 		var me = this;
 		var weekday = me.down('selectfield[name=weekday]').getValue(),
-			begintime = me.down('selectfield[name=begintime]').getValue()
+			begintime = me.down('textfield[name=begintime]').getValue()
+			//begintime = me.down('timepickerfield[name=begintime]').getValue()
 		if (weekday == null){
 			Ext.toast('请选择星期',3000); return;
 		}
+		/*
 		if (begintime == null){
 			Ext.toast('请选择时间',3000); return;
-		}
+		} */
 		
 		var obj = {
 			//weekday: weekday,
 			//begintime: begintime,
-			"timely": weekday+begintime
+			"timely": weekday + begintime
 		}
 		console.log(obj)
 		me.fireEvent('done',obj,me.getParentView(),me);
@@ -108692,7 +109720,7 @@ Ext.define('Youngshine.view.teacher.Course', {
     	items: [{
     		xtype: 'toolbar',
     		docked: 'top',
-    		title: '教师课时',
+    		title: '一对一上课课时记录',
 			items: [{
 				ui : 'back',
 				action: 'back',
@@ -109004,8 +110032,10 @@ Ext.define('Youngshine.view.teacher.List', {
         itemTpl: [
             '<div>{teacherName}</div>'+
 			'<div style="font-size:0.8em;"><span style="color:#888;">{subjectName}</span>'+
-			'<span class="edit" style="float:right;color:green;">编辑</span>'+
-			'<span class="kcb" style="float:right;color:green;">课程表｜</span>'+
+			//'<span class="edit" style="float:right;color:green;">编辑</span>'+
+			'<span class="kcb" style="float:right;color:green;">课程表</span>'+
+			'<span class="one2one" style="float:right;color:green;">一对一课时｜</span>'+
+			'<span class="class" style="float:right;color:green;">大小班课时｜</span>'+
 			'</div>'
         ],
 		
@@ -109052,6 +110082,12 @@ Ext.define('Youngshine.view.teacher.List', {
         			text: '物理',
 				},{
         			text: '化学',
+				},{
+        			text: '语文',
+				},{
+        			text: '英语',
+				},{
+        			text: '其它',
 				}], ///* 会同时触发2次，api示例不会啊
 				listeners:{
 			        toggle: function(container, button, pressed){

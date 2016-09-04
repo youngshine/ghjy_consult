@@ -10,6 +10,13 @@
     will need to resolve manually.
 */
 
+// Setup path for custom components in app.js
+//<debug>
+Ext.Loader.setPath({
+    'Ext.ux': 'src/ux'
+});
+//</debug>
+
 Ext.application({
     name: 'Youngshine',
 
@@ -18,7 +25,8 @@ Ext.application({
 		'Ext.Toast',
 		'Ext.data.JsonP',
 		'Ext.chart.*',
-		'Ext.draw.*'
+		'Ext.draw.*',
+		//'Ext.ux.TimePickerField' //时分选择 2016-9
     ],
 	
 	dataUrl: 'http://www.xzpt.org/app/consult/script/', //ÊúçÂä°Á´Ø,ÂÖ®Â±ÄÂèòÈáèÂ§ßÂÜô???

@@ -1,6 +1,6 @@
 <?php
 /* 
- * 学生从班级移出（转班或退学）current=0，不要真正删除，否则上过课程无法统计
+ * 学生从班级移出（转班或退学）current=0，不要真正删除???，否则上过课程无法统计（看点名）
  * 同时，放入待排班表，accntdetail isClassed=0
  */
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
@@ -13,8 +13,8 @@ $classstudentID = $_REQUEST['classstudentID'];	//unique
 $accntdetailID = $_REQUEST['accntdetailID']; //更改分班状态用
 
 // 禁用，不是真正删除，
-$query = "UPDATE `ghjy_class_student` SET current=0 
-	Where classstudentID = $classstudentID ";
+//$query = "UPDATE `ghjy_class_student` SET current=0 Where classstudentID = $classstudentID ";
+$query = "DELETE FROM `ghjy_class_student` Where classstudentID = $classstudentID ";
 $result = mysql_query($query) 
 	or die("Invalid query: deleteClassAttendee" . mysql_error());
 

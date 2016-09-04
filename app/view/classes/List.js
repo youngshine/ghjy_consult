@@ -43,6 +43,7 @@ Ext.define('Youngshine.view.classes.List', {
 			},{
                 xtype: 'searchfield',
                 placeHolder: 'Search...',
+				clearIcon: false,
 				//width: 150,
 				//label: '测评记录',
 				action: 'search',
