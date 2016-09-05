@@ -107526,7 +107526,8 @@ Ext.define('Youngshine.view.classes.Edit', {
 			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
 			teacherID = this.down('selectfield[name=teacherID]').getValue()
 		
-		//if(teacherID == null) teacherID=0
+		if(teacherID == null) teacherID=0; //尚未确定教师
+		
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
 		}
@@ -107702,7 +107703,7 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '我的大小班',
+				text: '大小班级设置',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -107886,9 +107887,9 @@ Ext.define('Youngshine.view.classes.Timely',{
 		modal: true,
 		hideOnMaskTap: true,
 		//centered: true,
-		//left:0,bottom:0,
-		centered: true,
-		width: '50%',
+		left:0,bottom:0,
+		//centered: true,
+		width: '100%',
 		//height: 280,
 		layout: 'vbox',
 
@@ -107896,16 +107897,33 @@ Ext.define('Youngshine.view.classes.Timely',{
         	xtype: 'toolbar',
 			ui: 'light',
         	docked: 'top',
-        	title: '设置上课周期',
+        	//title: '设置上课周期',
 			items: [{
 				text : '完成',
 				ui: 'confirm',
 				action: 'done',	
+			},{
+				xtype: 'spacer'	
+			},{
+				xtype: 'label',
+				html: '滑动设置时间：'	
+			},{
+				xtype: 'label',
+				name: 'timely', 
+				//label: '.',
+				html: '周一08:00',
+				style: {
+					color:'#ddd'
+				},
+				//placeHolder: '滑动设置上课时间',
+				//readOnly: true	
+			},{
+				xtype: 'spacer'	
 			}]
 		},{
 			xtype: 'fieldset',
 			//width: '98%',
-			items: [{
+			items: [{ /*
 				xtype: 'selectfield',
 				name: 'weekday', 
 				label: '星期',
@@ -107923,40 +107941,58 @@ Ext.define('Youngshine.view.classes.Timely',{
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
-			},{	
-				xtype: 'textfield',
-				name: 'begintime', 
-				label: '.',
-				value: '08:00',
-				readOnly: true
+			},{	*/
+				
+				
 			},{
 				xtype: 'sliderfield',
-				label: '时',
+				label: '星期',
+				labelWidth: 60,
+				//labelAlign: 'left',
+				name: 'weekday',
+				value: 1,
+				minValue: 1,
+				maxValue: 7,
+				increment: 1,
+				listeners: {
+					change: function( field, sl, thumb, newValue ){
+						console.log(newValue)
+						field.up('panel').onTime(newValue,'hr','min')
+						field.up('panel').down('sliderfield[name=hr]').setDisabled(false)
+						field.up('panel').down('sliderfield[name=min]').setDisabled(false)
+					}
+				}
+			},{
+				xtype: 'sliderfield',
+				label: '时［08-20］',
 				labelAlign: 'top',
 				name: 'hr',
 				value: 8,
 				minValue: 8,
 				maxValue: 20,
 				increment: 1,
+				//disabled: true,
 				listeners: {
 					change: function( field, sl, thumb, newValue ){
 						console.log(newValue)
-						field.up('panel').onTime(newValue,'min')
+						field.up('panel').onTime('weekday',newValue,'min')
+						//field.up('panel').down('sliderfield[name=min]').setDisabled(false)
 					}
 				}	
 			},{
 				xtype: 'sliderfield',
-				label: '分',
+				label: '分［05-55］',
 				labelAlign: 'top',
 				name: 'min',
 				value: 0,
 				minValue: 0,
 				maxValue: 55,
 				increment: 5,
+				//disabled: true,
 				listeners: {
 					change: function( field, sl, thumb, newValue ){
 						console.log(newValue)
-						field.up('panel').onTime('hr',newValue)
+						field.up('panel').onTime('weekday','hr',newValue)
 					}
 				}
 					/*
@@ -108006,30 +108042,54 @@ Ext.define('Youngshine.view.classes.Timely',{
     	}]
 	},
 	
-	onTime: function(hr,min){
+	onTime: function(weekday,hr,min){
 		var me = this;
-		var begintime = me.down('textfield[name=begintime]')
-		if(hr == 'hr'){ //传递过来是分钟
-			var hr = begintime.getValue().substr(0,2)
-			min = min.toString()
-			min = min.length==1 ? '0'+min : min
-			begintime.setValue(hr+':'+min)
-		}else{ //传递过来的是小时
-			var min = begintime.getValue().substr(3,2)
+		var timely = me.down('label[name=timely]')
+		if(weekday != 'weekday'){
+			switch(weekday){
+			case 1:
+				weekday = '周一';break;
+			case 2:
+				weekday = '周二';break;	
+			case 3:
+				weekday = '周三';break;
+			case 4:
+				weekday = '周四';break;	
+			case 5:
+				weekday = '周五';break;
+			case 6:
+				weekday = '周六';break;	
+			case 7:
+				weekday = '周日';break;	
+			}
+			var time = timely.getHtml().substr(2)
+			console.log(time)
+			//if(time.length==0) time = '08:00'
+			//var val = weekday + timely.getValue().substr(3)
+			timely.setHtml(weekday+time)
+		}
+		if(hr != 'hr'){ //传递参数：时
 			hr = hr.toString()
 			hr = hr.length==1 ? '0'+hr : hr
-			begintime.setValue(hr+':'+min)
+			var val = timely.getHtml().substr(0,2) + hr + timely.getHtml().substr(4)
+			timely.setHtml(val)
+		}
+		if(min != 'min'){
+			min = min.toString()
+			min = min.length==1 ? '0'+min : min
+			var val = timely.getHtml().substr(0,5) + min
+			timely.setHtml(val)
 		}
 		
 	},
 
 	onDone: function(btn){
 		var me = this;
-		var weekday = me.down('selectfield[name=weekday]').getValue(),
-			begintime = me.down('textfield[name=begintime]').getValue()
+		var //weekday = me.down('selectfield[name=weekday]').getValue(),
+			timely = me.down('label[name=timely]').getHtml()
 			//begintime = me.down('timepickerfield[name=begintime]').getValue()
-		if (weekday == null){
-			Ext.toast('请选择星期',3000); return;
+		if (timely == ''){
+			Ext.toast('请滑动设置上课时间',3000); return;
 		}
 		/*
 		if (begintime == null){
@@ -108039,7 +108099,7 @@ Ext.define('Youngshine.view.classes.Timely',{
 		var obj = {
 			//weekday: weekday,
 			//begintime: begintime,
-			"timely": weekday + begintime
+			"timely": timely
 		}
 		console.log(obj)
 		me.fireEvent('done',obj,me.getParentView(),me);

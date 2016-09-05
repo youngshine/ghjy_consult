@@ -15,7 +15,7 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '我的大小班',
+				text: '大小班级设置',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()

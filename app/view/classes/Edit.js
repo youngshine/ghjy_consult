@@ -133,7 +133,8 @@ Ext.define('Youngshine.view.classes.Edit', {
 			beginDate = this.down('datepickerfield[name=beginDate]').getFormattedValue("Y-m-d"),
 			teacherID = this.down('selectfield[name=teacherID]').getValue()
 		
-		//if(teacherID == null) teacherID=0
+		if(teacherID == null) teacherID=0; //尚未确定教师
+		
 		if (title == ''){
 			Ext.toast('班级名称不能空白',3000); return;
 		}
