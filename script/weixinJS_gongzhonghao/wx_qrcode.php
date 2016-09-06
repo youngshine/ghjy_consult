@@ -16,13 +16,21 @@ header('Access-Control-Allow-Origin: *'); // 跨域问题
 $studentID = $_REQUEST["studentID"]; 
 
 // 第二步：memberId作为scene_id，通过ticket取得二维码图片
-require_once "jssdk-token.php";
+//require_once "jssdk-token.php";
+//$corpid = "wx4f3ffca94662ce40";
+//$corpsecret = "9998a307f7f99e9445d84439d6182355";
+//$jssdk = new JSSDK($corpid, $corpsecret);
+//$access_token = $jssdk->getAccessToken();
 
-$corpid = "wx4f3ffca94662ce40";
-$corpsecret = "9998a307f7f99e9445d84439d6182355";
-
-$jssdk = new JSSDK($corpid, $corpsecret);
-$access_token = $jssdk->getAccessToken();
+// 新浪云kvdb保存token
+$ret = file_get_contents("http://xyzs.sinaapp.com/wx/kvdb.php");
+$ret = json_decode($ret); 
+$access_token = $ret->access_token;
+/*
+echo json_encode(array(
+	"access_token" => $access_token
+));
+exit();  */
 
 $url = "https://api.weixin.qq.com/cgi-bin/qrcode/create?access_token=$access_token";
 // scene_id采用推荐者的openId???? 临时最长30天2592000
