@@ -100569,7 +100569,8 @@ Ext.define('Youngshine.controller.Student', {
 		
 		var obj = {
 			"consultID": localStorage.consultID,
-			"schoolID" : localStorage.schoolID 
+			"schoolID" : localStorage.schoolID,
+			"schoolsubID" : localStorage.schoolsubID  
 			//来自公众号的学生，没有归属咨询师怎么办？让校长归属 
 		}	
 		console.log(obj)	
@@ -102666,6 +102667,44 @@ Ext.define('Youngshine.controller.One2one', {
 	}
 });
 
+// 某个咨询师的班级
+Ext.define('Youngshine.model.Classes', {
+    extend:  Ext.data.Model ,
+
+    config: {
+	    fields: [
+			{name: 'classID'}, 
+			{name: 'title'}, // 名称
+			{name: 'kclistID'}, //所属课程
+			{name: 'persons'}, // 计划招满人数
+			{name: 'enroll'}, //实际报读人数
+			{name: 'note'}, 
+			//{name: 'hour'}, // 要测评学科
+			//{name: 'amount'}, // 学科名称
+			{name: 'beginDate'}, // 开课日期
+			{name: 'timely_list'}, //上课时间列表
+			//{name: 'classType'}, // 科目
+			
+			{name: 'created'},	
+			
+			{name: 'teacherID'}, // 班级教师，待定？
+			{name: 'teacherName'}, //所属的咨询师
+			
+			{name: 'consultID'}, // 班级教师，待定？
+			{name: 'consultName'},	
+			
+			{name: 'schoolsubID'}, // 班级属于某个分校区
+			{name: 'fullname'},
+
+		
+			{ name: 'fullDate', convert: function(value, record){
+					return record.get('beginDate').substr(2,8);
+				} 
+			}, 
+	    ]
+    }
+});
+
 // 大小班级相关
 Ext.define('Youngshine.controller.Classes', {
     extend:  Ext.app.Controller ,
@@ -102677,7 +102716,7 @@ Ext.define('Youngshine.controller.Classes', {
 			//classes: 'classes', //全校班级
 			classes: 'classes-dataview', //全校班级
 			classstudent: 'class-student',
-			//class: 'class',
+			classall: 'class-all',
 			classesaddnew: 'classes-addnew',
 			classesedit: 'classes-edit',
 			//classesattendee: 'classes-attendee',
@@ -102693,7 +102732,8 @@ Ext.define('Youngshine.controller.Classes', {
 			classes: {
 				addnew: 'classesAddnew',
 				itemtap: 'classesItemtap', //包括'修改排课、删除‘’
-				itemswipe: 'classesItemswipe' //delete
+				itemswipe: 'classesItemswipe', //delete
+				all: 'classesAll',
 			}, /*
 			class: {
 				itemtap: 'classItemtap', 
@@ -102721,6 +102761,9 @@ Ext.define('Youngshine.controller.Classes', {
 				//search: '', //itemtap
 				itemtap: 'studentItemtap'
 			}, */
+			'class-all': {
+				back: 'classallBack'
+			}, 
 			// 班级学生
 			'class-student': {
 				back: 'classstudentBack',
@@ -103017,6 +103060,57 @@ Ext.define('Youngshine.controller.Classes', {
 				};
 			} 
         }); 
+	},	
+	
+	// 全校的班级，按分校区分组，当面营销用途
+	classesAll: function(){
+		var me = this;
+		me.classall = Ext.create('Youngshine.view.classes.ClassAll');
+		//me.classall.setParentRecord(record)
+		//me.classstudent.down('label[itemId=title]').setHtml(record.data.title)
+		Ext.Viewport.add(me.classall) // build?
+		Ext.Viewport.setActiveItem(me.classall);
+		
+		// 获取当前测评记录
+		//Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生记录'});
+		var obj = {
+			"schoolID": localStorage.schoolID
+		};
+		console.log(obj)
+		//var store = Ext.getStore('ClassStudent'); 
+		//store.removeAll();
+		//store.clearFilter()
+		var store = Ext.create("Ext.data.Store", {
+	        model: 'Youngshine.model.Classes',
+	        proxy: {
+	            type: 'jsonp',
+				callbackKey: 'callback',
+				url: '',
+				reader: {
+					type: "json",
+					rootProperty: "data"
+				}
+	        },
+			groupField: 'fullname',
+		});
+        var url = this.getApplication().dataUrl + 
+			'readClassesList.php?data=' + JSON.stringify(obj);
+		store.getProxy().setUrl(url);
+        store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+				if (success){
+					me.classall.setStore(store)
+				}else{
+					Ext.toast(result.message,3000);
+				};
+			} 
+        }); 
+	},
+	classallBack: function(oldView){		
+		var me = this;
+		Ext.Viewport.remove(me.classall,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.classes);
 	},	
 /*	
 	classItemtap: function( list, index, target, record, e, eOpts )	{
@@ -103899,44 +103993,6 @@ Ext.define('Youngshine.store.Followup', {
     }
 });
 
-// 某个咨询师的班级
-Ext.define('Youngshine.model.Classes', {
-    extend:  Ext.data.Model ,
-
-    config: {
-	    fields: [
-			{name: 'classID'}, 
-			{name: 'title'}, // 名称
-			{name: 'kclistID'}, //所属课程
-			{name: 'persons'}, // 计划招满人数
-			{name: 'enroll'}, //实际报读人数
-			{name: 'note'}, 
-			//{name: 'hour'}, // 要测评学科
-			//{name: 'amount'}, // 学科名称
-			{name: 'beginDate'}, // 开课日期
-			{name: 'timely_list'}, //上课时间列表
-			//{name: 'classType'}, // 科目
-			
-			{name: 'created'},	
-			
-			{name: 'teacherID'}, // 班级教师，待定？
-			{name: 'teacherName'}, //所属的咨询师
-			
-			{name: 'consultID'}, // 班级教师，待定？
-			{name: 'consultName'},	
-			
-			{name: 'schoolsubID'}, // 班级属于某个分校区
-			{name: 'fullname'},
-
-		
-			{ name: 'fullDate', convert: function(value, record){
-					return record.get('beginDate').substr(2,8);
-				} 
-			}, 
-	    ]
-    }
-});
-
 // 大小班级
 Ext.define('Youngshine.store.Classes', {
     extend:  Ext.data.Store ,
@@ -104423,7 +104479,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onPricelist()
 			} */
 		},{
-			text: '报读缴费',
+			text: '缴费｜退费',
 			iconCls: 'organize',
 			handler: function(btn){
 				//Ext.Viewport.hideMenu('right');
@@ -104462,7 +104518,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onClassesPk()
 			}
 		},{
-			text: '班级设置',
+			text: '班级管理',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
@@ -107261,6 +107317,48 @@ Ext.define('Youngshine.view.classes.Addnew', {
 	},
 });
 
+// 全校所有班级，按分校区分组
+Ext.define('Youngshine.view.classes.ClassAll', {
+    extend:  Ext.dataview.List ,
+	xtype: 'class-all',
+
+    config: {
+        layout: 'fit',
+
+		store: '', //动态
+		grouped: 'fullname',
+		disableSelection: true,
+		striped: true,
+        itemTpl: [
+			'<div>{title}</div>'+
+			'<div style="color:#888;">{timely_list}'+
+			'<span style="float:right;">满班率：{enroll} / {persons}</span></div>'
+        ],
+		
+    	items: [{
+    		xtype: 'toolbar',
+    		docked: 'top',
+    		title: '全校班级',
+			items: [{
+				ui : 'back',
+				action: 'back',
+				text : '返回',
+			}]
+    	}],
+		
+		listeners: [{
+			delegate: 'button[action=back]',
+			event: 'tap',
+			fn: 'onBack'
+		}]
+    },
+
+	onBack: function(btn){
+		var me = this;
+		me.fireEvent('back',me);
+	},
+});
+
 // 分配班级，对应某个大小班课程的班级列表（可能开多个班）
 Ext.define('Youngshine.view.classes.ClassList',{
 	extend:  Ext.dataview.List ,
@@ -107703,7 +107801,7 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班级设置',
+				text: '大小班级管理',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -107730,6 +107828,14 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				//text : '＋新增',
 				action: 'addnew'	
 			}]
+			
+		},{
+			xtype: 'label',
+			docked: 'top',
+			html: '<span class="classall">全校班级>></span>',
+			//itemId: 'zsd',
+			style: 'text-align:center;color:green;margin:10px;'
+			
 		},{
 			xtype: 'dataview',
 			store: 'Classes',
@@ -107758,6 +107864,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 			event: 'change', // need return to work
 			//event: 'keyup',
 			fn: 'onSearchChange'	
+		},{
+			element: 'element',
+			delegate: 'span.classall',
+			event: 'tap',
+			fn: 'onClassAll'
 		}]
     },
 
@@ -107775,6 +107886,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 		store.clearFilter();
         store.filter('title', field.getValue(), true); 
 		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},
+	
+	// 全校班级，按分校区分组，咨询面对家长营销用
+	onClassAll: function(){
+		this.fireEvent('all', this)
 	},
 
     //use initialize method to swipe back 右滑返回

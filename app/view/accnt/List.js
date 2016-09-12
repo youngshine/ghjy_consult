@@ -9,6 +9,7 @@ Ext.define('Youngshine.view.accnt.List', {
 		//record: null, //父窗口传递的记录参数
 		//ui: 'round',
 		store: 'Accnt',
+		//grouped: true,
         //itemHeight: 89,
         //emptyText: '学生列表',
 		disableSelection: true,

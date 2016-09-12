@@ -10,7 +10,9 @@ Ext.define('Youngshine.controller.Student', {
 			studentstudy: 'student-study',
 			studentshow: 'student-show',
 			studentaccnt: 'student-accnt',
-			studentfollowup: 'student-followup'
+			studentfollowup: 'student-followup',
+			studentaccnt: 'student-accnt',
+			studentaccntdetail: 'student-accntdetail'
         },
         control: {
 			student: {
@@ -26,12 +28,17 @@ Ext.define('Youngshine.controller.Student', {
 				save: 'studenteditSave', 
 				cancel: 'studenteditCancel'
 			},
-			studentaccnt: {
-				back: 'studentaccntBack'
-			},
 			studentfollowup: {
 				back: 'studentfollowupBack',
 				save: 'studentfollowupSave', 
+			},
+			studentaccnt: {
+				back: 'studentaccntBack',
+				itemtap: 'studentaccntItemtap'
+			},
+			studentaccntdetail: {
+				back: 'studentaccntdetailBack',
+				itemtap: 'studentaccntdetailItemtap' //点击‘退费’
 			},
         }
     },
@@ -49,7 +56,8 @@ Ext.define('Youngshine.controller.Student', {
 		
 		var obj = {
 			"consultID": localStorage.consultID,
-			"schoolID" : localStorage.schoolID 
+			"schoolID" : localStorage.schoolID,
+			"schoolsubID" : localStorage.schoolsubID  
 			//来自公众号的学生，没有归属咨询师怎么办？让校长归属 
 		}	
 		console.log(obj)	
@@ -385,6 +393,40 @@ Ext.define('Youngshine.controller.Student', {
 		//oldView.destroy()
 		Ext.Viewport.remove(me.studentaccnt,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.student);
+	},
+	// 缴费内容明细，用于退费，并从相应课程班级classes移除该学生
+	studentaccntItemtap: function( list, index, target, record, e, eOpts )	{
+		var me = this; 
+		
+		me.studentaccntdetail = Ext.create('Youngshine.view.student.AccntDetail');
+		//me.studentaccntdetail.setParentRecord(record)
+		Ext.Viewport.add(me.studentaccntdetail) // build?
+		Ext.Viewport.setActiveItem(me.studentaccntdetail);
+		
+		var params = {
+			"accntID": record.data.accntID,
+		}
+		var store = Ext.getStore('AccntDetail'); 
+		store.removeAll();
+		store.clearFilter()
+		store.getProxy().setUrl(this.getApplication().dataUrl + 
+			'readAccntDetailListByAccnt.php?data='+JSON.stringify(params) );
+        store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+				if (success){
+					
+				}else{
+					Ext.toast(result.message,3000);
+				};
+			} 
+        }); 
+	},
+	studentaccntdetailBack: function(oldView){		
+		var me = this; 
+		//oldView.destroy()
+		Ext.Viewport.remove(me.studentaccntdetail,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.studentaccnt);
 	},
 	
 	studentAddnew: function(win){		

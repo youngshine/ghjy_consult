@@ -7,10 +7,10 @@ Ext.define('Youngshine.model.Accnt', {
 			{name: 'accntID'}, 
 			{name: 'accntType'}, // 类别：一对一、大小班
 			
-			{name: 'pricelistID'}, // 一对一课程的套餐名称
-			{name: 'title'}, 
-			{name: 'unitprice'}, 
-			{name: 'hour'}, 
+			//{name: 'pricelistID'}, // 一对一课程的套餐名称
+			//{name: 'title'}, 
+			//{name: 'unitprice'}, 
+			//{name: 'hour'}, 
 			
 			{name: 'accntDate'}, 
 			{name: 'amount'}, // 实收金额

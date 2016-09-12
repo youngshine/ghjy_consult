@@ -15,7 +15,7 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				iconCls: 'list',
 				iconMask: true,
 				ui: 'plain',
-				text: '大小班级设置',
+				text: '大小班级管理',
 				handler: function(btn){
 					//btn.up('main').onMenu()
 					Youngshine.app.getApplication().getController('Main').menuNav()
@@ -42,6 +42,14 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 				//text : '＋新增',
 				action: 'addnew'	
 			}]
+			
+		},{
+			xtype: 'label',
+			docked: 'top',
+			html: '<span class="classall">全校班级>></span>',
+			//itemId: 'zsd',
+			style: 'text-align:center;color:green;margin:10px;'
+			
 		},{
 			xtype: 'dataview',
 			store: 'Classes',
@@ -70,6 +78,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 			event: 'change', // need return to work
 			//event: 'keyup',
 			fn: 'onSearchChange'	
+		},{
+			element: 'element',
+			delegate: 'span.classall',
+			event: 'tap',
+			fn: 'onClassAll'
 		}]
     },
 
@@ -87,6 +100,11 @@ Ext.define('Youngshine.view.classes.ListDataview', {
 		store.clearFilter();
         store.filter('title', field.getValue(), true); 
 		// 正则表达，才能模糊搜索?? true就可以anymatch
+	},
+	
+	// 全校班级，按分校区分组，咨询面对家长营销用
+	onClassAll: function(){
+		this.fireEvent('all', this)
 	},
 
     //use initialize method to swipe back 右滑返回

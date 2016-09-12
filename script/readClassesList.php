@@ -9,17 +9,18 @@ require_once('db/database_connection.php');
 	$res = new Response();
 
 	$arr = $req->params;
-	$consultID = $arr->consultID;//班级所属的咨询师
+	//$consultID = $arr->consultID;//班级所属的咨询师
 	$schoolID = $arr->schoolID;//班级所属的学校
-	$schoolsubID = $arr->schoolsubID;//班级所属的分校区
+	//$schoolsubID = $arr->schoolsubID;//班级所属的分校区
 
-	// left join 教师，因为可能还没有制定班级教师
-	$query = " SELECT a.*,b.fullname,c.consultName,d.teacherName 
+	// left join 教师，因为可能还没有制定班级教师, class没有schoolId，有分校schoolsubId
+	$query = "SELECT a.*,c.fullname, d.teacherName,   
+		(SELECT count(b.studentID) From `ghjy_class_student` b 
+		WHERE b.classID=a.classID And b.current=1 ) AS enroll  
 		From `ghjy_class` a 
-		Join `ghjy_school_sub` b On a.schoolsubID=b.schoolsubID 
-		Join `ghjy_consult` c On a.consultID=c.consultID 
+		Join `ghjy_school_sub` c On a.schoolsubID=c.schoolsubID  
 		Left Join `ghjy_teacher` d On a.teacherID=d.teacherID 
-		Where a.consultID = $consultID ";
+		WHERE c.schoolID = $schoolID";
     
     $result = mysql_query($query) 
 		or die("Invalid query: readClassList by school" . mysql_error());

@@ -9,7 +9,7 @@ Ext.define('Youngshine.controller.Classes', {
 			//classes: 'classes', //全校班级
 			classes: 'classes-dataview', //全校班级
 			classstudent: 'class-student',
-			//class: 'class',
+			classall: 'class-all',
 			classesaddnew: 'classes-addnew',
 			classesedit: 'classes-edit',
 			//classesattendee: 'classes-attendee',
@@ -25,7 +25,8 @@ Ext.define('Youngshine.controller.Classes', {
 			classes: {
 				addnew: 'classesAddnew',
 				itemtap: 'classesItemtap', //包括'修改排课、删除‘’
-				itemswipe: 'classesItemswipe' //delete
+				itemswipe: 'classesItemswipe', //delete
+				all: 'classesAll',
 			}, /*
 			class: {
 				itemtap: 'classItemtap', 
@@ -53,6 +54,9 @@ Ext.define('Youngshine.controller.Classes', {
 				//search: '', //itemtap
 				itemtap: 'studentItemtap'
 			}, */
+			'class-all': {
+				back: 'classallBack'
+			}, 
 			// 班级学生
 			'class-student': {
 				back: 'classstudentBack',
@@ -349,6 +353,57 @@ Ext.define('Youngshine.controller.Classes', {
 				};
 			} 
         }); 
+	},	
+	
+	// 全校的班级，按分校区分组，当面营销用途
+	classesAll: function(){
+		var me = this;
+		me.classall = Ext.create('Youngshine.view.classes.ClassAll');
+		//me.classall.setParentRecord(record)
+		//me.classstudent.down('label[itemId=title]').setHtml(record.data.title)
+		Ext.Viewport.add(me.classall) // build?
+		Ext.Viewport.setActiveItem(me.classall);
+		
+		// 获取当前测评记录
+		//Ext.Viewport.setMasked({xtype:'loadmask',message:'读取学生记录'});
+		var obj = {
+			"schoolID": localStorage.schoolID
+		};
+		console.log(obj)
+		//var store = Ext.getStore('ClassStudent'); 
+		//store.removeAll();
+		//store.clearFilter()
+		var store = Ext.create("Ext.data.Store", {
+	        model: 'Youngshine.model.Classes',
+	        proxy: {
+	            type: 'jsonp',
+				callbackKey: 'callback',
+				url: '',
+				reader: {
+					type: "json",
+					rootProperty: "data"
+				}
+	        },
+			groupField: 'fullname',
+		});
+        var url = this.getApplication().dataUrl + 
+			'readClassesList.php?data=' + JSON.stringify(obj);
+		store.getProxy().setUrl(url);
+        store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+				if (success){
+					me.classall.setStore(store)
+				}else{
+					Ext.toast(result.message,3000);
+				};
+			} 
+        }); 
+	},
+	classallBack: function(oldView){		
+		var me = this;
+		Ext.Viewport.remove(me.classall,true); //remove 当前界面
+		Ext.Viewport.setActiveItem(me.classes);
 	},	
 /*	
 	classItemtap: function( list, index, target, record, e, eOpts )	{

@@ -1,5 +1,5 @@
 <?php
-// 根号平台服务号：模版消息
+// 根号平台服务号：模版消息->购买课程通知accnt
 //根号教育上门家教－发送模版消息 token 微信上墙－现场大屏幕气氛 https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wxe7253a6972bd2d4b&secret=c5c604c56402baac2c7ccd98b35ef2f2 
 
 header("Content-type: text/html; charset=utf-8");
@@ -8,13 +8,18 @@ header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Ac
 header('Access-Control-Allow-Origin: *'); // 跨域问题
 //header('Access-Control-Allow-Headers: X-Requested-With');
 
+/*
 require_once "jssdk-token.php";
-
 $corpid = "wx4f3ffca94662ce40";
 $corpsecret = "9998a307f7f99e9445d84439d6182355";
-
 $jssdk = new JSSDK($corpid, $corpsecret);
 $access_token = $jssdk->getAccessToken();
+*/
+
+// 新浪云kvdb保存token
+$ret = file_get_contents("http://xyzs.sinaapp.com/wx/kvdb.php");
+$ret = json_decode($ret); 
+$access_token = $ret->access_token;
 
 define("ACCESS_TOKEN",$access_token );
 

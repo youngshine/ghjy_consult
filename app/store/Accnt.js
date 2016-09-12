@@ -17,6 +17,12 @@ Ext.define('Youngshine.store.Accnt', {
 		sorters: {
 			property: 'created',
 			direction: 'DESC'
-		}
+		},
+		grouper: {
+            groupFn: function(record) {
+                return record.get('studentID');
+            },
+            sortProperty: 'studentID'
+        }
     }
 });

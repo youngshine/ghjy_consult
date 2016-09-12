@@ -1,5 +1,5 @@
 /**
- * Displays a list of 学生的所有缴费
+ * Displays a list of 学生的所有缴费单，退费在这里
  */
 Ext.define('Youngshine.view.student.Accnt', {
     extend: 'Ext.dataview.List',
@@ -13,9 +13,9 @@ Ext.define('Youngshine.view.student.Accnt', {
 		//disableSelection: true,
 		striped: true,
         itemTpl: [
-			'<div>{accntType}<span style="float:right;">{amount}</span></div>' +
+			'<div>{accntType}<span style="float:right;">{amount}元</span></div>' +
 			'<div style="color:#888;font-size:0.9em;">{accntDate}'+
-			'<span style="float:right;">{title}</span>'+
+			'<span style="float:right;">应收{amount_ys}元</span>'+
 			'</div>'			
         ],
 		

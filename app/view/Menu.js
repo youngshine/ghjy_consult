@@ -79,7 +79,7 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onClassesPk()
 			}
 		},{
-			text: '班级设置',
+			text: '班级管理',
 			iconCls: 'team',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');

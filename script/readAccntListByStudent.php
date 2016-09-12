@@ -13,10 +13,7 @@ require_once('db/database_connection.php');
 
 	$studentID = $arr->studentID;
 	// 不都是一对一，所以left join pricelist
-	$sql = " SELECT a.*,b.title,b.hour  
-		From `ghjy_accnt` a 
-		Left Join `ghjy_pricelist` b On a.pricelistID=b.pricelistID 
-		WHERE a.studentID = $studentID ";   
+	$sql = " SELECT * From `ghjy_accnt` WHERE studentID = $studentID ";   
     $result = mysql_query($sql) 
 		or die("Invalid query: readAccntList by student" . mysql_error());
 
@@ -30,7 +27,7 @@ require_once('db/database_connection.php');
 	}
 		
 	$res->success = true;
-	$res->message = "读取缴费成功";
+	$res->message = "读取学生缴费成功";
 	$res->data = $query_array;
 
 	echo $_GET['callback']."(".$res->to_json().")";

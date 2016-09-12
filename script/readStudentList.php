@@ -1,6 +1,6 @@
 <?php
 /*
-  * 读取某个校区咨询师的报名学生
+  * 读取某个校区咨询师的报名学生?? 全校所有学生？某个分校所有学生，方便16-09-09
   * 来自公众号的学生，没有归属咨询师怎么办？
 */
 	require_once 'db/response.php';
@@ -14,9 +14,10 @@
 
 	$consultID = $arr->consultID;
 	$schoolID = $arr->schoolID;
-	//group by student+zsd?，一个学生可以报读同样知识点？？
+	$schoolsubID = $arr->schoolsubID;
+
 	$query = "SELECT * From `ghjy_student`  
-		Where consultID=$consultID And schoolID=$schoolID 
+		Where schoolsubID=$schoolsubID 
 		Order By created Desc ";
     
     $result = mysql_query($query) 
