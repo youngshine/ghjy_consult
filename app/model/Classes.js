@@ -7,6 +7,7 @@ Ext.define('Youngshine.model.Classes', {
 			{name: 'classID'}, 
 			{name: 'title'}, // 名称
 			{name: 'kclistID'}, //所属课程
+			{name: 'kmType'}, //课程科目分类：数理化，语政英，史地生，艺术
 			{name: 'persons'}, // 计划招满人数
 			{name: 'enroll'}, //实际报读人数
 			{name: 'note'}, 

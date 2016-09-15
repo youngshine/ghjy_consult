@@ -75,7 +75,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 				    {text: '现金', value: '现金'},
 				    {text: '刷卡', value: '刷卡'},
 				    {text: '微信', value: '微信'},
-				    {text: '扫码', value: '扫码'}
+				    {text: '支付宝', value: '支付宝'}
 				],
 				autoSelect: true, 	
 				defaultPhonePickerConfig: {
@@ -96,7 +96,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋内容明细',
+			text : '＋课程明细',
 			ui : 'plain',
 			action: 'kclist', //大小班课程，不是班级
 			style: {

@@ -855,6 +855,7 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.pricelist.Addnew": [],
   "Youngshine.view.pricelist.List": [],
   "Youngshine.view.student.Accnt": [],
+  "Youngshine.view.student.AccntDetail": [],
   "Youngshine.view.student.Addnew": [],
   "Youngshine.view.student.Edit": [],
   "Youngshine.view.student.Followup": [],
@@ -2031,6 +2032,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.student.Accnt": [
     "widget.student-accnt"
+  ],
+  "Youngshine.view.student.AccntDetail": [
+    "widget.student-accntdetail"
   ],
   "Youngshine.view.student.Addnew": [
     "widget.student-addnew"

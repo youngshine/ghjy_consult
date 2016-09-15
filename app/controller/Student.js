@@ -428,6 +428,42 @@ Ext.define('Youngshine.controller.Student', {
 		Ext.Viewport.remove(me.studentaccntdetail,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.studentaccnt);
 	},
+	// 退费
+	studentaccntdetailItemtap: function( list, index, target, record, e, eOpts )	{
+		var me = this; 
+		if(e.target.className == 'refund'){
+			Ext.Msg.show({
+			  title   : '退费金额',
+			  msg     : null,
+			  buttons : [{
+			    itemId : 'cancel',
+			    text   : '取消'
+			  },{
+			    itemId : 'ok',
+			    text   : '提交',
+			    ui     : 'confirm'
+			  }],
+			  prompt  : { 
+				//maxlength : 100, 
+				//autocapitalize : false ,
+				xtype: 'numberfield',
+				value: record.data.amount.toString()
+			  },
+			  fn      : function(btn,text) {
+
+				  if(btn=='ok' && text != 0) {
+					  var obj = {
+						  classstudentID: record.data.classstudentID,
+						  amount: text
+					  }
+					  console.log(obj)
+					  updateAmount(obj)
+				  }
+				  
+			  }
+			});
+		}
+	},
 	
 	studentAddnew: function(win){		
 		var me = this;

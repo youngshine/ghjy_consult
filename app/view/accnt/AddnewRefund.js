@@ -1,5 +1,5 @@
-// 缴费，一对一课程
-Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
+// 退费退班，大小班、一对一课程
+Ext.define('Youngshine.view.accnt.AddnewRefund', {
     extend: 'Ext.form.Panel',
     xtype: 'accnt-addnew', //与一对一相同xtype
 
@@ -8,7 +8,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 		items: [{
 			xtype: 'toolbar',
 			docked: 'top',
-			title: '购买一对一课程',
+			title: '退费退班',
 			items: [{
 				text: '取消',
 				ui: 'decline',
@@ -27,8 +27,28 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 				xtype: 'textfield'
 			},
 			items: [{
+				xtype: 'selectfield',
+				name: 'accntType', 
+				label: '课程类型',
+				options: [
+				    {text: '大小班', value: '大小班'},
+				    {text: '一对一', value: '一对一'},
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				listeners: {
+					change: function(e){
+						//this.setDisabled(true)
+						this.up('formpanel').down('button[action=kclist]').setDisabled(false)
+					}
+				}
+			},{	
 				layout: 'hbox',
 				xtype: 'container',
+				//itemId: 'student',
 				items: [{
 					xtype: 'textfield',
 					name: 'studentName', 
@@ -57,17 +77,10 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 				name: 'accntDate', 
 				label: '日期',
 				value: new Date()
-			},{	
+			},{
 				xtype: 'numberfield',
 				name: 'amount', //绑定后台数据字段
-				label: '实收（元）',
-			},{	
-				xtype: 'numberfield',
-				name: 'amount_ys', //绑定后台数据字段
-				label: '应收金额',
-				//clearIcon: false, 
-				value: 0,
-				readOnly: true
+				label: '金额（元）',
 			},{
 				xtype: 'selectfield',
 				name: 'payment', 
@@ -97,9 +110,10 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋课程明细',
+			text : '＋退费课程明细',
 			ui : 'plain',
 			action: 'kclist', //1to1
+			disabled: true,
 			style: {
 				color: 'SteelBlue',
 				background: 'none',//'#66cc00',
@@ -253,6 +267,24 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 	
 	// 添加一对一课程和输入课时
 	onKclist: function(btn){
-		this.fireEvent('kclistOne2one',btn,this);
+		var me = this;
+		var studentName = this.down('textfield[name=studentName]').getValue().trim()
+		if (studentName == ''){
+			Ext.toast('请选择学生',3000); return;
+		}
+		var studentID = this.down('hiddenfield[name=studentID]').getValue()
+		me.down('button[action=student]').setDisabled(true)	
+		me.down('textfield[name=studentName]').setDisabled(true)
+		
+		var sel = this.down('selectfield[name=accntType]')
+		sel.setDisabled(true);
+		var accntType = sel.getValue()
+		
+		var obj = {
+			studentID: studentID,
+			accntType: accntType
+		}
+		
+		this.fireEvent('kclistRefund',obj,btn,this);
 	},
 });

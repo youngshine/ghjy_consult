@@ -102,8 +102,8 @@ Ext.define('Youngshine.view.Menu', {
 				this.up('menu').onAssess()
 			}
 		},{
-			text: '退出登录',
-			//iconCls: 'delete',
+			text: '退出',
+			iconCls: 'action',
 			handler: function(btn){
 				Ext.Viewport.removeMenu('left');
 				Youngshine.app.getController('Main').logout()

@@ -66,6 +66,8 @@ Ext.define('Youngshine.view.accnt.List', {
 					pressed: true,
 				},{
         			text: '一对一',
+				},{
+					text: '退费退班',	
 				}], ///* 会同时触发2次，api示例不会啊
 				listeners:{
 			        toggle: function(container, button, pressed){

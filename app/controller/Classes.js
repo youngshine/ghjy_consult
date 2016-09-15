@@ -266,7 +266,7 @@ Ext.define('Youngshine.controller.Classes', {
 					handler: function(){
 						actionSheet.hide();
 						Ext.Viewport.remove(actionSheet,true); //移除dom
-						//del(record)
+						del(record)
 					}
 				},{
 					text: '取消',

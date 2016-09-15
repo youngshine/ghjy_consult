@@ -6,6 +6,7 @@ Ext.define('Youngshine.view.student.Accnt', {
 	xtype: 'student-accnt',
 	
     config: {
+		ui: 'round',
 		parentRecord: null,
 		
 		store: 'Accnt',

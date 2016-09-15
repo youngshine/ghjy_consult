@@ -10,7 +10,7 @@ require_once('db/database_connection.php');
 
 $accntID = $_REQUEST['accntID'];	
 
-$sql = "SELECT 1 FROM `ghjy_class_student` Where accntID = $accntID";
+$sql = "SELECT 1 FROM `ghjy_accnt_detail` Where accntID = $accntID";
 $result = mysql_query($sql);
 
 if(mysql_num_rows($result) > 0){
@@ -19,6 +19,7 @@ if(mysql_num_rows($result) > 0){
         "message" => "已经开班，不能删除"
     ));
 }else{	
+	/*
 	$sql = "SELECT 1 FROM `ghjy_student-study` Where accntID = $accntID";
 	$result = mysql_query($sql);
 	
@@ -27,7 +28,7 @@ if(mysql_num_rows($result) > 0){
 	        "success" => false,
 	        "message" => "已经排课，不能删除"
 	    ));
-	}else{
+	}else{ */
 		$query = "DELETE from `ghjy_accnt` Where accntID = $accntID ";
 		$result = mysql_query($query) 
 			or die("Invalid query: deleteAccnt" . mysql_error());
@@ -36,7 +37,7 @@ if(mysql_num_rows($result) > 0){
 	        "success" => true,
 	        "message" => "缴费删除成功"
 	    ));
-	}
+	//}
 }	
 
 ?>

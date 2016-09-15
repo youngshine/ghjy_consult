@@ -46,7 +46,10 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 				options: [
 				    {text: '数学', value: 1},
 				    {text: '物理', value: 2},
-				    {text: '化学', value: 3}
+				    {text: '化学', value: 3},
+				    {text: '语文', value: 16},
+				    {text: '英语', value: 17},
+				    {text: '其它', value: 19},
 				],
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
@@ -60,7 +63,8 @@ Ext.define('Youngshine.view.one2one.study.Zsd',{
 				disabled: true,
 				autoSelect: false,
 				options: [
-				    {text: '九年级', value: '九年级'},
+				    {text: '高一年', value: '高一年'},
+					{text: '九年级', value: '九年级'},
 				    {text: '八年级', value: '八年级'},
 				    {text: '七年级', value: '七年级'},
 				    {text: '六年级', value: '六年级'},

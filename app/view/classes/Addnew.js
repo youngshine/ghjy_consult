@@ -76,6 +76,19 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
+				},	
+			},{
+				xtype: 'selectfield',
+				label: '教师主管', //选择后本地缓存，方便下次直接获取
+				name: 'teacherchiefID',
+				store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
+				valueField: 'teacherID',
+				displayField: 'teacherName',
+				disabled: true,
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
 				},		
 			}]
 		

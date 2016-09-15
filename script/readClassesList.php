@@ -14,12 +14,13 @@ require_once('db/database_connection.php');
 	//$schoolsubID = $arr->schoolsubID;//班级所属的分校区
 
 	// left join 教师，因为可能还没有制定班级教师, class没有schoolId，有分校schoolsubId
-	$query = "SELECT a.*,c.fullname, d.teacherName,   
+	$query = "SELECT a.*,c.fullname, d.teacherName, e.kmType,   
 		(SELECT count(b.studentID) From `ghjy_class_student` b 
 		WHERE b.classID=a.classID And b.current=1 ) AS enroll  
 		From `ghjy_class` a 
 		Join `ghjy_school_sub` c On a.schoolsubID=c.schoolsubID  
 		Left Join `ghjy_teacher` d On a.teacherID=d.teacherID 
+		Join `ghjy_kclist` e On a.kclistID=e.kclistID 
 		WHERE c.schoolID = $schoolID";
     
     $result = mysql_query($query) 

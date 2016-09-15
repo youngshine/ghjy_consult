@@ -12,6 +12,7 @@ Ext.define('Youngshine.controller.Accnt', {
 			student: 'accnt-student',
 			kclistclass: 'kclist-class', //大小班课程
 			kclistone2one: 'kclist-one2one', //课程：一对一
+			kclistrefund: 'kclist-refund',
         },
         control: {
 			accnt: {
@@ -33,6 +34,7 @@ Ext.define('Youngshine.controller.Accnt', {
 				//classes: 'accntaddnewClasses', //查找选择学生
 				kclistClass: 'accntaddnewKclistClass', //大小班可能
 				kclistOne2one: 'accntaddnewKclistOne2one', //一对一课程
+				kclistRefund: 'accntaddnewKclistRefund', //退费课程：已购买的大小班、一对一课程
 			},
 			student: {
 				itemtap: 'studentItemtap'
@@ -42,7 +44,11 @@ Ext.define('Youngshine.controller.Accnt', {
 			}, 
 			kclistclass: {
 				itemtap: 'kclistclassItemtap'
-			}, /*
+			}, 
+			kclistrefund: {
+				itemtap: 'kclistrefundItemtap'
+			},
+			/*
 			accntmore: {
 				back: 'accntmoreBack',
 				//addnew: 'ordersstudyAddnew',
@@ -135,8 +141,8 @@ Ext.define('Youngshine.controller.Accnt', {
 
 	accntAddnew: function(accntType,win){		
 		var me = this;
-		
-		if(accntType == '一对一'){
+		switch(accntType){
+		case '一对一':
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistOne2one');
 			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的课时套餐价格表
@@ -156,7 +162,8 @@ Ext.define('Youngshine.controller.Accnt', {
 					console.log(records)
 				}   		
 			});	 
-		}else if(accntType == '大小班'){
+			break;
+		case '大小班':
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistClass');
 			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的大小班课程
@@ -177,6 +184,30 @@ Ext.define('Youngshine.controller.Accnt', {
 					console.log(records)
 				}   		
 			});	
+			break;
+		case '退费退班':
+			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewRefund');
+			break;
+			//me.accntaddnew.down('list').getStore().removeAll()
+			// 当前学校的大小班课程
+			/*
+			var objClass = {
+				"kcType": '退班退费',
+				"schoolID": localStorage.schoolID,
+				"schoolsubID": localStorage.schoolsubID,
+				//"consultID": localStorage.consultID //咨询师的大小班
+				"current": 1 //禁用的大小班课程不显示
+			}		
+			var store = Ext.getStore('Kclist'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
+				'readKclist.php?data=' + JSON.stringify(objClass));
+			store.load({
+				callback: function(records, operation, success){
+					console.log(records)
+				}   		
+			});	 */
 		}
 		Ext.Viewport.add(me.accntaddnew)
 		Ext.Viewport.setActiveItem(me.accntaddnew)
@@ -382,6 +413,55 @@ Ext.define('Youngshine.controller.Accnt', {
 			ss = me.accntaddnew.down('numberfield[name=amount]')
 		var amt = parseInt(obj.amount)
 		ys.setValue(ys.getValue()+amt)
+		ss.setValue(ss.getValue()+amt)
+	},
+	
+	// 退费已经购买的一对一课程或大小班课程（并且退班）
+	accntaddnewKclistRefund: function(obj,btn)	{
+    	var me = this;  console.log(obj)
+		if(obj.accntType == '大小班'){
+			me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundClass');
+		}else if(obj.accntType == '一对一'){
+			me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundOne2one');
+		}
+		
+		Ext.Viewport.add(me.kclist); //否则build后无法显示
+		//me.kclist.show();
+
+		var store = Ext.getStore('AccntDetail'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readAccntDetailListByRefund.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        if (success){
+					console.log(records)
+					me.kclist.show(); //showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	//
+	kclistrefundItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 
+		
+		var obj = {
+			accntdetailID: record.data.accntdetailID,
+			kclistID: record.data.kclistID,
+			title: record.data.title,
+			hour: record.data.hour,
+			unitprice: record.data.unitprice, // 大小班，没有单价
+			amount: record.data.amount,
+		}
+		console.log(obj); 
+		
+		list.getStore().removeAt(index); // 移除选中的
+		
+		var store = me.accntaddnew.down('list').getStore();
+		store.insert(0,obj); //新增记录，排在最前面
+		//Ext.getStore('Classes').remove(record) //选中的移除消失
+		// 金额累加
+		var ss = me.accntaddnew.down('numberfield[name=amount]')
+		var amt = parseInt(record.data.amount)
 		ss.setValue(ss.getValue()+amt)
 	},
 	
