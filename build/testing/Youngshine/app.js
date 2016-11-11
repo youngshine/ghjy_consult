@@ -101882,6 +101882,7 @@ Ext.define('Youngshine.controller.Accnt', {
 			student: 'accnt-student',
 			kclistclass: 'kclist-class', //大小班课程
 			kclistone2one: 'kclist-one2one', //课程：一对一
+			kclistrefund: 'kclist-refund',
         },
         control: {
 			accnt: {
@@ -101903,6 +101904,7 @@ Ext.define('Youngshine.controller.Accnt', {
 				//classes: 'accntaddnewClasses', //查找选择学生
 				kclistClass: 'accntaddnewKclistClass', //大小班可能
 				kclistOne2one: 'accntaddnewKclistOne2one', //一对一课程
+				kclistRefund: 'accntaddnewKclistRefund', //退费课程：已购买的大小班、一对一课程
 			},
 			student: {
 				itemtap: 'studentItemtap'
@@ -101912,7 +101914,11 @@ Ext.define('Youngshine.controller.Accnt', {
 			}, 
 			kclistclass: {
 				itemtap: 'kclistclassItemtap'
-			}, /*
+			}, 
+			kclistrefund: {
+				itemtap: 'kclistrefundItemtap'
+			},
+			/*
 			accntmore: {
 				back: 'accntmoreBack',
 				//addnew: 'ordersstudyAddnew',
@@ -101950,7 +101956,22 @@ Ext.define('Youngshine.controller.Accnt', {
 					me.accnt.onToggle('大小班'); //一开始默认运行
 				};
 			}   		
-		});	 			 
+		});	 
+		
+		// 学校的所有咨询
+		var objConsult = {
+			"schoolID": localStorage.schoolID
+		}
+		var storeConsult = Ext.getStore('Consult'); 
+		storeConsult.removeAll()
+		storeConsult.clearFilter() 
+		storeConsult.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readConsultList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+			}   		
+		});				 
 	},
 	
 	// 向左滑动，删除
@@ -102005,8 +102026,8 @@ Ext.define('Youngshine.controller.Accnt', {
 
 	accntAddnew: function(accntType,win){		
 		var me = this;
-		
-		if(accntType == '一对一'){
+		switch(accntType){
+		case '一对一':
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistOne2one');
 			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的课时套餐价格表
@@ -102026,7 +102047,8 @@ Ext.define('Youngshine.controller.Accnt', {
 					console.log(records)
 				}   		
 			});	 
-		}else if(accntType == '大小班'){
+			break;
+		case '大小班':
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewKclistClass');
 			me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的大小班课程
@@ -102047,6 +102069,30 @@ Ext.define('Youngshine.controller.Accnt', {
 					console.log(records)
 				}   		
 			});	
+			break;
+		case '退费退班':
+			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewRefund');
+			me.accntaddnew.down('list').getStore().removeAll()
+			break;
+			// 当前学校的大小班课程
+			/*
+			var objClass = {
+				"kcType": '退班退费',
+				"schoolID": localStorage.schoolID,
+				"schoolsubID": localStorage.schoolsubID,
+				//"consultID": localStorage.consultID //咨询师的大小班
+				"current": 1 //禁用的大小班课程不显示
+			}		
+			var store = Ext.getStore('Kclist'); 
+			store.removeAll()
+			store.clearFilter()
+			store.getProxy().setUrl(me.getApplication().dataUrl + 
+				'readKclist.php?data=' + JSON.stringify(objClass));
+			store.load({
+				callback: function(records, operation, success){
+					console.log(records)
+				}   		
+			});	 */
 		}
 		Ext.Viewport.add(me.accntaddnew)
 		Ext.Viewport.setActiveItem(me.accntaddnew)
@@ -102088,6 +102134,8 @@ Ext.define('Youngshine.controller.Accnt', {
 		Ext.Viewport.remove(me.accntaddnewclass,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.accnt);
 	},	
+	
+	// 保存：accntType:一对一、大小班、退费退班 
 	accntaddnewSave: function( obj,oldView )	{
     	var me = this; console.log(obj)
 		// 传递参数，带有数组（子表多条记录）
@@ -102117,10 +102165,11 @@ Ext.define('Youngshine.controller.Accnt', {
 						accntDate  : person.accntDate,
 						amount     : person.amount,
 						amount_ys  : person.amount_ys,
+						school     : localStorage.schoolName
 					}
 					console.log(objWx)
 					Ext.Ajax.request({
-					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl.php',
+					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl_accnt.php',
 					    params: objWx,
 					    success: function(response){
 					        var text = response.responseText;
@@ -102252,6 +102301,56 @@ Ext.define('Youngshine.controller.Accnt', {
 			ss = me.accntaddnew.down('numberfield[name=amount]')
 		var amt = parseInt(obj.amount)
 		ys.setValue(ys.getValue()+amt)
+		ss.setValue(ss.getValue()+amt)
+	},
+	
+	// 退费已经购买的一对一课程或大小班课程（并且退班）
+	// 尚未分班或一对一排课 isClass=9 才能显示出来
+	accntaddnewKclistRefund: function(obj,btn)	{
+    	var me = this;  console.log(obj)
+		if(obj.accntType == '大小班'){
+			//me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundClass');
+		}else if(obj.accntType == '一对一'){
+			//me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundOne2one');
+		}
+		me.kclist = Ext.create('Youngshine.view.accnt.KclistRefund');
+		Ext.Viewport.add(me.kclist); //否则build后无法显示
+		//me.kclist.show();
+
+		var store = Ext.getStore('AccntDetail'); 
+		store.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readAccntDetailListByRefund.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+		        if (success){
+					console.log(records)
+					me.kclist.show(); //showBy(btn); // overlay show
+				};
+			}   		
+		});	
+	},
+	//
+	kclistrefundItemtap: function( list, index, target, record, e, eOpts )	{
+    	var me = this; 		
+		var obj = {
+			accntdetailID: record.data.accntdetailID,
+			kclistID: record.data.kclistID,
+			kcType: record.data.kcType,
+			title: record.data.title,
+			hour: record.data.hour,
+			unitprice: record.data.unitprice, // 大小班，没有单价
+			amount: record.data.amount,
+		}
+		console.log(obj); 
+		
+		list.getStore().removeAt(index); // 移除选中的
+		
+		var store = me.accntaddnew.down('list').getStore();
+		store.insert(0,obj); //新增记录，排在最前面
+		//Ext.getStore('Classes').remove(record) //选中的移除消失
+		// 金额累加
+		var ss = me.accntaddnew.down('numberfield[name=amount]')
+		var amt = parseInt(record.data.amount)
 		ss.setValue(ss.getValue()+amt)
 	},
 	
@@ -103641,7 +103740,7 @@ Ext.define('Youngshine.model.Student', {
 			{name: 'born'}, 
 			{name: 'phone'}, 
 			{name: 'addr'}, 
-			//{name: 'school'}, 
+			{name: 'note'}, 
 			{name: 'level_list'}, //各学科123报读咨询测评的水平，以获得自适应第一组5个题目
 			
 			{name: 'consultID'}, //所属咨询师
@@ -104234,6 +104333,8 @@ Ext.define('Youngshine.model.Accnt', {
 			{name: 'accntDate'}, 
 			{name: 'amount'}, // 实收金额
 			{name: 'amount_ys'}, // 应收
+			{name: 'amount_owe'}, // 欠款，后来补缴时再修改为0
+			
 			{name: 'note'}, 
 			
 			{name: 'studentID'}, // 咨询师创建的
@@ -104292,6 +104393,7 @@ Ext.define('Youngshine.model.AccntDetail', {
 			{name: 'title'}, 
 			//{name: 'pricelistID'}, // 一对一课程的套餐名称
 			{name: 'kclistID'}, 
+			{name: 'kcType'}, //课程分类：大小班、一对一
 			{name: 'unitprice'},  // 一对一单价
 			{name: 'hour'}, 
 			{name: 'amount'}, // 金额
@@ -104461,7 +104563,7 @@ Ext.define('Youngshine.view.Login', {
     	},{
 			xtype: 'button',
 			//margin:-10px 10px',
-			text : '登录',
+			text : '请使用PC版，iPad版本暂时停用', disabled: true,
 			ui : 'plain',
 			action: 'login',
 			style: {
@@ -104503,7 +104605,7 @@ Ext.define('Youngshine.view.Login', {
 		if (psw.length<6){
 			Ext.toast('密码至少6位',3000); return;
 		}	
-	
+
     	this.fireEvent('ok', username,psw,school);		
     },	
 	
@@ -104758,9 +104860,9 @@ Ext.define('Youngshine.view.Main', {
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 420,height: 260,
-			scrollable: true,
-
+			width: 420,//height: 260,
+			//scrollable: true,
+			layout: 'vbox',
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
@@ -104800,7 +104902,7 @@ Ext.define('Youngshine.view.Main', {
 				}]
 			},{
 				xtype: 'fieldset',
-				width: 400,
+				//width: 400,
 				defaults: {
 					//labelAlign: 'right'
 				},
@@ -105149,7 +105251,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 					text: '...',
 					//iconCls: 'search',
 					ui: 'plain',
-					width: 60,
+					width: 50,
 					zIndex: 999
 				},{	
 					xtype: 'hiddenfield',
@@ -105163,17 +105265,6 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 				name: 'accntDate', 
 				label: '日期',
 				value: new Date()
-			},{	
-				xtype: 'numberfield',
-				name: 'amount', //绑定后台数据字段
-				label: '实收（元）',
-			},{	
-				xtype: 'numberfield',
-				name: 'amount_ys', //绑定后台数据字段
-				label: '应收金额',
-				//clearIcon: false, 
-				value: 0,
-				readOnly: true
 			},{
 				xtype: 'selectfield',
 				name: 'payment', 
@@ -105182,13 +105273,42 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 				    {text: '现金', value: '现金'},
 				    {text: '刷卡', value: '刷卡'},
 				    {text: '微信', value: '微信'},
-				    {text: '扫码', value: '扫码'}
+				    {text: '支付宝', value: '支付宝'}
 				],
 				autoSelect: true, 	
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
 					cancelButton: '取消'
 				},
+			},{	
+				xtype: 'numberfield',
+				name: 'amount_ys', //绑定后台数据字段
+				label: '应收金额',
+				//clearIcon: false, 
+				value: 0,
+				readOnly: true
+			},{	
+				xtype: 'numberfield',
+				name: 'amount', //绑定后台数据字段
+				label: '实收(元)',
+				listeners: {
+					focus: function(e){
+						// form滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
+			},{	
+				xtype: 'numberfield',
+				name: 'amount_owe', 
+				label: '欠费',
+				listeners: {
+					focus: function(e){
+						// form滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			},{	
 				xtype: 'textfield',
 				name: 'note', 
@@ -105200,10 +105320,23 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 						window.scrollTo(0,0);
 					}
 				}
+			},{
+				xtype: 'selectfield',
+				label: '业绩归属', 
+				name: 'consultID_owe', //默认归属录入咨询师
+				//store: 'Consult', //无法自动显示已选择的下拉项目，通过updateOpt
+				valueField: 'consultID',
+				displayField: 'consultName',
+				//disabled: true,
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
 			}]
     	},{
 			xtype: 'button',
-			text : '＋内容明细',
+			text : '＋课程明细',
 			ui : 'plain',
 			action: 'kclist', //大小班课程，不是班级
 			style: {
@@ -105276,6 +105409,8 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			//hour = this.down('hiddenfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
 			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
+			amount_owe = this.down('numberfield[name=amount_owe]').getValue(),
+			consultID_owe = this.down('selectfield[name=consultID_owe]').getValue(),
 			payment = this.down('selectfield[name=payment]').getValue(),
 			note = this.down('textfield[name=note]').getValue().trim()
 			//pricelistID = 0 //大小班，不是一对一课程pricelist
@@ -105284,7 +105419,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			Ext.toast('请选择学生',3000); return;
 		}
 		if (amount == 0 ){
-			Ext.toast('请填写金额',3000); return;
+			Ext.toast('请填写实收金额',3000); return;
 		}	
 			
 		//if list.length == 0 '至少报读一个班级'
@@ -105312,6 +105447,8 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			accntDate: accntDate,
 			amount: amount,
 			amount_ys: amount_ys,
+			amount_owe: amount_owe, //业绩归属
+			consultID_owe: consultID_owe,
 			payment: payment,
 			note: note,
 			//pricelistID: 0, //大小班，不是一对一
@@ -105320,7 +105457,8 @@ Ext.define('Youngshine.view.accnt.AddnewKclistClass', {
 			//hour: 0, // 一对一课时
 			arrList: arrList, // 报读的多个大小班课程
 			consultID: localStorage.consultID,
-			schoolID: localStorage.schoolID //归属哪个咨询师
+			schoolsubID: localStorage.schoolsubID,//归属哪个分校统计，咨询师可能换校区
+			schoolID: localStorage.schoolID 
 		};
 		console.log(obj)
 		
@@ -105410,7 +105548,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 					text: '...',
 					//iconCls: 'search',
 					ui: 'plain',
-					width: 60,
+					width: 50,
 					zIndex: 999
 				},{	
 					xtype: 'hiddenfield',
@@ -105443,7 +105581,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 				    {text: '现金', value: '现金'},
 				    {text: '刷卡', value: '刷卡'},
 				    {text: '微信', value: '微信'},
-				    {text: '扫码', value: '扫码'}
+				    {text: '支付宝', value: '支付宝'}
 				],
 				autoSelect: true, 	
 				defaultPhonePickerConfig: {
@@ -105464,7 +105602,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			}]
     	},{
 			xtype: 'button',
-			text : '＋内容明细',
+			text : '＋课程明细',
 			ui : 'plain',
 			action: 'kclist', //1to1
 			style: {
@@ -105581,7 +105719,8 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			//hour: 0, // 一对一课时
 			arrList: arrList, // 报读的多个大小班课程
 			consultID: localStorage.consultID,
-			schoolID: localStorage.schoolID //归属哪个咨询师
+			schoolsubID: localStorage.schoolsubID,//归属哪个分校统计，咨询师可能换校区
+			schoolID: localStorage.schoolID
 		};
 		console.log(obj)
 		
@@ -105621,6 +105760,290 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 	// 添加一对一课程和输入课时
 	onKclist: function(btn){
 		this.fireEvent('kclistOne2one',btn,this);
+	},
+});
+
+// 退费退班，大小班、一对一课程
+Ext.define('Youngshine.view.accnt.AddnewRefund', {
+    extend:  Ext.form.Panel ,
+    xtype: 'accnt-addnew', //与一对一相同xtype
+
+    config: {
+		layout: 'vbox',
+		items: [{
+			xtype: 'toolbar',
+			docked: 'top',
+			title: '退费退班',
+			items: [{
+				text: '取消',
+				ui: 'decline',
+				action: 'cancel'
+			},{
+				xtype: 'spacer'
+			},{
+				ui: 'confirm',
+				text: '保存',
+				action: 'save'
+			}]
+		},{
+			xtype: 'fieldset',
+			defaults: {
+				labelWidth: 95,
+				xtype: 'textfield'
+			},
+			items: [{
+				xtype: 'selectfield',
+				name: 'accntType', 
+				label: '课程类型',
+				options: [
+				    {text: '大小班', value: '大小班'},
+				    {text: '一对一', value: '一对一'},
+				],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+				listeners: {
+					change: function(e){
+						//this.setDisabled(true)
+						this.up('formpanel').down('button[action=kclist]').setDisabled(false)
+					}
+				}
+			},{	
+				layout: 'hbox',
+				xtype: 'container',
+				//itemId: 'student',
+				items: [{
+					xtype: 'textfield',
+					name: 'studentName', 
+					label: '姓名',
+					labelWidth: 95,
+					placeHolder: '选择全校范围学生',
+					readOnly: true, //to focus
+					flex: 1
+				},{
+					xtype: 'button',
+					action: 'student',
+					text: '...',
+					//iconCls: 'delete',
+					ui: 'plain',
+					width: 50,
+					//zIndex: 999
+				},{	
+					xtype: 'hiddenfield',
+					name: 'studentID', //绑定后台数据字段
+				},{	
+					xtype: 'hiddenfield',
+					name: 'wxID', //用于发模版消息
+				}]
+			},{
+				xtype: 'datepickerfield',
+				name: 'accntDate', 
+				label: '日期',
+				value: new Date()
+			},{
+				xtype: 'numberfield',
+				name: 'amount', //绑定后台数据字段
+				label: '退费金额',
+			},{
+				xtype: 'selectfield',
+				name: 'payment', 
+				label: '付款方式',
+				options: [
+				    {text: '现金', value: '现金'},
+				    {text: '刷卡', value: '刷卡'},
+				    {text: '微信', value: '微信'},
+				    {text: '支付宝', value: '支付宝'}
+				],
+				autoSelect: true, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{	
+				xtype: 'textfield',
+				name: 'note', 
+				label: '备注', //为什么优惠？
+				listeners: {
+					focus: function(e){
+						// form滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
+			}]
+    	},{
+			xtype: 'button',
+			text : '＋退费课程明细',
+			ui : 'plain',
+			action: 'kclist', //1to1
+			disabled: true,
+			style: {
+				color: 'SteelBlue',
+				background: 'none',//'#66cc00',
+				margin: '-10px 100px 0px',
+				border: 0
+			},
+			bageText: '0'
+		},{
+			// 缴费购买课程项目明细 1、一对一 2、大小班
+			xtype: 'list',
+			margin: '10px',
+			//height: '100%',
+			//ui: 'round',
+			flex: 1,
+			disableSelection: true,
+	        itemTpl: [
+				'<div><span>{title}</span>'+
+				'<span class="removeItem" style="float:right;color:red;">&nbsp;&nbsp;删除</span>'+
+				'<span style="color:#888;float:right;">{hour}课时{amount}元</span></div>'
+	        ],	
+			store: Ext.create("Ext.data.Store", {
+				fields: [
+		            {name: "title", type: "string"},
+					{name: "kclistID", defaultValue: 0}, //0， 不是大小班
+					{name: "unitprice"},
+					{name: "hour"},
+					{name: "amount"},
+					{name: "accntdetailID"}, //退费，退班用
+					{name: "kcType"},
+		        ],
+			}),
+		}],			
+	
+		listeners: [{
+			delegate: 'button[action=save]',
+			event: 'tap',
+			fn: 'onSave'
+		},{
+			delegate: 'button[action=cancel]',
+			event: 'tap',
+			fn: 'onCancel'	
+		},{
+			delegate: 'button[action=student]',
+			event: 'tap',
+			fn: 'onStudent'	
+		},{
+			delegate: 'button[action=kclist]',
+			event: 'tap',
+			fn: 'onKclist'
+		},{
+			delegate: 'list',
+			event: 'itemtap',
+			fn: 'onItemtap'
+		}]
+	},
+
+	// 课程退费保存，如果是大小班课程，还必须退班（根据accntdetailID在class_student)
+	onSave: function(){
+		var me = this;
+		
+		// 页面恢复正常
+		me.getScrollable().getScroller().scrollTo(0,0);
+		window.scrollTo(0,0);
+
+		var studentName = this.down('textfield[name=studentName]').getValue().trim(),
+			studentID = this.down('hiddenfield[name=studentID]').getValue(),
+			wxID = this.down('hiddenfield[name=wxID]').getValue(), // wechat
+			accntDate = this.down('datepickerfield[name=accntDate]').getFormattedValue("Y-m-d"),
+			amount = this.down('numberfield[name=amount]').getValue(),
+			payment = this.down('selectfield[name=payment]').getValue(),
+			note = this.down('textfield[name=note]').getValue().trim()
+	
+		if (studentName == ''){
+			Ext.toast('请选择学生',3000); return;
+		}
+		if (amount == 0 || amount==null){
+			Ext.toast('请填写退费金额',3000); return;
+		}	
+			
+		//if list.length == 0 '至少报读一个班级'
+		var arrList = [],
+			jsonList = {};
+		var store = me.down('list').getStore()
+		store.each(function(rec,index){
+			arrList.push(rec.data)
+			//jsonList[index] = rec.data.pricelistID 
+		})
+		//if (store.getCount()==0){
+		if (arrList.length == 0){	
+			Ext.toast('请添加明细记录',3000); return;
+		}
+		
+		//console.log(JSON.stringify(jsonList));
+		arrList = JSON.stringify(arrList); //传递到后台，必须字符串
+		console.log(arrList);
+		
+		var obj = {
+			accntType: '退费退班',
+			studentName: studentName,
+			studentID: studentID,
+			wxID: wxID, //用于发送微信模版消息
+			accntDate: accntDate,
+			amount: amount,
+			amount_ys: 0, //退费没有应收款
+			payment: payment,
+			note: note,
+			arrList: arrList, // 报读的多个大小班课程
+			consultID: localStorage.consultID,//归属哪个咨询师
+			schoolsubID: localStorage.schoolsubID,//归属哪个分校统计，咨询师可能换校区
+			schoolID: localStorage.schoolID 
+		};
+		console.log(obj)
+		
+    	Ext.Msg.confirm('保存',"确认提交退费？",function(btn){	
+			if(btn == 'yes'){
+				me.fireEvent('save', obj,me);
+				// 然后在class-student 填写班级学生
+			}
+		})	
+	},
+	onCancel: function(btn){
+		var me = this; 
+		me.fireEvent('cancel',me);
+	},
+	
+	// 移除报读的班级
+	onItemtap: function(list, index, target, record, e, eOpts){
+		var me = this;
+		console.log(e.target.className)
+		if(e.target.className == 'removeItem'){
+			list.getStore().removeAt(index)
+			var ss = me.down('textfield[name=amount]')
+			// 金额 减少
+			var amt = parseInt(record.data.amount)
+			ss.setValue(ss.getValue()-amt)
+		}
+	},
+	
+	// 查找选择学生
+	onStudent: function(btn){
+		var me = this; 
+		me.fireEvent('student',btn,me);
+	},
+	
+	// 添加课程明细记录，退费必须是从前购买的
+	onKclist: function(btn){
+		var me = this;
+		var studentName = this.down('textfield[name=studentName]').getValue().trim()
+		if (studentName == ''){
+			Ext.toast('请选择学生',3000); return;
+		}
+		var studentID = this.down('hiddenfield[name=studentID]').getValue()
+		me.down('button[action=student]').setDisabled(true)	
+		me.down('textfield[name=studentName]').setDisabled(true)
+		
+		var sel = this.down('selectfield[name=accntType]')
+		sel.setDisabled(true);
+		var accntType = sel.getValue()
+		
+		var obj = {
+			studentID: studentID,
+			accntType: accntType
+		}
+		
+		this.fireEvent('kclistRefund',obj,btn,this);
 	},
 });
 
@@ -105885,10 +106308,11 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 	config: {
 		modal: true,
 		hideOnMaskTap: true,
-		//centered: true,
-		left:0,bottom:0,
-		width: '100%',
+		centered: true,
+		//left:0,bottom:0,
+		width: '80%',
 		//height: 280,
+		layout: 'vbox',
 
         items: [{	
         	xtype: 'toolbar',
@@ -105901,7 +106325,7 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '98%',
+			//width: '98%',
 			items: [{
 				xtype: 'selectfield',
 				label: '课程', 
@@ -105985,6 +106409,99 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 	},	
 });
 
+// 退费大小班，并且退班class_student
+Ext.define('Youngshine.view.accnt.KclistRefund',{
+	extend:  Ext.dataview.List ,
+	xtype: 'kclist-refund',
+
+	config: {
+		striped: true,
+		disableSelection: true,
+		store: 'AccntDetail',
+		itemTpl: '<div>{title}</div>'+
+			'<div style="color:#888;"><span>{hour}课时{amount}元</span>'+
+			'<span style="float:right;">{accntDate}报读</span></div>',
+        // We give it a left and top property to make it floating by default
+        right: 0,
+        top: 0,
+		width: 420,height: '100%',
+		border: 5,
+		style: 'border-color: black; border-style: solid;',
+
+        // Make it modal so you can click the mask to hide the overlay
+        modal: true,
+        hideOnMaskTap: true,
+
+        // Make it hidden by default
+        hidden: true,
+        scrollable: true,
+
+        // Insert a title docked at the top with a title
+        items: [{
+            docked: 'top',
+            xtype: 'toolbar',
+			ui: 'light',
+            items: [{
+				xtype: 'selectfield',
+				itemId: 'kclistType',
+                placeHolder: '选择课程类别',
+				width: 180,
+                options: [
+					{text: '数理化', value: '数理化'},
+				    {text: '史地生', value: '史地生'},
+					{text: '语政英', value: '语政英'},
+				    {text: '艺术', value: '艺术'}
+                ],
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},
+			},{
+            	xtype: 'searchfield',
+				width: 180,
+				placeHolder: '搜索...'	
+            }]
+        }],
+		
+    	listeners: [{
+			delegate: 'searchfield',
+			event: 'change', // need return to work
+			//event: 'keyup',
+			fn: 'onFilter' 
+		},{
+			delegate: 'searchfield',
+			event: 'clearicontap',
+			fn: 'onFilter' 
+		},{
+			delegate: 'selectfield[itemId=kclistType]',
+			event: 'change', // need return to work
+			fn: 'onFilter'						
+    	}]
+	},
+
+	// 搜索过滤
+    onFilter: function(){
+		var kclistType = this.down('selectfield[itemId=kclistType]').getValue(),
+			search = this.down('searchfield').getValue().trim()
+		console.log(search)
+		search = new RegExp("/*" + search); // 正则表达式，模糊查询
+		var store = this.getStore(); //得到list的store: Myaroundroute
+		store.clearFilter(); //filter is additive
+		// 正则表达，才能模糊搜索?? true就可以anymatch
+        //store.filter('studentName', field.getValue(), true); 
+		if(kclistType != null ){
+			store.filter([
+				{property: "kmType", value: kclistType},
+				{property: "title", value: search}, // 姓名＋手机
+			]);
+		}else{
+			store.filter("title", search, true);
+		}
+		console.log(search,kclistType)	
+	},	
+});
+
 /**
  * Displays a list of 缴费记录
  */
@@ -106053,6 +106570,8 @@ Ext.define('Youngshine.view.accnt.List', {
 					pressed: true,
 				},{
         			text: '一对一',
+				},{
+					text: '退费退班',	
 				}], ///* 会同时触发2次，api示例不会啊
 				listeners:{
 			        toggle: function(container, button, pressed){
@@ -107261,6 +107780,19 @@ Ext.define('Youngshine.view.classes.Addnew', {
 				store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
 				valueField: 'teacherID',
 				displayField: 'teacherName',
+				autoSelect: false, 	
+				defaultPhonePickerConfig: {
+					doneButton: '确定',
+					cancelButton: '取消'
+				},	
+			},{
+				xtype: 'selectfield',
+				label: '教师主管', //选择后本地缓存，方便下次直接获取
+				name: 'teacherchiefID',
+				store: 'Teacher', //无法自动显示已选择的下拉项目，通过updateOpt
+				valueField: 'teacherID',
+				displayField: 'teacherName',
+				disabled: true,
 				autoSelect: false, 	
 				defaultPhonePickerConfig: {
 					doneButton: '确定',
@@ -109248,7 +109780,7 @@ Ext.define('Youngshine.view.student.AccntDetail', {
         itemTpl: [
 			'<div><span>{title}</span></div>'+
 			'<div><span style="color:#888;">{hour}课时{amount}元</span>' +
-			'<span class="refund" style="float:right;color:red;">退费退班</span></div>'
+			'<span class="" style="float:right;color:red;">状态</span></div>'
         ],
 		
     	items: [{
@@ -109374,6 +109906,18 @@ Ext.define('Youngshine.view.student.Addnew', {
 						window.scrollTo(0,0);
 					}
 				}	
+			},{	
+				xtype: 'textfield',
+				name: 'note', //绑定后台数据字段
+				label: '备注',
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			},{
 				xtype: 'selectfield',
 				name: 'schoolsubID', 
@@ -109426,6 +109970,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade = this.down('selectfield[name=grade]').getValue(),
 			phone = this.down('textfield[name=phone]').getValue().trim(),
 			addr = this.down('textfield[name=addr]').getValue().trim(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			schoolsubID = this.down('selectfield[name=schoolsubID]').getValue()
 	
 		if (studentName == ''){
@@ -109449,6 +109994,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
+			note: note,
 			schoolsubID: schoolsubID, //归属学校的分校区
 			consultID: localStorage.consultID,//归属哪个咨询师
 			schoolID: localStorage.schoolID //归属学校
@@ -109561,6 +110107,18 @@ Ext.define('Youngshine.view.student.Edit', {
 						window.scrollTo(0,0);
 					}
 				}
+			},{	
+				xtype: 'textfield',
+				name: 'note', //绑定后台数据字段
+				label: '备注',
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			},{
 				xtype: 'selectfield',
 				name: 'schoolsubID', 
@@ -109600,6 +110158,7 @@ Ext.define('Youngshine.view.student.Edit', {
 			grade = this.down('selectfield[name=grade]').getValue(),
 			phone = this.down('textfield[name=phone]').getValue().trim(),
 			addr = this.down('textfield[name=addr]').getValue().trim(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			schoolsubID = this.down('selectfield[name=schoolsubID]').getValue()
 	
 		if (studentName == ''){
@@ -109617,6 +110176,7 @@ Ext.define('Youngshine.view.student.Edit', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
+			note: note,
 			schoolsubID: schoolsubID, //归属学校的分校区
 			studentID: studentID //修改unique
 		};

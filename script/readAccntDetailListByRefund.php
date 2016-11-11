@@ -14,9 +14,10 @@ require_once('db/database_connection.php');
 	$studentID = $arr->studentID;
 	$accntType = $arr->accntType;
 	// isClassed=0 尚未排课状态
-	$sql = " SELECT a.*,b.accntType,b.accntDate,b.studentID 
+	$sql = " SELECT a.*,b.accntType,b.accntDate,b.studentID,c.kcType,c.title As kcTitle  
 		From `ghjy_accnt_detail` a 
 		Join `ghjy_accnt` b On b.accntID=a.accntID 
+		Join `ghjy_kclist` c On a.kclistID=c.kclistID  
 		WHERE b.studentID = $studentID And b.accntType='$accntType' And a.isClassed=0 "; 
 	$result = mysql_query($sql) 
 		or die("Invalid query: readAccntDetailList by refund " . mysql_error());

@@ -1,7 +1,7 @@
 <?php
 /* 
  * 删除学生 ajax instead of jsonp
- * 有订单prepaidID，不能删除
+ * 有缴费accnt，不能删除
 */
 
 	header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
@@ -12,7 +12,7 @@
 
     $studentID = $_REQUEST['studentID'];
 	
-	$query = "SELECT 1 FROM `ghjy_student-prepaid` WHERE studentID=$studentID LIMIT 1";
+	$query = "SELECT 1 FROM `ghjy_accnt` WHERE studentID=$studentID LIMIT 1";
     $result = mysql_query($query);
 	
 	if(mysql_num_rows($result) > 0){

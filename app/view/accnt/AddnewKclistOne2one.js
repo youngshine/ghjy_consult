@@ -43,7 +43,7 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 					text: '...',
 					//iconCls: 'search',
 					ui: 'plain',
-					width: 60,
+					width: 50,
 					zIndex: 999
 				},{	
 					xtype: 'hiddenfield',
@@ -214,7 +214,8 @@ Ext.define('Youngshine.view.accnt.AddnewKclistOne2one', {
 			//hour: 0, // 一对一课时
 			arrList: arrList, // 报读的多个大小班课程
 			consultID: localStorage.consultID,
-			schoolID: localStorage.schoolID //归属哪个咨询师
+			schoolsubID: localStorage.schoolsubID,//归属哪个分校统计，咨询师可能换校区
+			schoolID: localStorage.schoolID
 		};
 		console.log(obj)
 		

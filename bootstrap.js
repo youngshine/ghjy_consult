@@ -805,12 +805,14 @@ Ext.ClassManager.addNameAlternateMappings({
   "Youngshine.view.Menu": [],
   "Youngshine.view.accnt.AddnewKclistClass": [],
   "Youngshine.view.accnt.AddnewKclistOne2one": [],
+  "Youngshine.view.accnt.AddnewRefund": [],
   "Youngshine.view.accnt.Addnew_1to1": [],
   "Youngshine.view.accnt.Addnew_class": [],
   "Youngshine.view.accnt.Classes": [],
   "Youngshine.view.accnt.Detail": [],
   "Youngshine.view.accnt.KclistClass": [],
   "Youngshine.view.accnt.KclistOne2one": [],
+  "Youngshine.view.accnt.KclistRefund": [],
   "Youngshine.view.accnt.List": [],
   "Youngshine.view.accnt.Student": [],
   "Youngshine.view.assess.Addnew": [],
@@ -1883,6 +1885,9 @@ Ext.ClassManager.addNameAliasMappings({
   "Youngshine.view.accnt.AddnewKclistOne2one": [
     "widget.accnt-addnew"
   ],
+  "Youngshine.view.accnt.AddnewRefund": [
+    "widget.accnt-addnew"
+  ],
   "Youngshine.view.accnt.Addnew_1to1": [
     "widget.accnt-addnew"
   ],
@@ -1900,6 +1905,9 @@ Ext.ClassManager.addNameAliasMappings({
   ],
   "Youngshine.view.accnt.KclistOne2one": [
     "widget.kclist-one2one"
+  ],
+  "Youngshine.view.accnt.KclistRefund": [
+    "widget.kclist-refund"
   ],
   "Youngshine.view.accnt.List": [
     "widget.accnt"

@@ -15,6 +15,8 @@ Ext.define('Youngshine.model.Accnt', {
 			{name: 'accntDate'}, 
 			{name: 'amount'}, // 实收金额
 			{name: 'amount_ys'}, // 应收
+			{name: 'amount_owe'}, // 欠款，后来补缴时再修改为0
+			
 			{name: 'note'}, 
 			
 			{name: 'studentID'}, // 咨询师创建的

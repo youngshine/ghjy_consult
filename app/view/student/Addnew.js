@@ -96,6 +96,18 @@ Ext.define('Youngshine.view.student.Addnew', {
 						window.scrollTo(0,0);
 					}
 				}	
+			},{	
+				xtype: 'textfield',
+				name: 'note', //绑定后台数据字段
+				label: '备注',
+				clearIcon: false,
+				listeners: {
+					focus: function(e){
+						// 滚动自己，避免toolbar滚动，前面2个 2*50=100
+						this.up('panel').getScrollable().getScroller().scrollTo(0,100);
+						window.scrollTo(0,0);
+					}
+				}
 			},{
 				xtype: 'selectfield',
 				name: 'schoolsubID', 
@@ -148,6 +160,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade = this.down('selectfield[name=grade]').getValue(),
 			phone = this.down('textfield[name=phone]').getValue().trim(),
 			addr = this.down('textfield[name=addr]').getValue().trim(),
+			note = this.down('textfield[name=note]').getValue().trim(),
 			schoolsubID = this.down('selectfield[name=schoolsubID]').getValue()
 	
 		if (studentName == ''){
@@ -171,6 +184,7 @@ Ext.define('Youngshine.view.student.Addnew', {
 			grade: grade,
 			phone: phone,
 			addr: addr,
+			note: note,
 			schoolsubID: schoolsubID, //归属学校的分校区
 			consultID: localStorage.consultID,//归属哪个咨询师
 			schoolID: localStorage.schoolID //归属学校

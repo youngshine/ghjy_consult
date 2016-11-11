@@ -415,7 +415,7 @@ Ext.define('Youngshine.controller.Assess', {
 	},
 	// 历年考点雷达图
 	assesstopicHist: function(obj)	{
-    	var me = this; 
+    	var me = this; console.log(obj)
 		
 		me.assesshist = Ext.create('Youngshine.view.assess.PolarChart');
 		Ext.Viewport.add(me.assesshist); //否则build后无法显示

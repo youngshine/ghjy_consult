@@ -17,7 +17,7 @@
 	$schoolsubID = $arr->schoolsubID;
 
 	$query = "SELECT * From `ghjy_student`  
-		Where schoolsubID=$schoolsubID 
+		Where schoolID=$schoolID 
 		Order By created Desc ";
     
     $result = mysql_query($query) 

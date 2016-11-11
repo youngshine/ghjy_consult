@@ -1,5 +1,5 @@
 // 退费大小班，并且退班class_student
-Ext.define('Youngshine.view.accnt.KclistRefundClass',{
+Ext.define('Youngshine.view.accnt.KclistRefund',{
 	extend: 'Ext.dataview.List',
 	xtype: 'kclist-refund',
 
@@ -9,7 +9,7 @@ Ext.define('Youngshine.view.accnt.KclistRefundClass',{
 		store: 'AccntDetail',
 		itemTpl: '<div>{title}</div>'+
 			'<div style="color:#888;"><span>{hour}课时{amount}元</span>'+
-			'<span style="float:right;">{accntDate}</span></div>',
+			'<span style="float:right;">{accntDate}报读</span></div>',
         // We give it a left and top property to make it floating by default
         right: 0,
         top: 0,

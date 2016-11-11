@@ -59,7 +59,7 @@ $amount_ys = $_REQUEST['amount_ys'];
 $data = '{
        "touser":"' . $wxID . '",
        "template_id":"_yap-hIoKDO2uvVGhU-GD1KeLg6U79Rl943fNQj0p_I",
-       "url":"",            
+       "url":"http://www.xzpt.org/wx_ghjy/script/weixinJS/oAuth2.php?menuitem=member",            
        "data":{
                "first": {
                    "value":"您已在我校成功购买课程。",
@@ -78,7 +78,7 @@ $data = '{
                    "color":"#173177"
                },
                "remark":{
-                   "value": "服务电话 400-6680-118",
+                   "value": "点击详情查看缴费记录",
                    "color":"#173177"
                }
        }

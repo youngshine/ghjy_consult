@@ -86,7 +86,22 @@ Ext.define('Youngshine.controller.Accnt', {
 					me.accnt.onToggle('大小班'); //一开始默认运行
 				};
 			}   		
-		});	 			 
+		});	 
+		
+		// 学校的所有咨询
+		var objConsult = {
+			"schoolID": localStorage.schoolID
+		}
+		var storeConsult = Ext.getStore('Consult'); 
+		storeConsult.removeAll()
+		storeConsult.clearFilter() 
+		storeConsult.getProxy().setUrl(me.getApplication().dataUrl + 
+			'readConsultList.php?data=' + JSON.stringify(obj));
+		store.load({
+			callback: function(records, operation, success){
+				console.log(records)
+			}   		
+		});				 
 	},
 	
 	// 向左滑动，删除
@@ -187,8 +202,8 @@ Ext.define('Youngshine.controller.Accnt', {
 			break;
 		case '退费退班':
 			me.accntaddnew = Ext.create('Youngshine.view.accnt.AddnewRefund');
+			me.accntaddnew.down('list').getStore().removeAll()
 			break;
-			//me.accntaddnew.down('list').getStore().removeAll()
 			// 当前学校的大小班课程
 			/*
 			var objClass = {
@@ -249,6 +264,8 @@ Ext.define('Youngshine.controller.Accnt', {
 		Ext.Viewport.remove(me.accntaddnewclass,true); //remove 当前界面
 		Ext.Viewport.setActiveItem(me.accnt);
 	},	
+	
+	// 保存：accntType:一对一、大小班、退费退班 
 	accntaddnewSave: function( obj,oldView )	{
     	var me = this; console.log(obj)
 		// 传递参数，带有数组（子表多条记录）
@@ -278,10 +295,11 @@ Ext.define('Youngshine.controller.Accnt', {
 						accntDate  : person.accntDate,
 						amount     : person.amount,
 						amount_ys  : person.amount_ys,
+						school     : localStorage.schoolName
 					}
 					console.log(objWx)
 					Ext.Ajax.request({
-					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl.php',
+					    url: me.getApplication().dataUrl+'weixinJS_gongzhonghao/wx_msg_tpl_accnt.php',
 					    params: objWx,
 					    success: function(response){
 					        var text = response.responseText;
@@ -417,14 +435,15 @@ Ext.define('Youngshine.controller.Accnt', {
 	},
 	
 	// 退费已经购买的一对一课程或大小班课程（并且退班）
+	// 尚未分班或一对一排课 isClass=9 才能显示出来
 	accntaddnewKclistRefund: function(obj,btn)	{
     	var me = this;  console.log(obj)
 		if(obj.accntType == '大小班'){
-			me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundClass');
+			//me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundClass');
 		}else if(obj.accntType == '一对一'){
-			me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundOne2one');
+			//me.kclist = Ext.create('Youngshine.view.accnt.KclistRefundOne2one');
 		}
-		
+		me.kclist = Ext.create('Youngshine.view.accnt.KclistRefund');
 		Ext.Viewport.add(me.kclist); //否则build后无法显示
 		//me.kclist.show();
 
@@ -442,11 +461,11 @@ Ext.define('Youngshine.controller.Accnt', {
 	},
 	//
 	kclistrefundItemtap: function( list, index, target, record, e, eOpts )	{
-    	var me = this; 
-		
+    	var me = this; 		
 		var obj = {
 			accntdetailID: record.data.accntdetailID,
 			kclistID: record.data.kclistID,
+			kcType: record.data.kcType,
 			title: record.data.title,
 			hour: record.data.hour,
 			unitprice: record.data.unitprice, // 大小班，没有单价

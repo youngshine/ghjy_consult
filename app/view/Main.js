@@ -78,9 +78,9 @@ Ext.define('Youngshine.view.Main', {
 			modal: true,
 			hideOnMaskTap: true,
 			centered: true,
-			width: 420,height: 260,
-			scrollable: true,
-
+			width: 420,//height: 260,
+			//scrollable: true,
+			layout: 'vbox',
 	        items: [{	
 	        	xtype: 'toolbar',
 	        	docked: 'top',
@@ -120,7 +120,7 @@ Ext.define('Youngshine.view.Main', {
 				}]
 			},{
 				xtype: 'fieldset',
-				width: 400,
+				//width: 400,
 				defaults: {
 					//labelAlign: 'right'
 				},

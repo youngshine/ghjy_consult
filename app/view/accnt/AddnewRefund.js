@@ -61,10 +61,10 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 					xtype: 'button',
 					action: 'student',
 					text: '...',
-					//iconCls: 'search',
+					//iconCls: 'delete',
 					ui: 'plain',
-					width: 60,
-					zIndex: 999
+					width: 50,
+					//zIndex: 999
 				},{	
 					xtype: 'hiddenfield',
 					name: 'studentID', //绑定后台数据字段
@@ -80,7 +80,7 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 			},{
 				xtype: 'numberfield',
 				name: 'amount', //绑定后台数据字段
-				label: '金额（元）',
+				label: '退费金额',
 			},{
 				xtype: 'selectfield',
 				name: 'payment', 
@@ -137,11 +137,12 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 			store: Ext.create("Ext.data.Store", {
 				fields: [
 		            {name: "title", type: "string"},
-		            //{name: "pricelistID"},
 					{name: "kclistID", defaultValue: 0}, //0， 不是大小班
 					{name: "unitprice"},
 					{name: "hour"},
 					{name: "amount"},
+					{name: "accntdetailID"}, //退费，退班用
+					{name: "kcType"},
 		        ],
 			}),
 		}],			
@@ -169,6 +170,7 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 		}]
 	},
 
+	// 课程退费保存，如果是大小班课程，还必须退班（根据accntdetailID在class_student)
 	onSave: function(){
 		var me = this;
 		
@@ -180,19 +182,15 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 			studentID = this.down('hiddenfield[name=studentID]').getValue(),
 			wxID = this.down('hiddenfield[name=wxID]').getValue(), // wechat
 			accntDate = this.down('datepickerfield[name=accntDate]').getFormattedValue("Y-m-d"),
-			//taocan = this.down('textfield[name=taocan]').getValue(),
-			//hour = this.down('hiddenfield[name=hour]').getValue(),
 			amount = this.down('numberfield[name=amount]').getValue(),
-			amount_ys = this.down('numberfield[name=amount_ys]').getValue(),
 			payment = this.down('selectfield[name=payment]').getValue(),
 			note = this.down('textfield[name=note]').getValue().trim()
-			//kclistID = 0 //一对一，不是大小班kclist
 	
 		if (studentName == ''){
 			Ext.toast('请选择学生',3000); return;
 		}
 		if (amount == 0 || amount==null){
-			Ext.toast('请填写金额',3000); return;
+			Ext.toast('请填写退费金额',3000); return;
 		}	
 			
 		//if list.length == 0 '至少报读一个班级'
@@ -201,38 +199,35 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 		var store = me.down('list').getStore()
 		store.each(function(rec,index){
 			arrList.push(rec.data)
-			jsonList[index] = rec.data.pricelistID 
+			//jsonList[index] = rec.data.pricelistID 
 		})
 		//if (store.getCount()==0){
 		if (arrList.length == 0){	
 			Ext.toast('请添加明细记录',3000); return;
 		}
 		
-		console.log(JSON.stringify(jsonList));
+		//console.log(JSON.stringify(jsonList));
 		arrList = JSON.stringify(arrList); //传递到后台，必须字符串
 		console.log(arrList);
 		
 		var obj = {
-			accntType: '一对一',
+			accntType: '退费退班',
 			studentName: studentName,
 			studentID: studentID,
 			wxID: wxID, //用于发送微信模版消息
 			accntDate: accntDate,
 			amount: amount,
-			amount_ys: amount_ys,
+			amount_ys: 0, //退费没有应收款
 			payment: payment,
 			note: note,
-			//pricelistID: 0, //大小班，不是一对一
-			//title: '',
-			//unitprice: 0,
-			//hour: 0, // 一对一课时
 			arrList: arrList, // 报读的多个大小班课程
-			consultID: localStorage.consultID,
-			schoolID: localStorage.schoolID //归属哪个咨询师
+			consultID: localStorage.consultID,//归属哪个咨询师
+			schoolsubID: localStorage.schoolsubID,//归属哪个分校统计，咨询师可能换校区
+			schoolID: localStorage.schoolID 
 		};
 		console.log(obj)
 		
-    	Ext.Msg.confirm('保存',"确认提交购买？",function(btn){	
+    	Ext.Msg.confirm('保存',"确认提交退费？",function(btn){	
 			if(btn == 'yes'){
 				me.fireEvent('save', obj,me);
 				// 然后在class-student 填写班级学生
@@ -250,11 +245,9 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 		console.log(e.target.className)
 		if(e.target.className == 'removeItem'){
 			list.getStore().removeAt(index)
-			var ys = me.down('textfield[name=amount_ys]'),
-				ss = me.down('textfield[name=amount]')
+			var ss = me.down('textfield[name=amount]')
 			// 金额 减少
 			var amt = parseInt(record.data.amount)
-			ys.setValue(ys.getValue()-amt)
 			ss.setValue(ss.getValue()-amt)
 		}
 	},
@@ -265,7 +258,7 @@ Ext.define('Youngshine.view.accnt.AddnewRefund', {
 		me.fireEvent('student',btn,me);
 	},
 	
-	// 添加一对一课程和输入课时
+	// 添加课程明细记录，退费必须是从前购买的
 	onKclist: function(btn){
 		var me = this;
 		var studentName = this.down('textfield[name=studentName]').getValue().trim()

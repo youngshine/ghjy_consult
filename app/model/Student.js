@@ -12,7 +12,7 @@ Ext.define('Youngshine.model.Student', {
 			{name: 'born'}, 
 			{name: 'phone'}, 
 			{name: 'addr'}, 
-			//{name: 'school'}, 
+			{name: 'note'}, 
 			{name: 'level_list'}, //各学科123报读咨询测评的水平，以获得自适应第一组5个题目
 			
 			{name: 'consultID'}, //所属咨询师

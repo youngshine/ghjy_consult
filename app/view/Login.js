@@ -50,7 +50,7 @@ Ext.define('Youngshine.view.Login', {
     	},{
 			xtype: 'button',
 			//margin:-10px 10px',
-			text : '登录',
+			text : '请使用PC版，iPad版本暂时停用', 
 			ui : 'plain',
 			action: 'login',
 			style: {
@@ -92,7 +92,7 @@ Ext.define('Youngshine.view.Login', {
 		if (psw.length<6){
 			Ext.toast('密码至少6位',3000); return;
 		}	
-	
+
     	this.fireEvent('ok', username,psw,school);		
     },	
 	

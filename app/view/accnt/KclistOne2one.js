@@ -6,10 +6,11 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 	config: {
 		modal: true,
 		hideOnMaskTap: true,
-		//centered: true,
-		left:0,bottom:0,
-		width: '100%',
+		centered: true,
+		//left:0,bottom:0,
+		width: '80%',
 		//height: 280,
+		layout: 'vbox',
 
         items: [{	
         	xtype: 'toolbar',
@@ -22,7 +23,7 @@ Ext.define('Youngshine.view.accnt.KclistOne2one',{
 			}]
 		},{
 			xtype: 'fieldset',
-			width: '98%',
+			//width: '98%',
 			items: [{
 				xtype: 'selectfield',
 				label: '课程', 

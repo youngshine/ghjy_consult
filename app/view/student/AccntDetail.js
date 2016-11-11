@@ -13,7 +13,7 @@ Ext.define('Youngshine.view.student.AccntDetail', {
         itemTpl: [
 			'<div><span>{title}</span></div>'+
 			'<div><span style="color:#888;">{hour}课时{amount}元</span>' +
-			'<span class="refund" style="float:right;color:red;">退费退班</span></div>'
+			'<span class="" style="float:right;color:red;">状态</span></div>'
         ],
 		
     	items: [{

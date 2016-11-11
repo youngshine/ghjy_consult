@@ -1,6 +1,6 @@
 <?php
 /*log 选择知识点的教学教师
-* 课程（学习知识点）排课
+ * 课程（学习知识点）排课：修改任课教师、上课时间
 endlog */
 
 header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
@@ -11,11 +11,7 @@ require_once('db/database_connection.php');
 
 $studentstudyID = $_REQUEST['studentstudyID'];
 $teacherID = $_REQUEST['teacherID'];
-//$weekday = addslashes($_REQUEST['weekday']);
-//$timespan = addslashes($_REQUEST['timespan']);
-//$note = addslashes($_REQUEST['note']);
-
-// 上课周期列表，数组字符串转为json对象
+// 上课周期列表，数组字符串
 $timely_list = $_REQUEST['timely_list'];
 
 $query = "UPDATE `ghjy_student-study` SET  
@@ -23,7 +19,7 @@ $query = "UPDATE `ghjy_student-study` SET
 	Where studentstudyID = $studentstudyID ";
 
 $result = mysql_query($query) 
-	or die("Invalid query: updateStudy by Kcb" . mysql_error());
+	or die("Invalid query: updateOne2oneStudy by Kcb" . mysql_error());
 
 echo json_encode(array(
     "success" => true,
